@@ -166,7 +166,7 @@ public class Test : MonoBehaviour {
 		edges[5].setOccupyingPiece(pieces[4]);
 		edges[50].setOccupyingPiece(pieces[5]);
 		edges[10].setOccupyingPiece(pieces[6]);
-		edges[11].setOccupyingPiece(pieces[7]);
+		edges[51].setOccupyingPiece(pieces[7]);
 		edges[9].setOccupyingPiece(pieces[8]);
 		edges[15].setOccupyingPiece(pieces[9]);
 		edges[14].setOccupyingPiece(pieces[10]);
@@ -244,11 +244,48 @@ public class Test : MonoBehaviour {
 		hexes [6].setOccupyingPiece (new Pirate (Enums.Color.NONE));
 
 		// Print the available actions
-		printResults ();
+		printLongestRoute ();
 	}
 
-	// Prints all available actions
-	private void printResults() {
+	// Print the longest route for every edge
+	private void printLongestRoute() {
+		List<Edge> edgeList = new List<Edge> ();
+
+		Debug.Log ("Longest Route:\n");
+		for (int i = 0; i < edgeCount; i++) {
+			Graph.edgeReset (edges [0]);
+			edgeList = Graph.collectRouteEdges (edges [i], Enums.Color.WHITE);
+			int route = Graph.longestRoute (edgeList, Enums.Color.WHITE);
+			Debug.Log ("Edge " + i + " has longest route " + route +"\n");
+		}
+		Debug.Log("\n");
+	}
+
+	// Print edges connected to every edge
+	private void printConnectedEdges() {
+
+		List<Edge> edgeList = new List<Edge> ();
+
+		// Print all edges that are connected to every given edge
+		Debug.Log ("Connected Edges:\n");
+		for (int i = 0; i < edgeCount; i++) {
+			Debug.Log ("Edges connected to edge " + i + ":\n");
+			Graph.edgeReset (edges [0]);
+			edgeList = Graph.collectRouteEdges (edges [i], Enums.Color.WHITE);
+			for (int j = 0; j < edgeCount; j++) {
+				foreach (Edge e in edgeList) {
+					if (Object.ReferenceEquals (e, edges [j])) {
+						Debug.Log ("Edge " + i + " is connected to edge " + j + "\n");
+					}
+				}
+			}
+			Debug.Log("\n");
+		}
+		Debug.Log("\n");
+	}
+
+	// Prints all available actions in move authorizer
+	private void printMoveAuthorizer() {
 
 		// Check all vertices that a knight can move to
 		Debug.Log ("canKnightMove:\n");

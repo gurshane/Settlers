@@ -6,11 +6,11 @@ using Enums;
 public static class MoveManager {
 
 	// Move a knight from source to target
-	public static bool moveKnight(Vertex source, Vertex target, Enums.Color color) {
+	public static int moveKnight(Vertex source, Vertex target, Enums.Color color, int currentLongest) {
 
 		// Check if the knight can be moved
 		if (!MoveAuthorizer.canKnightMove (source, target, color)) {
-			return false;
+			return 0;
 		}
 
 		bool unbroken = (Graph.checkRouteBreak (source));
@@ -24,13 +24,24 @@ public static class MoveManager {
 		sourceKnight.deactivateKnight ();
 
 		// Check if longest route needs to be updated
+		int max = currentLongest;
 		if (Graph.checkRouteBreak(target)) {
-			// reassess longest route at target
+			foreach (Edge e in Graph.getBrokenEdges(target)) {
+				int longest = Graph.longestRoute (Graph.collectRouteEdges(e, color), color);
+				if (longest > max) {
+					max = longest;
+				}
+			}
 		}
 		if (unbroken) {
-			// reassess longest route at source
+			foreach (Edge e in Graph.getFixedEdges(source)) {
+				int longest = Graph.longestRoute (Graph.collectRouteEdges(e, color), color);
+				if (longest > max) {
+					max = longest;
+				}
+			}
 		}
-		return true;
+		return max;
 	}
 
 	// Displace a knight at target with knight at source
