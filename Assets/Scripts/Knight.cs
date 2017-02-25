@@ -56,6 +56,17 @@ public class Knight : GamePiece {
 		this.activatedThisTurn = false;
 	}
 
+	public static Knight getFreeKnight(List<GamePiece> pieces) {
+		foreach (GamePiece p in pieces) {
+			if (p.getPieceType () == Enums.PieceType.KNIGHT) {
+				if (!p.isOnBoard ()) {
+					return (Knight)p;
+				}
+			}
+		}
+		return null;
+	}
+
 	// Use this for initialization
 	void Start () {
 		

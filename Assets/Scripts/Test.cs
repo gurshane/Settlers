@@ -244,7 +244,7 @@ public class Test : MonoBehaviour {
 		hexes [6].setOccupyingPiece (new Pirate (Enums.Color.NONE));
 
 		// Print the available actions
-		printLongestRoute ();
+		printMoveAuthorizer ();
 	}
 
 	// Print the longest route for every edge
@@ -437,6 +437,33 @@ public class Test : MonoBehaviour {
 		for (int i = 0; i < hexCount; i++) {
 			if (MoveAuthorizer.canPlaceMerchant(hexes[i])) {
 				Debug.Log("Merchant can be placed on hex " + i + "\n");
+			}
+		}
+		Debug.Log("\n");
+
+		// Check where the initial town-piece can be placed
+		Debug.Log ("canPlaceInitialTownPiece:\n");
+		for (int i = 0; i < vertexCount; i++) {
+			if (MoveAuthorizer.canPlaceInitialTownPiece(vertices[i])) {
+				Debug.Log("Initial town piece can be placed on vertex " + i + "\n");
+			}
+		}
+		Debug.Log("\n");
+
+		// Check where the initial road can be placed
+		Debug.Log ("canPlaceInitialRoad:\n");
+		for (int i = 0; i < edgeCount; i++) {
+			if (MoveAuthorizer.canPlaceInitialRoad(edges[i], Enums.Color.WHITE)) {
+				Debug.Log("Initial road can be placed on edge " + i + "\n");
+			}
+		}
+		Debug.Log("\n");
+
+		// Check where the initial ship can be placed
+		Debug.Log ("canPlaceInitialShip:\n");
+		for (int i = 0; i < edgeCount; i++) {
+			if (MoveAuthorizer.canPlaceInitialShip(edges[i], Enums.Color.WHITE)) {
+				Debug.Log("Initial ship can be placed on edge " + i + "\n");
 			}
 		}
 		Debug.Log("\n");

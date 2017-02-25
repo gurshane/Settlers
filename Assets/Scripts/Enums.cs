@@ -10,7 +10,7 @@ namespace Enums {
 
 	public enum CommodityType { CLOTH, COIN, PAPER };
 
-	public enum PieceType { ROAD, SETTLEMENT, CITY, KNIGHT, SHIP, 
+	public enum PieceType { ROAD, SETTLEMENT, CITY, KNIGHT, 
 		PIRATE, ROBBER, MERCHANT };
 
 	public enum Status { ACTIVE, INACTIVE };

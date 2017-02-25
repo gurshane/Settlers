@@ -30,6 +30,32 @@ public class Road : GamePiece {
 		this.builtThisTurn = false;
 	}
 
+	public static Road getFreeRoad(List<GamePiece> pieces) {
+		foreach (GamePiece p in pieces) {
+			if (p.getPieceType () == Enums.PieceType.ROAD) {
+				if ( !((Road)p).getIsShip () ) {
+					if (!p.isOnBoard ()) {
+						return (Road)p;
+					}
+				}
+			}
+		}
+		return null;
+	}
+
+	public static Road getFreeShip(List<GamePiece> pieces) {
+		foreach (GamePiece p in pieces) {
+			if (p.getPieceType () == Enums.PieceType.ROAD) {
+				if ( ((Road)p).getIsShip () ) {
+					if (!p.isOnBoard ()) {
+						return (Road)p;
+					}
+				}
+			}
+		}
+		return null;
+	}
+
 	// Use this for initialization
 	void Start () {
 		

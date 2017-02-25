@@ -187,6 +187,108 @@ public class Extra : MonoBehaviour {
 		return true;
 	}*/
 
+	// Get all edges that have been broken by the placement of a vertex piece
+	/*public static List<Edge> getBrokenEdges(Vertex v) {
+		List<Edge> ret = new List<Edge> ();
+		GamePiece interPiece = v.getOccupyingPiece ();
+
+		// Check if there is a piece on the given vertex
+		if (Object.ReferenceEquals (interPiece, null)) {
+			return ret;
+		}
+
+		// Get all the edge pieces that have a different color than the vertex piece
+		Enums.Color interColor = interPiece.getColor ();
+		foreach (Edge e in v.getNeighbouringEdges()) {
+			GamePiece edgePiece = e.getOccupyingPiece ();
+
+			if (Object.ReferenceEquals (edgePiece, null)) {
+				continue;
+			} else if (edgePiece.getColor () != interColor) {
+				ret.Add (e);
+			}
+		}
+		return ret;
+	}
+
+	// Get the edges at an intersection that share the same color
+	public static List<Edge> getFixedEdges(Vertex v) {
+		List<Edge> ret = new List<Edge> ();
+		Enums.Color color1 = Enums.Color.NONE;
+		Enums.Color color2 = Enums.Color.NONE;
+		Enums.Color chosen = Enums.Color.NONE;
+
+		// Get the color of the fixed edges
+		foreach (Edge e in v.getNeighbouringEdges()) {
+			GamePiece edgePiece = e.getOccupyingPiece ();
+
+			if (Object.ReferenceEquals (edgePiece, null)) {
+				continue;
+			} else {
+				if (color1 == Enums.Color.NONE) {
+					color1 = edgePiece.getColor ();
+				} else if (edgePiece.getColor () == color1) {
+					chosen = color1;
+				} else if (color2 == Enums.Color.NONE) {
+					color2 = edgePiece.getColor ();
+				} else if (edgePiece.getColor () == color2) {
+					chosen = color2;
+				}
+			}
+		}
+
+		// Add the edges of the chosen color to the return list
+		foreach (Edge e in v.getNeighbouringEdges()) {
+			GamePiece edgePiece = e.getOccupyingPiece ();
+
+			if (Object.ReferenceEquals (edgePiece, null)) {
+				continue;
+			} else if (edgePiece.getColor () == chosen) {
+				ret.Add (e);
+			}
+		}
+		return ret;
+	}*/
+
+	// Check if a vertex has a piece that breaks a route
+	/*public static bool checkRouteBreak (Vertex v) {
+		GamePiece interPiece = v.getOccupyingPiece ();
+
+		// First check if there is a piece on vertex v
+		if (Object.ReferenceEquals (interPiece, null)) {
+			return false;
+		}
+			
+		// Create a color dictionary
+		Dictionary<Enums.Color, int> colors = new Dictionary<Enums.Color, int>();
+		Enums.Color interColor = interPiece.getColor ();
+		for (int i = 0; i < 5; i++) {
+			colors.Add ((Enums.Color)i, 0);
+		}
+
+		// Get a count of colored edges around vertex v
+		// If two edges don't match the piece at vertex v, there is a break
+		foreach (Edge e in v.getNeighbouringEdges()) {
+			GamePiece edgePiece = e.getOccupyingPiece ();
+
+			if (Object.ReferenceEquals (edgePiece, null)) {
+				continue;
+			} else {
+				int currentColor = colors [edgePiece.getColor ()];
+				currentColor++;
+
+				if (edgePiece.getColor () != interColor) {
+					if (currentColor >= 2) {
+						return true;
+					}
+				}
+				colors.Remove (edgePiece.getColor ());
+				colors.Add (edgePiece.getColor (), currentColor);
+			}
+		}
+		return false;
+	}*/
+
 	// Use this for initialization
 	void Start () {
 		
