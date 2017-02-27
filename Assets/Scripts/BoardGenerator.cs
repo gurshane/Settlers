@@ -1,12 +1,13 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Networking;
 
-public class BoardGenerator : MonoBehaviour {
+public class BoardGenerator : NetworkBehaviour {
 
     //Spawn Locations
-    public List<Transform> mainBoardHexSpawns;
-    public List<Transform> islandHexSpawns;
+    private List<GameObject> mainBoardHexSpawns;
+    private List<GameObject> islandHexSpawns;
 
     //Hexes
     public List<GameObject> hexPieces;
@@ -25,10 +26,10 @@ public class BoardGenerator : MonoBehaviour {
     public List<GameObject> numberPieces;
 
     //Edges
-    public List<GameObject> edges;
+    private List<GameObject> edges;
 
     //Vertices
-    public List<GameObject> vertices;
+    private List<GameObject> vertices;
 
     //Spawned versions of the hexes, number tiles, water hexes
     private List<GameObject> spawned;
@@ -43,6 +44,13 @@ public class BoardGenerator : MonoBehaviour {
         spawnedNumbers = new List<GameObject>();
         spawnedMainBoardHexes = new List<GameObject>();
         spawnedIslandHexes = new List<GameObject>();
+
+        edges = new List<GameObject>(GameObject.FindGameObjectsWithTag("Edge"));
+        vertices = new List<GameObject>(GameObject.FindGameObjectsWithTag("Vertex"));
+
+        mainBoardHexSpawns = new List<GameObject>(GameObject.FindGameObjectsWithTag("MainHex"));
+        islandHexSpawns = new List<GameObject>(GameObject.FindGameObjectsWithTag("IslandHex"));
+
 
         makeBoard();
 	}
@@ -83,11 +91,12 @@ public class BoardGenerator : MonoBehaviour {
         spawnHex(islandHexSpawns, pastureHex, 2, false);
     }
 
-    void spawnHex(List<Transform> spawnPositions, GameObject hexToSpawn, int numToSpawn, bool isOnMainBoard)
+    void spawnHex(List<GameObject> spawnPositions, GameObject hexToSpawn, int numToSpawn, bool isOnMainBoard)
     {
        for( int i = 0; i < numToSpawn; i++)
         {
-            Transform targetTransform = spawnPositions[Random.Range(0, spawnPositions.Count)];
+            GameObject targetSpawn = (spawnPositions[Random.Range(0, spawnPositions.Count)]);
+            Transform targetTransform = targetSpawn.transform;
             GameObject spawnedHex = Instantiate(hexToSpawn, targetTransform.position, Quaternion.identity, targetTransform);
 
             if (isOnMainBoard)
@@ -99,7 +108,8 @@ public class BoardGenerator : MonoBehaviour {
                 spawnedIslandHexes.Add(spawnedHex);
             }
 
-            spawnPositions.Remove(targetTransform);
+            NetworkServer.Spawn(spawnedHex);
+            spawnPositions.Remove(targetSpawn);
         }
     }
 }
