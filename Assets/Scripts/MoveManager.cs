@@ -152,8 +152,8 @@ public static class MoveManager {
 	}
 
 	// Place an initial settlement
-	public static bool placeInitialSettlement (Vertex v, List<GamePiece> pieces) {
-		if (!MoveAuthorizer.canPlaceInitialTownPiece (v)) {
+	public static bool placeInitialSettlement (Vertex v, List<GamePiece> pieces, List<Hex> validHexes) {
+		if (!MoveAuthorizer.canPlaceInitialTownPiece (v, validHexes)) {
 			return false;
 		}
 			
@@ -165,14 +165,16 @@ public static class MoveManager {
 	}
 
 	// Place an initial city
-	public static bool placeInitialCity (Vertex v, List<GamePiece> pieces) {
-		if (!MoveAuthorizer.canPlaceInitialTownPiece (v)) {
+	public static bool placeInitialCity (Vertex v, List<GamePiece> pieces, List<Hex> validHexes) {
+		if (!MoveAuthorizer.canPlaceInitialTownPiece (v, validHexes)) {
 			return false;
 		}
 
 		City city = City.getFreeCity (pieces);
 		v.setOccupyingPiece (city);
 		city.putOnBoard ();
+
+		//port
 
 		return true;
 	}

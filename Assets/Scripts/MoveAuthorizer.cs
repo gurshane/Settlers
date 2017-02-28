@@ -708,7 +708,21 @@ public static class MoveAuthorizer {
 	}
 
 	// Check if initial town-pieces can be placed on a vertex
-	public static bool canPlaceInitialTownPiece(Vertex v) {
+	public static bool canPlaceInitialTownPiece(Vertex v, List<Hex> validHexes) {
+
+		bool valid = false;
+		foreach (Hex h in validHexes) {
+			foreach (Vertex neighbour in h.getVertices()) {
+				if (Object.ReferenceEquals (neighbour, v)) {
+					valid = true;
+				}
+			}
+		}
+
+		if (!valid) {
+			return false;
+		}
+
 		if (Graph.freeVertex (v)) {
 			if (v.getTerrainType () == Enums.TerrainType.LAND) {
 				return true;
