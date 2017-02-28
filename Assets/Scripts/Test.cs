@@ -37,6 +37,7 @@ public class Test : MonoBehaviour {
 		vertices = new List<Vertex> ();
 		edges = new List<Edge> ();
 		hexes = new List<Hex> ();
+		validHexes = new List<Hex> ();
 
 		vertexCount = 40;
 		edgeCount = 52;
