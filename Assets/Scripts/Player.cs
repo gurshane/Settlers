@@ -64,10 +64,34 @@ public class Player : MonoBehaviour {
         return this.victoryPoints;
     }
 
+	public bool decrementVictoryPoints(int num) {
+		if (this.victoryPoints < num) {
+			return false;
+		}
+		this.victoryPoints -= num;
+		return true;
+	}
+
+	public void incrementVictoryPoints(int num) {
+		this.victoryPoints += num;
+	}
+
     public int getGoldCount()
     {
         return this.goldCount;
     }
+
+	public bool decrementGoldCount(int num) {
+		if (this.goldCount < num) {
+			return false;
+		}
+		this.goldCount -= num;
+		return true;
+	}
+
+	public void incrementGoldCount(int num) {
+		this.goldCount += num;
+	}
 
     public int getSafeCardCount()
     {
@@ -139,10 +163,15 @@ public class Player : MonoBehaviour {
         commodityRatios = newRatios;
     }
 
-    public void discardCommodity(CommodityType commodityType, int numToRemove)
+    public bool discardCommodity(CommodityType commodityType, int numToRemove)
     {
-        int comPosition = (int)commodityType;
-        commodities[comPosition] -= numToRemove;
+		int comPosition = (int)commodityType;
+		if (commodities[comPosition] < numToRemove)
+		{
+			return false;
+		}
+		commodities[comPosition] -= numToRemove;
+		return true;
     }
 
     public void addCommodity(CommodityType commodityType, int numToAdd)
@@ -151,7 +180,7 @@ public class Player : MonoBehaviour {
         commodities[comPosition] += numToAdd;
     }
 
-    public void addResource(ResourceType resourceType, int numToAdd)
+    public void addResource(Enums.ResourceType resourceType, int numToAdd)
     {
         int resPosition = (int)resourceType;
         resources[resPosition] += numToAdd;
