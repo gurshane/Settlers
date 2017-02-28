@@ -9,6 +9,7 @@ public class Test : MonoBehaviour {
 	List<Vertex> vertices;
 	List<Edge> edges;
 	List<Hex> hexes;
+	List<Hex> validHexes;
 
 	// The board piece counts
 	int vertexCount;
@@ -115,6 +116,7 @@ public class Test : MonoBehaviour {
 		}
 		for (int i = 0; i < 4; i++) {
 			hexes.Add (new Hex (Enums.TerrainType.LAND, Enums.HexType.FIELD));
+			validHexes.Add(hexes[i]);
 		}
 		for (int i = 0; i < 6; i++) {
 			hexes.Add (new Hex (Enums.TerrainType.WATER, Enums.HexType.WATER));
@@ -444,7 +446,7 @@ public class Test : MonoBehaviour {
 		// Check where the initial town-piece can be placed
 		Debug.Log ("canPlaceInitialTownPiece:\n");
 		for (int i = 0; i < vertexCount; i++) {
-			if (MoveAuthorizer.canPlaceInitialTownPiece(vertices[i])) {
+			if (MoveAuthorizer.canPlaceInitialTownPiece(vertices[i], validHexes)) {
 				Debug.Log("Initial town piece can be placed on vertex " + i + "\n");
 			}
 		}
