@@ -43,7 +43,7 @@ public static class GameManager {
 
 	public Player getPlayer(string name) {
 		foreach (Player p in players) {
-			if p.getUserName().Equals(name) {
+			if (p.getUserName().Equals(name)) {
 				return p;
 			}
 		}
@@ -207,7 +207,16 @@ public static class GameManager {
 
 		int num = this.firstDie + this.secondDie;
 
-		// Check enough resources in bank
+		Dictionary<Enums.ResourceType, bool> enoughRes = new Dictionary<Enums.CommodityType, bool> ();
+		Dictionary<Enums.CommodityType, bool> enoughComs = new Dictionary<Enums.CommodityType, bool> ();
+
+		for (int i = 0; i < 5; i++) {
+			enoughRes.Add ((Enums.ResourceType)i, checkResources ((Enums.ResourceType)i, num));
+		}
+
+		for (int i = 0; i < 3; i++) {
+			enoughComs.Add ((Enums.CommodityType)i, checkCommodities ((Enums.CommodityType)i, num));
+		}
 
 		foreach (Hex h in hexes) {
 
@@ -225,6 +234,10 @@ public static class GameManager {
 			Enums.ResourceType res = getResourceFromHex (hType);
 			Enums.CommodityType com = getCommodityFromHex (hType);
 
+			if (res == Enums.ResourceType.NONE) {
+				continue;
+			}
+
 			foreach (Vertex v in h.getVertices()) {
 				if (v.getVisited () != 0) {
 					continue;
@@ -240,7 +253,7 @@ public static class GameManager {
 				if (current.getPieceType() == Enums.PieceType.SETTLEMENT) {
 					string owner = current.getOwnerName ();
 					Player p = getPlayer (owner);
-					if (res != Enums.ResourceType.NONE) {
+					if (res != Enums.ResourceType.NONE && enoughRes[res]) {
 						Bank.withdrawResource (res, 1);
 						p.addResource (res, 1);
 					} else if (gold) {
@@ -252,14 +265,18 @@ public static class GameManager {
 					string owner = current.getOwnerName ();
 					Player p = getPlayer (owner);
 					if (com != Enums.ResourceType.NONE) {
-						Bank.withdrawResource (res, 1);
-						Bank.withdrawResource (com, 1);
-						p.addResource (res, 1);
-						p.addResource (com, 1);
-					} else if (res == Enums.ResourceType.BRICK) {
+						if (enoughRes [res]) {
+							Bank.withdrawResource (res, 1);
+							p.addResource (res, 1);
+						}
+						if (enoughComs [com]) {
+							Bank.withdrawResource (com, 1);
+							p.addResource (com, 1);
+						}
+					} else if (res == Enums.ResourceType.BRICK && enoughRes[res]) {
 						Bank.withdrawResource (res, 2);
 						p.addResource (res, 2);
-					} else if (res == Enums.ResourceType.GRAIN) {
+					} else if (res == Enums.ResourceType.GRAIN && enoughRes[res]) {
 						Bank.withdrawResource (res, 2);
 						p.addResource (res, 2);
 					} else if (gold) {
@@ -304,5 +321,105 @@ public static class GameManager {
 		}
 	}
 				      
-			
+	private bool checkResources(Enums.ResourceType res, int n) {
+		Graph.vertexReset ();
+
+		int total = 0;
+
+		foreach (Hex h in hexes) {
+
+			if (h.getHexNumber () != n) {
+				continue;
+			}
+
+			Enums.HexType hType = h.getHexType;
+
+			if (getResourceFromHex (hType) != res) {
+				continue;
+			}
+
+			foreach (Vertex v in h.getVertices()) {
+				if (v.getVisited () != 0) {
+					continue;
+				}
+
+				v.setVisited();
+
+				GamePiece current = v.getOccupyingPiece ();
+				if(Object.ReferenceEquals(current, null)) {
+					continue;
+				} 
+
+				if (current.getPieceType() == Enums.PieceType.SETTLEMENT) {
+					total++;
+				}
+
+				if (current.getPieceType() == Enums.PieceType.CITY) {
+					if (res == Enums.ResourceType.BRICK) {
+						total += 2;
+					} else if (res == Enums.ResourceType.GRAIN) {
+						total += 2;
+					} else if (res != Enums.ResourceType.NONE) {
+						total++;
+					}
+				}
+			}
+		}
+
+		int bankAmount = Bank.getResourceAmount (res);
+		if (bankAmount >= total) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	private bool checkCommodities(Enums.CommodityType com, int n) {
+		Graph.vertexReset ();
+
+		int total = 0;
+
+		foreach (Hex h in hexes) {
+
+			if (h.getHexNumber () != n) {
+				continue;
+			}
+
+			Enums.HexType hType = h.getHexType;
+
+			if (getCommodityFromHex (hType) != com) {
+				continue;
+			}
+
+			foreach (Vertex v in h.getVertices()) {
+				if (v.getVisited () != 0) {
+					continue;
+				}
+
+				v.setVisited();
+
+				GamePiece current = v.getOccupyingPiece ();
+				if(Object.ReferenceEquals(current, null)) {
+					continue;
+				} 
+
+				if (current.getPieceType() == Enums.PieceType.CITY) {
+					switch (com) {
+					case Enums.CommodityType.NONE:
+						break;
+					default:
+						total++;
+						break;
+					}
+				}
+			}
+		}
+
+		int bankAmount = Bank.getCommodityAmount (com);
+		if (bankAmount >= total) {
+			return true;
+		} else {
+			return false;
+		}
+	}
 }
