@@ -6,6 +6,13 @@ using UnityEngine.Networking;
 public class HighLighter : NetworkBehaviour {
 
     private GameObject currentlyHighlighted;
+    private GameObject gameManager;
+
+    void Start()
+    {
+        gameManager = GameObject.FindGameObjectWithTag("GameManager");
+        
+    }
 
     // Update is called once per frame
     void Update() {
@@ -25,13 +32,13 @@ public class HighLighter : NetworkBehaviour {
     }
 
     [Command]
-    void CmdHighlightThis(GameObject target)
+    public void CmdHighlightThis(GameObject target)
     {
         RpcHighlightThis(target);
     }
 
     [ClientRpc]
-    void RpcHighlightThis(GameObject target)
+    public void RpcHighlightThis(GameObject target)
     {
         if (target.tag == "Edge" || target.tag == "Vertex")
         {
