@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class UISegment : MonoBehaviour {
+public class UIComponent : MonoBehaviour {
 
 
 	public void distributeComponents()

@@ -4,6 +4,9 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 
+/// <summary>
+/// A subelement within the UI Canvas.
+/// </summary>
 public class UIElement : MonoBehaviour, IDescribable<string>, IPointerEnterHandler, IPointerExitHandler {
 
 
