@@ -98,6 +98,36 @@ public class BoardGenerator : NetworkBehaviour {
             GameObject targetSpawn = (spawnPositions[Random.Range(0, spawnPositions.Count)]);
             Transform targetTransform = targetSpawn.transform;
             GameObject spawnedHex = Instantiate(hexToSpawn, targetTransform.position, Quaternion.identity, targetTransform);
+            Hex hex = targetSpawn.gameObject.GetComponent<Hex>();
+            string name = hexToSpawn.name;
+            switch (name)
+            {
+                case "waterTile":
+                    hex.hexType = Enums.HexType.WATER;
+                    break;
+                case "brickTile":
+                    hex.hexType = Enums.HexType.HILL;
+                    break;
+                case "desertTile":
+                    hex.hexType = Enums.HexType.DESERT;
+                    break;
+                case "goldTile":
+                    hex.hexType = Enums.HexType.GOLD;
+                    break;
+                case "oreTile":
+                    hex.hexType = Enums.HexType.MOUNTAIN;
+                    break;
+                case "sheepTile":
+                    hex.hexType = Enums.HexType.PASTURE;
+                    break;
+                case "wheatTile":
+                    hex.hexType = Enums.HexType.FIELD;
+                    break;
+                case "woodTile":
+                    hex.hexType = Enums.HexType.FOREST;
+                    break;
+            }
+
 
             if (isOnMainBoard)
             {
