@@ -207,6 +207,8 @@ public static class GameManager {
 
 		int num = this.firstDie + this.secondDie;
 
+		// Check enough resources in bank
+
 		foreach (Hex h in hexes) {
 
 			if (h.getHexNumber () != num) {
