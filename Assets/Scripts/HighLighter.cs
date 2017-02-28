@@ -1,32 +1,46 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Networking;
 
-public class HighLighter : MonoBehaviour {
+public class HighLighter : NetworkBehaviour {
 
     private GameObject currentlyHighlighted;
 
-	
-	
-	// Update is called once per frame
-	void Update () {
-		if(Input.GetButtonDown("Fire1"))
+    // Update is called once per frame
+    void Update() {
+        if(!isLocalPlayer)
+        {
+            return;
+        }
+        if (Input.GetButtonDown("Fire1"))
         {
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
             RaycastHit impact;
-            if(Physics.Raycast(ray, out impact))
+            if (Physics.Raycast(ray, out impact))
             {
-                GameObject temp = impact.collider.gameObject;
-                if(temp.tag == "Edge" || temp.tag == "Vertex")
-                {
-                    if (currentlyHighlighted != null)
-                    {
-                        currentlyHighlighted.GetComponent<MeshRenderer>().enabled = false;
-                    }
-                    temp.GetComponent<MeshRenderer>().enabled = true;
-                    currentlyHighlighted = temp;
-                }
+                CmdHighlightThis( impact.collider.gameObject );
             }
         }
-	}
+    }
+
+    [Command]
+    void CmdHighlightThis(GameObject target)
+    {
+        RpcHighlightThis(target);
+    }
+
+    [ClientRpc]
+    void RpcHighlightThis(GameObject target)
+    {
+        if (target.tag == "Edge" || target.tag == "Vertex")
+        {
+            if (currentlyHighlighted != null)
+            {
+                currentlyHighlighted.GetComponent<MeshRenderer>().enabled = false;
+            }
+            target.GetComponent<MeshRenderer>().enabled = true;
+            currentlyHighlighted = target;
+        }
+    }
 }
