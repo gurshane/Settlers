@@ -54,26 +54,25 @@ public static class MoveManager {
 	}
 
 	// Upgrade a knight at vertex v
-	public static bool upgradeKnight(Dictionary<Enums.ResourceType, int> resources, 
-		Dictionary<Enums.DevChartType, int> devChart, Vertex v) {
+	public static bool upgradeKnight(int[] resources, int[] devChart, Vertex v) {
 
 		return true;
 	}
 
 	// Activate a knight at vertex v
-	public static bool activateKnight(Dictionary<Enums.ResourceType, int> resources, Vertex v) {
+	public static bool activateKnight(int[] resources, Vertex v) {
 		return true;
 	}
 
 	// Upgrade a development chart in the specified field
-	public static bool upgradeDevChart(Enums.DevChartType dev, Dictionary<Enums.CommodityType, int> commodities, 
-		List<GamePiece> pieces, Dictionary<Enums.DevChartType, int> devChart) {
+	public static bool upgradeDevChart(Enums.DevChartType dev, int[] commodities, 
+		List<GamePiece> pieces, int[] devChart) {
 
 		return true;
 	}
 
 	// Build a settlement at location
-	public static bool buidSettlement(Vertex location, Dictionary<Enums.ResourceType, int> resources,
+	public static bool buidSettlement(Vertex location, int[] resources,
 		List<GamePiece> pieces, Enums.Color color) {
 
 		if (!MoveAuthorizer.canBuildSettlement (location, resources, pieces, color)) {
@@ -84,40 +83,39 @@ public static class MoveManager {
 		//p.putOnBoard ();
 
 		return true;
-		return true;
 	}
 
 
 	// Build a city at location
-	public static bool buildCity(Vertex location, Dictionary<Enums.ResourceType, int> resources,
+	public static bool buildCity(Vertex location, int[] resources,
 		List<GamePiece> pieces, Enums.Color color) {
 
 		return true;
 	}
 
 	// Check if a city wall can be built at a vertex
-	public static bool buildCityWall(Vertex location, Dictionary<Enums.ResourceType, int> resources,
+	public static bool buildCityWall(Vertex location, int[] resources,
 		int cityWalls, Enums.Color color) {
 
 		return true;
 	}
 
 	// Build a knight at location
-	public static bool buildKnight(Vertex location, Dictionary<Enums.ResourceType, int> resources,
+	public static bool buildKnight(Vertex location, int[] resources,
 		List<GamePiece> pieces, Enums.Color color) {
 
 		return true;
 	}
 
 	// Build a road at location
-	public static bool buildRoad(Edge location, Dictionary<Enums.ResourceType, int> resources,
+	public static bool buildRoad(Edge location, int[] resources,
 		List<GamePiece> pieces, Enums.Color color) {
 
 		return true;
 	}
 
 	// Build a ship at location
-	public static bool buildShip(Edge location, Dictionary<Enums.ResourceType, int> resources,
+	public static bool buildShip(Edge location, int[] resources,
 		List<GamePiece> pieces, Enums.Color color) {
 
 		return true;
