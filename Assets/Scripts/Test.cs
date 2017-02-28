@@ -9,6 +9,7 @@ public class Test : MonoBehaviour {
 	List<Vertex> vertices;
 	List<Edge> edges;
 	List<Hex> hexes;
+	List<Hex> validHexes;
 
 	// The board piece counts
 	int vertexCount;
@@ -115,6 +116,7 @@ public class Test : MonoBehaviour {
 		}
 		for (int i = 0; i < 4; i++) {
 			hexes.Add (new Hex (Enums.TerrainType.LAND, Enums.HexType.FIELD));
+			validHexes.Add(hexes[i]);
 		}
 		for (int i = 0; i < 6; i++) {
 			hexes.Add (new Hex (Enums.TerrainType.WATER, Enums.HexType.WATER));
@@ -166,7 +168,7 @@ public class Test : MonoBehaviour {
 		edges[5].setOccupyingPiece(pieces[4]);
 		edges[50].setOccupyingPiece(pieces[5]);
 		edges[10].setOccupyingPiece(pieces[6]);
-		edges[11].setOccupyingPiece(pieces[7]);
+		edges[51].setOccupyingPiece(pieces[7]);
 		edges[9].setOccupyingPiece(pieces[8]);
 		edges[15].setOccupyingPiece(pieces[9]);
 		edges[14].setOccupyingPiece(pieces[10]);
@@ -244,11 +246,48 @@ public class Test : MonoBehaviour {
 		hexes [6].setOccupyingPiece (new Pirate (Enums.Color.NONE));
 
 		// Print the available actions
-		printResults ();
+		printMoveAuthorizer ();
 	}
 
-	// Prints all available actions
-	private void printResults() {
+	// Print the longest route for every edge
+	private void printLongestRoute() {
+		List<Edge> edgeList = new List<Edge> ();
+
+		Debug.Log ("Longest Route:\n");
+		for (int i = 0; i < edgeCount; i++) {
+			Graph.edgeReset (edges [0]);
+			edgeList = Graph.collectRouteEdges (edges [i], Enums.Color.WHITE);
+			int route = Graph.longestRoute (edgeList, Enums.Color.WHITE);
+			Debug.Log ("Edge " + i + " has longest route " + route +"\n");
+		}
+		Debug.Log("\n");
+	}
+
+	// Print edges connected to every edge
+	private void printConnectedEdges() {
+
+		List<Edge> edgeList = new List<Edge> ();
+
+		// Print all edges that are connected to every given edge
+		Debug.Log ("Connected Edges:\n");
+		for (int i = 0; i < edgeCount; i++) {
+			Debug.Log ("Edges connected to edge " + i + ":\n");
+			Graph.edgeReset (edges [0]);
+			edgeList = Graph.collectRouteEdges (edges [i], Enums.Color.WHITE);
+			for (int j = 0; j < edgeCount; j++) {
+				foreach (Edge e in edgeList) {
+					if (Object.ReferenceEquals (e, edges [j])) {
+						Debug.Log ("Edge " + i + " is connected to edge " + j + "\n");
+					}
+				}
+			}
+			Debug.Log("\n");
+		}
+		Debug.Log("\n");
+	}
+
+	// Prints all available actions in move authorizer
+	private void printMoveAuthorizer() {
 
 		// Check all vertices that a knight can move to
 		Debug.Log ("canKnightMove:\n");
@@ -400,6 +439,33 @@ public class Test : MonoBehaviour {
 		for (int i = 0; i < hexCount; i++) {
 			if (MoveAuthorizer.canPlaceMerchant(hexes[i])) {
 				Debug.Log("Merchant can be placed on hex " + i + "\n");
+			}
+		}
+		Debug.Log("\n");
+
+		// Check where the initial town-piece can be placed
+		Debug.Log ("canPlaceInitialTownPiece:\n");
+		for (int i = 0; i < vertexCount; i++) {
+			if (MoveAuthorizer.canPlaceInitialTownPiece(vertices[i], validHexes)) {
+				Debug.Log("Initial town piece can be placed on vertex " + i + "\n");
+			}
+		}
+		Debug.Log("\n");
+
+		// Check where the initial road can be placed
+		Debug.Log ("canPlaceInitialRoad:\n");
+		for (int i = 0; i < edgeCount; i++) {
+			if (MoveAuthorizer.canPlaceInitialRoad(edges[i], Enums.Color.WHITE)) {
+				Debug.Log("Initial road can be placed on edge " + i + "\n");
+			}
+		}
+		Debug.Log("\n");
+
+		// Check where the initial ship can be placed
+		Debug.Log ("canPlaceInitialShip:\n");
+		for (int i = 0; i < edgeCount; i++) {
+			if (MoveAuthorizer.canPlaceInitialShip(edges[i], Enums.Color.WHITE)) {
+				Debug.Log("Initial ship can be placed on edge " + i + "\n");
 			}
 		}
 		Debug.Log("\n");

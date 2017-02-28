@@ -416,14 +416,28 @@ public static class MoveAuthorizer {
 		}
 
 		bool nextToWater = false;
-		if (!Object.ReferenceEquals(location.getLeftHex(), null)) {
-			if (location.getLeftHex().getTerrainType() == Enums.TerrainType.WATER) {
+		Hex hex = location.getLeftHex ();
+		if (!Object.ReferenceEquals(hex, null)) {
+			if (hex.getTerrainType() == Enums.TerrainType.WATER) {
 				nextToWater = true;
+				GamePiece piece = hex.getOccupyingPiece ();
+				if (!Object.ReferenceEquals (piece, null)) {
+					if (piece.getPieceType () == Enums.PieceType.PIRATE) {
+						return false;
+					}
+				}
 			}
 		}
-		if (!Object.ReferenceEquals(location.getRightHex(), null)) {
-			if (location.getRightHex ().getTerrainType () == Enums.TerrainType.WATER) {
+		hex = location.getRightHex ();
+		if (!Object.ReferenceEquals(hex, null)) {
+			if (hex.getTerrainType () == Enums.TerrainType.WATER) {
 				nextToWater = true;
+				GamePiece piece = hex.getOccupyingPiece ();
+				if (!Object.ReferenceEquals (piece, null)) {
+					if (piece.getPieceType () == Enums.PieceType.PIRATE) {
+						return false;
+					}
+				}
 			}
 		}
 		if (!nextToWater) {
@@ -691,5 +705,104 @@ public static class MoveAuthorizer {
 			return false;
 		}
 		return true;
+	}
+
+	// Check if initial town-pieces can be placed on a vertex
+	public static bool canPlaceInitialTownPiece(Vertex v, List<Hex> validHexes) {
+
+		bool valid = false;
+		foreach (Hex h in validHexes) {
+			foreach (Vertex neighbour in h.getVertices()) {
+				if (Object.ReferenceEquals (neighbour, v)) {
+					valid = true;
+				}
+			}
+		}
+
+		if (!valid) {
+			return false;
+		}
+
+		if (Graph.freeVertex (v)) {
+			if (v.getTerrainType () == Enums.TerrainType.LAND) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	// Check if initial road can be placed on an edge
+	public static bool canPlaceInitialRoad(Edge e, Enums.Color color) {
+
+		// Make sure the location is valid
+		if (e.getTerrainType () == Enums.TerrainType.WATER) {
+			return false;
+		}
+
+		// Make sure the road is going on the correct town-piece
+		if (Graph.nextToMyCityOrSettlement (e, color)) {
+			Vertex current = e.getLeftVertex ();
+			GamePiece piece = current.getOccupyingPiece ();
+			if (Object.ReferenceEquals (piece, null)) {
+				current = e.getRightVertex ();
+				piece = current.getOccupyingPiece ();
+			}
+
+			int count = 0;
+			foreach (Edge edge in current.getNeighbouringEdges()) {
+				if (!Object.ReferenceEquals (edge.getOccupyingPiece (), null)) {
+					count++;
+					break;
+				}
+			}
+			if (count > 0) {
+				return false;
+			}
+			return true;
+		}
+		return false;
+	}
+
+	// Check if initial ship can be placed on an edge
+	public static bool canPlaceInitialShip(Edge e, Enums.Color color) {
+
+		// Make sure the location is valid
+		bool nextToWater = false;
+		if (!Object.ReferenceEquals(e.getLeftHex(), null)) {
+			if (e.getLeftHex().getTerrainType() == Enums.TerrainType.WATER) {
+				nextToWater = true;
+			}
+		}
+		if (!Object.ReferenceEquals(e.getRightHex(), null)) {
+			if (e.getRightHex ().getTerrainType () == Enums.TerrainType.WATER) {
+				nextToWater = true;
+			}
+		}
+		if (!nextToWater) {
+			return false;
+		}
+
+		// Make sure the road is going on the correct town-piece
+		if (Graph.nextToMyCityOrSettlement (e, color)) {
+			Vertex current = e.getLeftVertex ();
+			GamePiece piece = current.getOccupyingPiece ();
+			if (Object.ReferenceEquals (piece, null)) {
+				current = e.getRightVertex ();
+				piece = current.getOccupyingPiece ();
+			}
+
+			int count = 0;
+			foreach (Edge edge in current.getNeighbouringEdges()) {
+				if (!Object.ReferenceEquals (edge.getOccupyingPiece (), null)) {
+					count++;
+					break;
+				}
+			}
+			if (count > 0) {
+				return false;
+			}
+			return true;
+		}
+		return false;
 	}
 }

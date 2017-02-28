@@ -6,11 +6,11 @@ namespace Enums {
 
 	public enum Color { WHITE, ORANGE, RED, BLUE, NONE };
 
-	public enum ResourceType { ORE, LUMBER, WOOL, BRICK, GRAIN };
+	public enum ResourceType { ORE, LUMBER, WOOL, BRICK, GRAIN, NONE };
 
-	public enum CommodityType { CLOTH, COIN, PAPER };
+	public enum CommodityType { CLOTH, COIN, PAPER, NONE };
 
-	public enum PieceType { ROAD, SETTLEMENT, CITY, KNIGHT, SHIP, 
+	public enum PieceType { ROAD, SETTLEMENT, CITY, KNIGHT, 
 		PIRATE, ROBBER, MERCHANT };
 
 	public enum Status { ACTIVE, INACTIVE };
