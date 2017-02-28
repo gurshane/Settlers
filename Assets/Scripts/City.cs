@@ -24,6 +24,17 @@ public class City : GamePiece {
 		this.metropolis = false;
 	}
 
+	public static City getFreeCity(List<GamePiece> pieces) {
+		foreach (GamePiece p in pieces) {
+			if (p.getPieceType () == Enums.PieceType.CITY) {
+				if (!p.isOnBoard ()) {
+					return (City)p;
+				}
+			}
+		}
+		return null;
+	}
+
 	// Use this for initialization
 	void Start () {
 		
