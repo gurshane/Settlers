@@ -6,14 +6,13 @@ using Enums;
 public static class MoveManager {
 
 	// Move a knight from source to target
-	public static bool moveKnight(Vertex source, Vertex target, Enums.Color color) {
+	public static bool moveKnight(Vertex source, Vertex target, Enums.Color color, int currentLongest) {
 
 		// Check if the knight can be moved
 		if (!MoveAuthorizer.canKnightMove (source, target, color)) {
 			return false;
 		}
 
-		bool unbroken = (Graph.checkRouteBreak (source));
 		Knight sourceKnight = (Knight)source.getOccupyingPiece ();
 
 		// Move the knight
@@ -24,12 +23,7 @@ public static class MoveManager {
 		sourceKnight.deactivateKnight ();
 
 		// Check if longest route needs to be updated
-		if (Graph.checkRouteBreak(target)) {
-			// reassess longest route at target
-		}
-		if (unbroken) {
-			// reassess longest route at source
-		}
+
 		return true;
 	}
 
@@ -40,8 +34,7 @@ public static class MoveManager {
 		if (!MoveAuthorizer.canKnightDisplace (source, target, color)) {
 			return false;
 		}
-
-		bool unbroken = (Graph.checkRouteBreak (source));
+			
 		Knight sourceKnight = (Knight)source.getOccupyingPiece ();
 		Knight targetKnight = (Knight)target.getOccupyingPiece ();
 
@@ -56,15 +49,7 @@ public static class MoveManager {
 		sourceKnight.deactivateKnight ();
 
 		// Check if longest route needs to be updated
-		if (Graph.checkRouteBreak(target)) {
-			// reassess longest route at target
-		}
-		if (Graph.checkRouteBreak(displacedTarget)) {
-			// reassess longest route at displacedTarget
-		}
-		if (unbroken) {
-			// reassess longest route at source
-		}
+
 		return true;
 	}
 
@@ -91,6 +76,14 @@ public static class MoveManager {
 	public static bool buidSettlement(Vertex location, Dictionary<Enums.ResourceType, int> resources,
 		List<GamePiece> pieces, Enums.Color color) {
 
+		if (!MoveAuthorizer.canBuildSettlement (location, resources, pieces, color)) {
+			return false;
+		}
+
+		//location.setOccupyingPiece (p);
+		//p.putOnBoard ();
+
+		return true;
 		return true;
 	}
 
@@ -152,6 +145,63 @@ public static class MoveManager {
 
 	// Place Merchant at target
 	public static bool placeMerchant(Hex target) {
+
+
+
+		return true;
+	}
+
+	// Place an initial settlement
+	public static bool placeInitialSettlement (Vertex v, List<GamePiece> pieces, List<Hex> validHexes) {
+		if (!MoveAuthorizer.canPlaceInitialTownPiece (v, validHexes)) {
+			return false;
+		}
+			
+		Settlement settlement = Settlement.getFreeSettlement (pieces);
+		v.setOccupyingPiece (settlement);
+		settlement.putOnBoard ();
+
+		return true;
+	}
+
+	// Place an initial city
+	public static bool placeInitialCity (Vertex v, List<GamePiece> pieces, List<Hex> validHexes) {
+		if (!MoveAuthorizer.canPlaceInitialTownPiece (v, validHexes)) {
+			return false;
+		}
+
+		City city = City.getFreeCity (pieces);
+		v.setOccupyingPiece (city);
+		city.putOnBoard ();
+
+		//port
+
+		return true;
+	}
+
+	// Place an initial road
+	public static bool placeInitialRoad (Edge e, Enums.Color color, List<GamePiece> pieces) {
+		if (!MoveAuthorizer.canPlaceInitialRoad (e, color)) {
+			return false;
+		}
+
+		Road road = Road.getFreeRoad (pieces);
+		e.setOccupyingPiece (road);
+		road.putOnBoard ();
+
+		return true;
+	}
+	 
+	// Place an initial ship
+	public static bool placeInitialShip (Edge e, Enums.Color color, List<GamePiece> pieces) {
+		if (!MoveAuthorizer.canPlaceInitialShip (e, color)) {
+			return false;
+		}
+			
+		Road ship = Road.getFreeShip (pieces);
+		e.setOccupyingPiece (ship);
+		ship.putOnBoard ();
+
 		return true;
 	}
 }
