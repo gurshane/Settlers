@@ -21,6 +21,19 @@ public class Player : MonoBehaviour {
     private Enums.Status status;
     private bool movedRoad;
     
+    public List<GamePiece> getNotOnBoardPiece()
+    {
+        List<GamePiece> notOnBoard = new List<GamePiece>();
+        for (int i = 0; i < pieces.Count; i++)
+        {
+            if (pieces[i].isOnBoard()==false)
+            {
+                notOnBoard.Add(pieces[i]);
+            }
+        }
+        return notOnBoard;
+    }
+
     public List<GamePiece> getGamePieces()
     {
         return this.pieces;
