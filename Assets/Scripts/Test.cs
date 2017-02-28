@@ -17,18 +17,18 @@ public class Test : MonoBehaviour {
 	int hexCount;
 
 	// Sample hands
-	Dictionary<Enums.ResourceType, int> fullRes;
-	Dictionary<Enums.ResourceType, int> emptyRes;
-	Dictionary<Enums.CommodityType, int> fullCom;
-	Dictionary<Enums.CommodityType, int> emptyCom;
+	int[] fullRes;
+	int[] emptyRes;
+	int[] fullCom;
+	int[] emptyCom;
 
 	// The game pieces
 	List<GamePiece> pieces;
 
 	// Sample development charts
-	Dictionary<Enums.DevChartType, int> fullDev;
-	Dictionary<Enums.DevChartType, int> medDev;
-	Dictionary<Enums.DevChartType, int> emptyDev;
+	int[] fullDev;
+	int[] medDev;
+	int[] emptyDev;
 
 	// The test function
 	private void testExample() {
@@ -42,21 +42,21 @@ public class Test : MonoBehaviour {
 		edgeCount = 52;
 		hexCount = 13;
 
-		fullRes = new Dictionary<Enums.ResourceType, int> ();
-		emptyRes = new Dictionary<Enums.ResourceType, int> ();
-		fullCom = new Dictionary<Enums.CommodityType, int> ();
-		emptyCom = new Dictionary<Enums.CommodityType, int> ();
+		fullRes = new int[5];
+		emptyRes = new int[5];
+		fullCom = new int[3];
+		emptyCom = new int[3];
 		for (int i = 0; i < 5; i++) {
-			fullRes.Add ((Enums.ResourceType)i, 10);
+			fullRes[i] = (10);
 		}
 		for (int i = 0; i < 5; i++) {
-			emptyRes.Add ((Enums.ResourceType)i, 0);
+			emptyRes[i] = (10);
 		}
 		for (int i = 0; i < 3; i++) {
-			fullCom.Add ((Enums.CommodityType)i, 10);
+			fullCom[i] = (10);
 		}
 		for (int i = 0; i < 3; i++) {
-			emptyCom.Add ((Enums.CommodityType)i, 0);
+			emptyCom[i] = (10);
 		}
 
 		pieces = new List<GamePiece> ();
@@ -76,17 +76,17 @@ public class Test : MonoBehaviour {
 			pieces.Add (new Knight (Enums.Color.WHITE));
 		}
 
-		fullDev = new Dictionary<Enums.DevChartType, int> ();
-		medDev = new Dictionary<Enums.DevChartType, int> ();
-		emptyDev = new Dictionary<Enums.DevChartType, int> ();
+		fullDev = new int[3];
+		medDev = new int[3];
+		emptyDev = new int[3];
 		for (int i = 0; i < 3; i++) {
-			fullDev.Add ((Enums.DevChartType)i, 5);
+			fullDev[i] = (5);
 		}
 		for (int i = 0; i < 3; i++) {
-			medDev.Add ((Enums.DevChartType)i, 3);
+			medDev[i] = (3);
 		}
 		for (int i = 0; i < 3; i++) {
-			emptyDev.Add ((Enums.DevChartType)i, 1);
+			emptyDev[i] = (1);
 		}
 
 		// Construct the board with the board pieces

@@ -52,8 +52,10 @@ public interface Catalog {
 
 
 	//----------------------------
-	//Game Piece Class:
+	// Game Piece and Player Class:
 	Enums.Color getColor();
+
+	//Game Piece Class:
 	string getOwnerName();
 	Enums.PieceType getPieceType();
 	bool isOnBoard();            //returns true if piece is on board
@@ -138,31 +140,30 @@ public interface Catalog {
 	bool canKnightDisplace (Vertex source, Vertex target, Enums.Color color);
 
 	// Given the resources, development chart, and vertex, can a knight be upgraded
-	bool canUpgradeKnight (Dictionary<Enums.ResourceType, int> resources, 
-	                      Dictionary<Enums.DevChartType, int> devChart, Vertex v);
+	bool canUpgradeKnight (int[] resources, int[] devChart, Vertex v);
 
 	// Given the resources, and vertex, can a knight be upgraded
-	bool canActivateKnight (Dictionary<Enums.ResourceType, int> resources, Vertex v);
+	bool canActivateKnight (int[] resources, Vertex v);
 
 	/* Given the commodities and development chart, can a development chart be upgraded
 	 * in the given development area
 	 * Note: a list of pieces must also be given to check if a city is on the board */
-	bool canUpgradeDevChart (Enums.DevChartType dev, Dictionary<Enums.CommodityType, int> commodities, 
-	                        List<GamePiece> pieces, Dictionary<Enums.DevChartType, int> devChart);
+	bool canUpgradeDevChart (Enums.DevChartType dev, int[] commodities, 
+		List<GamePiece> pieces, int[] devChart);
 
 	/* The canBuild... methods check if a piece can be built at the given location, with the
 	 * given resources and the piece list that player has */
-	bool canBuildSettlement (Vertex location, Dictionary<Enums.ResourceType, int> resources,
+	bool canBuildSettlement (Vertex location, int[] resources,
 	                        List<GamePiece> pieces, Enums.Color color);
-	bool canBuildCity (Vertex location, Dictionary<Enums.ResourceType, int> resources,
+	bool canBuildCity (Vertex location, int[] resources,
 	                  List<GamePiece> pieces, Enums.Color color);
-	bool canBuildCityWall (Vertex location, Dictionary<Enums.ResourceType, int> resources,
+	bool canBuildCityWall (Vertex location, int[] resources,
 	                      int cityWalls, Enums.Color color);
-	bool canBuildKnight (Vertex location, Dictionary<Enums.ResourceType, int> resources,
+	bool canBuildKnight (Vertex location, int[] resources,
 	                    List<GamePiece> pieces, Enums.Color color);
-	bool canBuildRoad (Edge location, Dictionary<Enums.ResourceType, int> resources,
+	bool canBuildRoad (Edge location, int[] resources,
 	                  List<GamePiece> pieces, Enums.Color color);
-	bool canBuildShip (Edge location, Dictionary<Enums.ResourceType, int> resources,
+	bool canBuildShip (Edge location, int[] resources,
 	                  List<GamePiece> pieces, Enums.Color color);
 
 	// Check if a ship can be moved from source to target
@@ -189,4 +190,92 @@ public interface Catalog {
 	bool placeInitialCity (Vertex v, List<GamePiece> pieces);
 	bool placeInitialRoad (Edge e, Enums.Color color, List<GamePiece> pieces);
 	bool placeInitialShip (Edge e, Enums.Color color, List<GamePiece> pieces);
+	//----------------------------
+
+
+	//----------------------------
+	// Game Manager Class (Static):
+
+	List<string> getPlayerNames();    // Get all player names
+	Player getCurrentPlayer ();	      // Get the  current player
+	Player getPlayer (string name);   // Get a player from their name (returns null if player not in game)
+
+	Enums.GamePhase getGamePhase();
+	int getFirstDie();
+	int getSecondDie();
+	Enums.EventDie getEventDie();
+	string getMerchantController();
+	string getLongestRouteContoller ();
+	Hex getPirateLocation ();
+	Hex getRobberLocation();
+
+	bool hasBarbarianAttacked();       // Returns true if barbarian has already attacked this game
+	void barbarianAttackedThisGame();  // Sets barbarianHasAttacked to true
+
+	/* Give a metropolis to the given player at the given vertex.
+	 * Remove a metropolis from the player who currently controls it if anyone does.
+	 * Returns true upon successful completion, false otherwise */
+	bool giveMetropolis (string player, Enums.DevChartType met, Vertex city);
+
+	// Not yet implemented
+	void determineLongestRoute();
+
+	void updateRobberLocation (Hex newLocation);
+	void updatePirateLocation (Hex newLocation);
+	void setMerchantController (Merchant m, string player);
+
+	void rollDice();					// Rolls the dice and commences all appropriate actions
+	void rollDice(int d1, int d2);      // Same as rollDice(), but sets dice for alchemist card
+	//----------------------------
+
+
+	//----------------------------
+	// Player Class:
+
+	List<GamePiece> getNotOnBoardPiece (); 			  // Get a list of the pieces that aren't on the board
+	List<GamePiece> getGamePieces ();                 // Get a list of all the game pieces
+	string getUserName();
+
+	int getVictoryCounts();
+	bool decrementVictoryPoints(int num);
+	void incrementVictoryPoints(int num);
+
+	int getGoldCount();
+	bool decrementGoldCount(int num);
+	void incrementGoldCount(int num);
+
+	Enums.Status getStatus();
+	void setStatus(Enums.Status newStatus);
+
+	// Upgrade the development chart for the given type
+	void upgradeDevChart(Enums.DevChartType devChartType);
+	int[] getDevFlipChart ();
+
+	List<Enums.ProgressCardName> getProgressCards();
+	void addProgressCard(Enums.ProgressCardName cardName);
+	bool discardProgressCard(Enums.ProgressCardName cardName);
+
+	int getSafeCardCount();
+	void increaseSafeCardCount(int count);
+	void decreaseSafeCardCount(int count);
+
+	int[] getResourceRatios ();
+	void updateResourceRatio (Enums.ResourceType resourceType, int newRatio);
+	void updateResoureRatios(int [] newRatios);
+
+	int[] getCommodityRatios ();
+	void updateCommodityRatio(Enums.CommodityType commodity, int newRatio);
+	void updateCommodityRatios(int [] newRatios);
+
+	int[] getCommodities();
+	void addCommodity(Enums.CommodityType commodityType, int numToAdd);
+	bool discardCommodity(Enums.CommodityType commodityType, int numToRemove);
+
+	int[] getResources();
+	void addResource(Enums.ResourceType resourceType, int numToAdd);
+	bool discardResource(Enums.ResourceType resource, int numToRemove);
+
+	bool hasMovedRoad();
+	void movesRoad();
+	//----------------------------
 }

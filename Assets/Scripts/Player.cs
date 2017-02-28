@@ -7,18 +7,22 @@ public class Player : MonoBehaviour {
 
     private List<GamePiece> pieces;
     private List<ProgressCardName> progressCards;
+
     private int[] resources;
     private int[] commodities;
     private int goldCount;
+
     private int[] devFlipChart;
     private int[] resourceRatios;
     private int[] commodityRatios;
+
     private string userName;
     private string password;
+	private Enums.Status status;
     private Enums.Color myColor;
+
     private int victoryPoints;
     private int safeCardCount;
-    private Enums.Status status;
     private bool movedRoad;
     
     public List<GamePiece> getNotOnBoardPiece()
@@ -53,6 +57,16 @@ public class Player : MonoBehaviour {
     {
         return this.commodities;
     }
+
+	public int[] getResourceRatios()
+	{
+		return this.resourceRatios; 
+	}
+
+	public int[] getCommodityRatios()
+	{
+		return this.commodityRatios;
+	}
 
     public int [] getDevFlipChart()
     {

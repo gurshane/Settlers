@@ -86,12 +86,11 @@ public static class MoveAuthorizer {
 	}
 
 	// Check if a knight can be upgraded
-	public static bool canUpgradeKnight(Dictionary<Enums.ResourceType, int> resources, 
-		Dictionary<Enums.DevChartType, int> devChart, Vertex v) {
+	public static bool canUpgradeKnight(int[] resources, int[] devChart, Vertex v) {
 
 		// Make sure there are enough resources
-		int wool = resources [Enums.ResourceType.WOOL];
-		int sheep = resources [Enums.ResourceType.ORE];
+		int wool = resources [(int)Enums.ResourceType.WOOL];
+		int sheep = resources [(int)Enums.ResourceType.ORE];
 
 		if (wool < 1) {
 			return false;
@@ -115,7 +114,7 @@ public static class MoveAuthorizer {
 		}
 
 		// Check the politics level for high-level knights
-		int level = devChart [Enums.DevChartType.POLITICS];
+		int level = devChart [(int)Enums.DevChartType.POLITICS];
 		if (level < 3) {
 			if (sourceKnight.getLevel () >= 2) {
 				return false;
@@ -127,10 +126,10 @@ public static class MoveAuthorizer {
 	}
 
 	// Check if a knight can be activated
-	public static bool canActivateKnight(Dictionary<Enums.ResourceType, int> resources, Vertex v) {
+	public static bool canActivateKnight(int[] resources, Vertex v) {
 
 		// Make sure there is a grain available
-		if (resources [Enums.ResourceType.GRAIN] < 1) {
+		if (resources [(int)Enums.ResourceType.GRAIN] < 1) {
 			return false;
 		}
 
@@ -151,8 +150,8 @@ public static class MoveAuthorizer {
 	}
 
 	// Check if the development chart can be upgraded for a specific development type
-	public static bool canUpgradeDevChart(Enums.DevChartType dev, Dictionary<Enums.CommodityType, int> commodities, 
-		List<GamePiece> pieces, Dictionary<Enums.DevChartType, int> devChart) {
+	public static bool canUpgradeDevChart(Enums.DevChartType dev, int[] commodities, 
+		List<GamePiece> pieces, int[] devChart) {
 
 		// Make sure there is a city on the board
 		bool cityOnBoard = false;
@@ -174,24 +173,24 @@ public static class MoveAuthorizer {
 		// Or that the chart is not at maximum capacity
 		int level, coms;
 		if (dev == Enums.DevChartType.TRADE) {
-			level = devChart [Enums.DevChartType.TRADE];
-			coms = commodities [Enums.CommodityType.CLOTH];
+			level = devChart [(int)Enums.DevChartType.TRADE];
+			coms = commodities [(int)Enums.CommodityType.CLOTH];
 			if (coms < level) {
 				return false;
 			} else if (level >= 5) {
 				return false;
 			}
 		} else if (dev == Enums.DevChartType.POLITICS) {
-			level = devChart [Enums.DevChartType.POLITICS];
-			coms = commodities [Enums.CommodityType.COIN];
+			level = devChart [(int)Enums.DevChartType.POLITICS];
+			coms = commodities [(int)Enums.CommodityType.COIN];
 			if (coms < level) {
 				return false;
 			} else if (level >= 5) {
 				return false;
 			}
 		} else if (dev == Enums.DevChartType.SCIENCE) {
-			level = devChart [Enums.DevChartType.SCIENCE];
-			coms = commodities [Enums.CommodityType.PAPER];
+			level = devChart [(int)Enums.DevChartType.SCIENCE];
+			coms = commodities [(int)Enums.CommodityType.PAPER];
 			if (coms < level) {
 				return false;
 			} else if (level >= 5) {
@@ -202,7 +201,7 @@ public static class MoveAuthorizer {
 	}
 
 	// Check if a settlement can be built at given vertex
-	public static bool canBuildSettlement(Vertex location, Dictionary<Enums.ResourceType, int> resources,
+	public static bool canBuildSettlement(Vertex location, int[] resources,
 		List<GamePiece> pieces, Enums.Color color) {
 
 		// Make sure the location is valid
@@ -231,16 +230,16 @@ public static class MoveAuthorizer {
 		}
 
 		// Make sure there are enough resources
-		if (resources [Enums.ResourceType.GRAIN] < 1) {
+		if (resources [(int)Enums.ResourceType.GRAIN] < 1) {
 			return false;
 		}
-		if (resources [Enums.ResourceType.WOOL] < 1) {
+		if (resources [(int)Enums.ResourceType.WOOL] < 1) {
 			return false;
 		}
-		if (resources [Enums.ResourceType.BRICK] < 1) {
+		if (resources [(int)Enums.ResourceType.BRICK] < 1) {
 			return false;
 		}
-		if (resources [Enums.ResourceType.LUMBER] < 1) {
+		if (resources [(int)Enums.ResourceType.LUMBER] < 1) {
 			return false;
 		}
 		return true;
@@ -248,7 +247,7 @@ public static class MoveAuthorizer {
 
 
 	// Check if a city can be built at a vertex
-	public static bool canBuildCity(Vertex location, Dictionary<Enums.ResourceType, int> resources,
+	public static bool canBuildCity(Vertex location, int[] resources,
 		List<GamePiece> pieces, Enums.Color color) {
 
 		GamePiece settlement = location.getOccupyingPiece ();
@@ -279,17 +278,17 @@ public static class MoveAuthorizer {
 		}
 
 		// Make sure there are enough resources
-		if (resources [Enums.ResourceType.GRAIN] < 2) {
+		if (resources [(int)Enums.ResourceType.GRAIN] < 2) {
 			return false;
 		}
-		if (resources [Enums.ResourceType.ORE] < 3) {
+		if (resources [(int)Enums.ResourceType.ORE] < 3) {
 			return false;
 		}
 		return true;
 	}
 
 	// Check if a city wall can be built at a vertex
-	public static bool canBuildCityWall(Vertex location, Dictionary<Enums.ResourceType, int> resources,
+	public static bool canBuildCityWall(Vertex location, int[] resources,
 		int cityWalls, Enums.Color color) {
 
 		GamePiece city = location.getOccupyingPiece ();
@@ -312,14 +311,14 @@ public static class MoveAuthorizer {
 		}
 
 		// Make sure there are enough resources
-		if (resources [Enums.ResourceType.BRICK] < 2) {
+		if (resources [(int)Enums.ResourceType.BRICK] < 2) {
 			return false;
 		}
 		return true;
 	}
 
 	// Check if knight can be built at vertex
-	public static bool canBuildKnight(Vertex location, Dictionary<Enums.ResourceType, int> resources,
+	public static bool canBuildKnight(Vertex location, int[] resources,
 		List<GamePiece> pieces, Enums.Color color) {
 
 		// Make sure location is valid
@@ -345,17 +344,17 @@ public static class MoveAuthorizer {
 		}
 
 		// Make sure there are enough resources
-		if (resources [Enums.ResourceType.WOOL] < 1) {
+		if (resources [(int)Enums.ResourceType.WOOL] < 1) {
 			return false;
 		}
-		if (resources [Enums.ResourceType.ORE] < 1) {
+		if (resources [(int)Enums.ResourceType.ORE] < 1) {
 			return false;
 		}
 		return true;
 	}
 
 	// Check if a road can be built on an edge
-	public static bool canBuildRoad(Edge location, Dictionary<Enums.ResourceType, int> resources,
+	public static bool canBuildRoad(Edge location, int[] resources,
 		List<GamePiece> pieces, Enums.Color color) {
 
 		// Make sure the location is valid
@@ -397,17 +396,17 @@ public static class MoveAuthorizer {
 		}
 
 		// Make sure there are enough resources
-		if (resources [Enums.ResourceType.BRICK] < 1) {
+		if (resources [(int)Enums.ResourceType.BRICK] < 1) {
 			return false;
 		}
-		if (resources [Enums.ResourceType.LUMBER] < 1) {
+		if (resources [(int)Enums.ResourceType.LUMBER] < 1) {
 			return false;
 		}
 		return true;
 	}
 
 	// Check if a ship can be built on an edge
-	public static bool canBuildShip(Edge location, Dictionary<Enums.ResourceType, int> resources,
+	public static bool canBuildShip(Edge location, int[] resources,
 		List<GamePiece> pieces, Enums.Color color) {
 
 		// Make sure the location is valid
@@ -475,10 +474,10 @@ public static class MoveAuthorizer {
 		}
 
 		// Make sure there are enough resources
-		if (resources [Enums.ResourceType.WOOL] < 1) {
+		if (resources [(int)Enums.ResourceType.WOOL] < 1) {
 			return false;
 		}
-		if (resources [Enums.ResourceType.LUMBER] < 1) {
+		if (resources [(int)Enums.ResourceType.LUMBER] < 1) {
 			return false;
 		}
 		return true;

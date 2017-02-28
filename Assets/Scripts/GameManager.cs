@@ -22,13 +22,22 @@ public static class GameManager {
 
 	// Some important state info
 	private static int longestRouteLength;
-	private static int merchantController;
-	private static int longestRouteController;
+	private static string merchantController;
+	private static string longestRouteController;
 
 	private static Hex pirateLocation;
 	private static Hex robberLocation;
 	private static Dictionary<Enums.DevChartType, Vertex> metropolises;
 	private static bool barbarianHasAttacked;
+
+
+	// Begin Game
+
+	// End Game
+
+	// Begin Turn
+
+	// End Turn
 
 	public static List<string> getPlayerNames() {
 		List<string> ret = new List<string> ();
@@ -68,10 +77,11 @@ public static class GameManager {
 	}
 
 	public static string getMerchantController() {
-		if (merchantController < 0) {
-			return null;
-		}
-		return players [merchantController].getUserName ();
+		return merchantController;
+	}
+
+	public static string getLongestRouteContoller() {
+		return longestRouteController;
 	}
 
 	public static Hex getPirateLocation() {
@@ -84,6 +94,10 @@ public static class GameManager {
 
 	public static bool hasBarbarianAttacked() {
 		return barbarianHasAttacked;
+	}
+
+	public static void barbarianAttackedThisGame() {
+		barbarianHasAttacked = true;
 	}
 
 	// return true upon success, false upon failure
@@ -119,7 +133,32 @@ public static class GameManager {
 		return true;
 	}
 		
-	public static void determineLongestRoad() {
+	public static void determineLongestRoute() {
+	}
+
+	public static void updateRobberLocation(Hex newLocation) {
+		robberLocation = newLocation;
+	}
+
+	public static void updatePirateLocation(Hex newLocation) {
+		pirateLocation = newLocation;
+	}
+
+	// Remove the old merchant controller, and set the new one, assigning victory points
+	public static void setMerchantController(Merchant m, string player) {
+		if (merchantController != "") {
+			Player p = getPlayer (merchantController);
+			if (!Object.ReferenceEquals (p, null)) {
+				p.decrementVictoryPoints (1);
+			}
+		}
+
+		Player given = getPlayer(player);
+		if (!Object.ReferenceEquals (given, null)) {
+			merchantController = player;
+			given.incrementVictoryPoints (1);
+			m.putOnBoard ();
+		}
 	}
 
 	// Get a dice roll, randomly
@@ -190,6 +229,12 @@ public static class GameManager {
 		//Barbarian
 
 		//Event Die
+
+		if (gamePhase == Enums.GamePhase.PHASE_ONE) {
+			gamePhase = Enums.GamePhase.PHASE_TWO;
+		} else if (gamePhase == Enums.GamePhase.SETUP_ONE) {
+			gamePhase = Enums.GamePhase.SETUP_TWO; 
+		}
 	}
 
 	// Resolve a seven if it is rolled
