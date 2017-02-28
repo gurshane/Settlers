@@ -4,7 +4,8 @@ using UnityEngine;
 using Enums;
 
 public static class GameManager {
-
+	/*
+	 
 	// Overall Game State
 	private List<Player> players;
 	private List<Enums.TurnOrder> playOrder;
@@ -40,6 +41,7 @@ public static class GameManager {
 	public Player getCurrentPlayer() {
 		return this.currentPlayer;
 	}
+
 
 	public Player getPlayer(string name) {
 		foreach (Player p in players) {
@@ -304,5 +306,5 @@ public static class GameManager {
 		}
 	}
 				      
-			
+		*/	
 }

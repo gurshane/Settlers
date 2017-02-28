@@ -84,7 +84,6 @@ public static class MoveManager {
 		//p.putOnBoard ();
 
 		return true;
-		return true;
 	}
 
 
