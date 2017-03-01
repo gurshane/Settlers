@@ -192,6 +192,18 @@ public interface Catalog {
 	bool placeInitialCity (Vertex v, List<GamePiece> pieces);
 	bool placeInitialRoad (Edge e, Enums.Color color, List<GamePiece> pieces);
 	bool placeInitialShip (Edge e, Enums.Color color, List<GamePiece> pieces);
+
+	/* The build... methods will check to see if the request is valid,
+	 * and then build the appropriate game piece adjusting all necessary
+	 * game state */
+	bool buidSettlement (Vertex location, int[] resources,
+	                    List<GamePiece> pieces, Enums.Color color);
+	bool buidCity (Vertex location, int[] resources,
+	                    List<GamePiece> pieces, Enums.Color color);
+	bool buildRoad (Edge location, int[] resources,
+	               List<GamePiece> pieces, Enums.Color color);
+	bool buildShip (Edge location, int[] resources,
+	               List<GamePiece> pieces, Enums.Color color);
 	//----------------------------
 
 
@@ -331,4 +343,10 @@ public interface Catalog {
 
 	// Draw and return a progress card from the requested pile
 	Enums.ProgressCardName withdrawProgressCard (Enums.DevChartType progressType);
+
+	// Check if a trade is valid for the bank given certain trade ratios
+	bool isValidBankTrade(int[] resRatios, int[] comRatios, Trades trade);
+
+	// Make a trade with the bank, returns false if invalid, true if it goes through
+	bool tradeWithBank (int[] resRatios, int[] comRatios, Trades trade);
 }

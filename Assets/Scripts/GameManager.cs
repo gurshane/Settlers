@@ -453,6 +453,10 @@ public static class GameManager {
 			if (h.getHexNumber () != num) {
 				continue;
 			}
+
+			if (Object.ReferenceEquals(h, robberLocation)) {
+				continue;
+			}
 			Enums.HexType hType = h.getHexType();
 
 			// Check if a hex produces gold

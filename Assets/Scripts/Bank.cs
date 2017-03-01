@@ -74,7 +74,81 @@ public static class Bank {
 		}
 	}
 
-	// Is valid bank trade needs to be done
+	// Make sure a given trade is valid
+	public static bool isValidBankTrade(int[] resRatios, int[] comRatios, Trades trade) {
+		int totalAvailable = 0;
+		int totalWanted = 0;
 
-	// Trade with bank needs to be done
+		// Extract the information from the trade
+		int[] resOffered = trade.getResourcesOffered ();
+		int[] resWanted = trade.getResourcesWanted ();
+		int[] comOffered = trade.getCommoditiesOffered ();
+		int[] comWanted = trade.getCommoditiesWanted ();
+
+		// Find the total offered amount
+		for (int i = 0; i < resOffered.Length; i++) {
+			totalAvailable += resOffered [i] / resRatios [i];
+		}
+		for (int i = 0; i < comOffered.Length; i++) {
+			totalAvailable += comOffered [i] / comRatios [i];
+		}
+		totalAvailable += trade.getGoldOffered () / 2;
+
+		// Find the total requested amount
+		for (int i = 0; i < resWanted.Length; i++) {
+			if (resWanted [i] > resources [i]) {
+				return false;
+			}
+			totalWanted += resWanted [i];
+		}
+		for (int i = 0; i < comWanted.Length; i++) {
+			if (comWanted [i] > commodities [i]) {
+				return false;
+			}
+			totalWanted += comWanted [i];
+		}
+
+		// Return true if the requested amount is valid
+		if (totalWanted != 0 && totalWanted <= totalAvailable) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	// Make a trade with the bank
+	public static bool tradeWithBank(int[] resRatios, int[] comRatios, Trades trade) {
+		if (!isValidBankTrade (resRatios, comRatios, trade)) {
+			return false;
+		}
+
+		// Extract the information from the trade
+		int[] resOffered = trade.getResourcesOffered ();
+		int[] resWanted = trade.getResourcesWanted ();
+		int[] comOffered = trade.getCommoditiesOffered ();
+		int[] comWanted = trade.getCommoditiesWanted ();
+
+		Player trader = trade.getPlayerOffering ();
+
+		// Update all relevent fields
+		for (int i = 0; i < resOffered.Length; i++) {
+			trader.discardResource ((Enums.ResourceType)i, resOffered [i]);
+			depositResource ((Enums.ResourceType)i, resOffered [i]);
+		}
+		for (int i = 0; i < comOffered.Length; i++) {
+			trader.discardCommodity ((Enums.CommodityType)i, comOffered [i]);
+			depositCommodity ((Enums.CommodityType)i, comOffered [i]);
+		}
+		for (int i = 0; i < resWanted.Length; i++) {
+			trader.addResource ((Enums.ResourceType)i, resWanted [i]);
+			withdrawResource ((Enums.ResourceType)i, resWanted [i]);
+		}
+		for (int i = 0; i < comWanted.Length; i++) {
+			trader.addCommodity ((Enums.CommodityType)i, comWanted [i]);
+			withdrawCommodity ((Enums.CommodityType)i, comWanted [i]);
+		}
+		trader.decrementGoldCount (trade.getGoldOffered());
+
+		return true;
+	}
 }
