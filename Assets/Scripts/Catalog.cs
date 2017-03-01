@@ -313,4 +313,22 @@ public interface Catalog {
 	void movesRoad();
 	void roadNotMoved ();
 	//----------------------------
+
+
+	//----------------------------
+	// Bank Class:
+
+	int getResourceAmount (Enums.ResourceType res);
+	int getCommodityAmount (Enums.CommodityType com);
+	bool withdrawResource (Enums.ResourceType res, int amount);
+	bool withdrawCommodity (Enums.CommodityType com, int amount);
+	void depositResource(Enums.ResourceType res, int amount);
+	void depositCommodity(Enums.CommodityType com, int amount);
+
+	// Put the given progress card on the bottom of a progress card pile
+	void depositProgressCard (Enums.DevChartType progressType, 
+	                         Enums.ProgressCardName progressCard);
+
+	// Draw and return a progress card from the requested pile
+	Enums.ProgressCardName withdrawProgressCard (Enums.DevChartType progressType);
 }

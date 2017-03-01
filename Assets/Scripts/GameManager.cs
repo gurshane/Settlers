@@ -484,7 +484,7 @@ public static class GameManager {
 					string owner = current.getOwnerName ();
 					Player p = getPlayer (owner);
 					if (res != Enums.ResourceType.NONE && enoughRes[res]) {
-						//Bank.withdrawResource (res, 1);
+						Bank.withdrawResource (res, 1);
 						p.addResource (res, 1);
 					} else if (gold) {
 						p.incrementGoldCount (2);
@@ -497,18 +497,18 @@ public static class GameManager {
 					Player p = getPlayer (owner);
 					if (com != Enums.CommodityType.NONE) {
 						if (enoughRes [res]) {
-							//Bank.withdrawResource (res, 1);
+							Bank.withdrawResource (res, 1);
 							p.addResource (res, 1);
 						}
 						if (enoughComs [com]) {
-							//Bank.withdrawCommodity (com, 1);
+							Bank.withdrawCommodity (com, 1);
 							p.addCommodity (com, 1);
 						}
 					} else if (res == Enums.ResourceType.BRICK && enoughRes[res]) {
-						//Bank.withdrawResource (res, 2);
+						Bank.withdrawResource (res, 2);
 						p.addResource (res, 2);
 					} else if (res == Enums.ResourceType.GRAIN && enoughRes[res]) {
-						//Bank.withdrawResource (res, 2);
+						Bank.withdrawResource (res, 2);
 						p.addResource (res, 2);
 					} else if (gold) {
 						p.incrementGoldCount (2);
@@ -598,7 +598,7 @@ public static class GameManager {
 		}
 
 		// Check the amount against the bank
-		int bankAmount = 100; //Bank.getResourceAmount (res);
+		int bankAmount = Bank.getResourceAmount (res);
 		if (bankAmount >= total) {
 			return true;
 		} else {
@@ -647,7 +647,7 @@ public static class GameManager {
 		}
 
 		// Check the amount against the bank
-		int bankAmount = 100; //Bank.getCommodityAmount (com);
+		int bankAmount = Bank.getCommodityAmount (com);
 		if (bankAmount >= total) {
 			return true;
 		} else {
