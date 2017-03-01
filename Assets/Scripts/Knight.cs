@@ -56,6 +56,10 @@ public class Knight : GamePiece {
 		this.activatedThisTurn = false;
 	}
 
+	public void notUpgradedThisTurn() {
+		this.hasBeenUpgraded = false;
+	}
+
 	public static Knight getFreeKnight(List<GamePiece> pieces) {
 		foreach (GamePiece p in pieces) {
 			if (p.getPieceType () == Enums.PieceType.KNIGHT) {
