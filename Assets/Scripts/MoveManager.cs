@@ -87,6 +87,7 @@ public static class MoveManager {
 		// Add an appropriate amount of victory points
 		Player current = GameManager.getCurrentPlayer ();
 		current.incrementVictoryPoints (1);
+		current.incrementVictoryPoints (location.getChits ());
 
 		// Spend the correct resources
 		current.discardResource (Enums.ResourceType.BRICK, 1);

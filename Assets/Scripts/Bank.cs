@@ -147,7 +147,7 @@ public static class Bank {
 			trader.addCommodity ((Enums.CommodityType)i, comWanted [i]);
 			withdrawCommodity ((Enums.CommodityType)i, comWanted [i]);
 		}
-		trader.decrementGoldCount (trade.getGoldOffered);
+		trader.decrementGoldCount (trade.getGoldOffered());
 
 		return true;
 	}
