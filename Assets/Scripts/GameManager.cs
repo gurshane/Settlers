@@ -10,6 +10,7 @@ public static class GameManager {
 	private static List<Enums.TurnOrder> playOrder;
 	private static Player currentPlayer;
 	private static Enums.GamePhase gamePhase;
+	private static int pointsToWin;
 
 	private static Edge edge1;
 	private static Vertex vertex1;
@@ -30,14 +31,190 @@ public static class GameManager {
 	private static Dictionary<Enums.DevChartType, Vertex> metropolises;
 	private static bool barbarianHasAttacked;
 
+	private const int numCommodities = 3;
+	private const int numResources = 5;
+	private const int numDevChartType = 3;
+	private const int progressCardLimit = 4;
+
+	public static int getNumberResources() {
+		return numResources;
+	}
+
+	public static int getNumberCommodities() {
+		return numCommodities;
+	}
+
+	public static int getNumberDevChartType() {
+		return numDevChartType;
+	}
+
+	public static int getProgressCardLimit() {
+		return progressCardLimit;
+	}
+
+	public static int getPointsToWin() {
+		return pointsToWin;
+	}
+
+	// Complete an initial first turn
+	public static void initialFirstTurn() {
+		currentPlayer = getNextPlayer (false);
+		gamePhase = Enums.GamePhase.SETUP_ONE;
+
+		// Current player places pieces
+
+		if (getCurrentTurn () == getLastTurn ()) {
+			initialSecondTurn (true);
+		} else {
+			initialFirstTurn ();
+		}
+	}
+		
+	// Complete an initial second turn
+	public static void initialSecondTurn(bool first) {
+		if (first && getCurrentTurn () == getLastTurn ()) {
+			currentPlayer = currentPlayer;
+		} else {
+			currentPlayer = getNextPlayer (true);
+		}
+		gamePhase = Enums.GamePhase.SETUP_TWO;
+
+		// Current player places pieces
+
+		if (getCurrentTurn () == Enums.TurnOrder.FIRST) {
+			beginTurn (true);
+		} else {
+			initialSecondTurn (false);
+		}
+	}
 
 	// Begin Game
 
 	// End Game
 
-	// Begin Turn
+	public static void endGame() {
+	}
 
-	// End Turn
+	// Begin a Turn
+	public static void beginTurn(bool first) {
+		if (first) {
+			currentPlayer = currentPlayer;
+		} else {
+			currentPlayer = getNextPlayer (false);
+		}
+		gamePhase = Enums.GamePhase.PHASE_ONE;
+
+		// current player rolls dice
+	}
+
+	// End a turn
+	public static void endTurn() {
+
+		// If a player has won, end the game
+		foreach (Player p in players) {
+			if (p.getVictoryCounts () >= pointsToWin) {
+				endGame ();
+				return;
+			}
+		}
+
+		// Do some cleanup steps
+		foreach (Player p in players) {
+			p.roadNotMoved ();
+
+			// If any player has more than 4 progress cards, they must discard
+			if (p.getProgressCards ().Count > progressCardLimit) {
+
+				// Those players discard down to 4 progress cards
+
+			}
+
+			// Set some turn specific booleans to false
+			List<GamePiece> pieceList = p.getGamePieces ();
+			foreach (GamePiece piece in pieceList) {
+				if (piece.getPieceType () == Enums.PieceType.KNIGHT) {
+					Knight k = (Knight)piece;
+					k.notActivatedThisTurn ();
+					k.notUpgradedThisTurn ();
+				} else if (piece.getPieceType () == Enums.PieceType.ROAD) {
+					Road r = (Road)piece;
+					r.notBuiltThisTurn ();
+				}
+			}
+		}
+
+		// Begin the next turn
+		beginTurn (false);
+	}
+
+	// Find the next player
+	private static Player getNextPlayer(bool reverse) {
+
+		// If current player is null, get the first player in the turn order
+		if (Object.ReferenceEquals(currentPlayer, null)) {
+			for (int i = 0; i < playOrder.Count; i++) {
+				if (playOrder[i] == Enums.TurnOrder.FIRST) {
+					return players[i];
+				}
+			}
+		}
+
+		Enums.TurnOrder currentTurn = getCurrentTurn();
+		Enums.TurnOrder nextTurn;
+		Enums.TurnOrder lastTurn = getLastTurn ();
+
+		// Check if turns are moving in reverse order
+		if (!reverse) {
+			if (currentTurn == lastTurn) {
+				nextTurn = Enums.TurnOrder.FIRST;
+			} else {
+				int next = ((int)currentTurn) + 1;
+				nextTurn = (Enums.TurnOrder)next;
+			}
+		} else {
+			if (currentTurn == Enums.TurnOrder.FIRST) {
+				nextTurn = lastTurn;
+			} else {
+				int next = ((int)currentTurn) - 1;
+				nextTurn = (Enums.TurnOrder)next;
+			}
+		}
+
+		// Find the next player based on the next turn
+		int index = 0;
+		for (int i = 0; i < playOrder.Count; i++) {
+			if (playOrder [i] == nextTurn) {
+				index = i;
+			}
+		}
+
+		// Return the next player
+		return players [index];
+	}
+
+	// Get the current turn based on the current player
+	private static Enums.TurnOrder getCurrentTurn() {
+		int index = 0;
+		for (int i = 0; i < players.Count; i++) {
+			if (Object.ReferenceEquals (currentPlayer, players [i])) {
+				index = i;
+			}
+		}
+		return playOrder [index];
+	}
+
+	// Get the last turn based on the number of people playing
+	private static Enums.TurnOrder getLastTurn() {
+		if (playOrder.Count == 1) {
+			return Enums.TurnOrder.FIRST;
+		} else if (playOrder.Count == 2) {
+			return Enums.TurnOrder.SECOND;
+		} else if (playOrder.Count == 3) {
+			return Enums.TurnOrder.THIRD;
+		} else {
+			return Enums.TurnOrder.FOURTH;
+		}
+	}
 
 	public static List<string> getPlayerNames() {
 		List<string> ret = new List<string> ();
@@ -230,11 +407,7 @@ public static class GameManager {
 
 		//Event Die
 
-		if (gamePhase == Enums.GamePhase.PHASE_ONE) {
-			gamePhase = Enums.GamePhase.PHASE_TWO;
-		} else if (gamePhase == Enums.GamePhase.SETUP_ONE) {
-			gamePhase = Enums.GamePhase.SETUP_TWO; 
-		}
+		gamePhase = Enums.GamePhase.PHASE_TWO;
 	}
 
 	// Resolve a seven if it is rolled
@@ -267,10 +440,10 @@ public static class GameManager {
 		Dictionary<Enums.ResourceType, bool> enoughRes = new Dictionary<Enums.ResourceType, bool> ();
 		Dictionary<Enums.CommodityType, bool> enoughComs = new Dictionary<Enums.CommodityType, bool> ();
 
-		for (int i = 0; i < 5; i++) {
+		for (int i = 0; i < numResources; i++) {
 			enoughRes.Add ((Enums.ResourceType)i, checkResources ((Enums.ResourceType)i, num));
 		}
-		for (int i = 0; i < 3; i++) {
+		for (int i = 0; i < numCommodities; i++) {
 			enoughComs.Add ((Enums.CommodityType)i, checkCommodities ((Enums.CommodityType)i, num));
 		}
 
@@ -311,7 +484,7 @@ public static class GameManager {
 					string owner = current.getOwnerName ();
 					Player p = getPlayer (owner);
 					if (res != Enums.ResourceType.NONE && enoughRes[res]) {
-						//Bank.withdrawResource (res, 1);
+						Bank.withdrawResource (res, 1);
 						p.addResource (res, 1);
 					} else if (gold) {
 						p.incrementGoldCount (2);
@@ -324,18 +497,18 @@ public static class GameManager {
 					Player p = getPlayer (owner);
 					if (com != Enums.CommodityType.NONE) {
 						if (enoughRes [res]) {
-							//Bank.withdrawResource (res, 1);
+							Bank.withdrawResource (res, 1);
 							p.addResource (res, 1);
 						}
 						if (enoughComs [com]) {
-							//Bank.withdrawCommodity (com, 1);
+							Bank.withdrawCommodity (com, 1);
 							p.addCommodity (com, 1);
 						}
 					} else if (res == Enums.ResourceType.BRICK && enoughRes[res]) {
-						//Bank.withdrawResource (res, 2);
+						Bank.withdrawResource (res, 2);
 						p.addResource (res, 2);
 					} else if (res == Enums.ResourceType.GRAIN && enoughRes[res]) {
-						//Bank.withdrawResource (res, 2);
+						Bank.withdrawResource (res, 2);
 						p.addResource (res, 2);
 					} else if (gold) {
 						p.incrementGoldCount (2);
@@ -348,7 +521,7 @@ public static class GameManager {
 	}
 
 	// get a resource from a hex
-	private static Enums.ResourceType getResourceFromHex(Enums.HexType hType) {
+	public static Enums.ResourceType getResourceFromHex(Enums.HexType hType) {
 
 		switch (hType) {
 		case Enums.HexType.FIELD:
@@ -367,7 +540,7 @@ public static class GameManager {
 	}
 
 	// Get a commodity from a hex
-	private static Enums.CommodityType getCommodityFromHex(Enums.HexType hType) {
+	public static Enums.CommodityType getCommodityFromHex(Enums.HexType hType) {
 
 		switch (hType) {
 		case Enums.HexType.FOREST:
@@ -425,7 +598,7 @@ public static class GameManager {
 		}
 
 		// Check the amount against the bank
-		int bankAmount = 100; //Bank.getResourceAmount (res);
+		int bankAmount = Bank.getResourceAmount (res);
 		if (bankAmount >= total) {
 			return true;
 		} else {
@@ -474,7 +647,7 @@ public static class GameManager {
 		}
 
 		// Check the amount against the bank
-		int bankAmount = 100; //Bank.getCommodityAmount (com);
+		int bankAmount = Bank.getCommodityAmount (com);
 		if (bankAmount >= total) {
 			return true;
 		} else {

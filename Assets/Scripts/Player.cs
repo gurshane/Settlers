@@ -23,6 +23,7 @@ public class Player : MonoBehaviour {
 
     private int victoryPoints;
     private int safeCardCount;
+	private int cityWallsLeft;
     private bool movedRoad;
     
     public List<GamePiece> getNotOnBoardPiece()//iterate through list of player's gamePieces
@@ -153,6 +154,22 @@ public class Player : MonoBehaviour {
         this.safeCardCount -= count;
     }
 
+	public int getCityWallCount() {
+		return this.cityWallsLeft;
+	}
+
+	public void incrementCityWallCount() {
+		this.cityWallsLeft++;
+	}
+
+	public bool decrementCityWallCount() {
+		if (this.cityWallsLeft <= 0) {
+			return false;
+		}
+		this.cityWallsLeft++;
+		return true;
+	}
+
     public void updateResourceRatio(ResourceType resourceType, int newRatio)
     {
         int resPosition = (int)resourceType;//find index of resource Enum and set an int to this index
@@ -233,6 +250,12 @@ public class Player : MonoBehaviour {
     {
         this.movedRoad = true;
     }
+
+	public void roadNotMoved()
+	{
+		this.movedRoad = false;
+	}
+
 	// Use this for initialization
 	void Start () {
 		

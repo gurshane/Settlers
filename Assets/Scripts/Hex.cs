@@ -28,6 +28,15 @@ public class Hex : BoardPiece {
 		return this.vertices;
 	}
 
+	public bool adjacentToVertex(Vertex v) {
+		foreach (Vertex neighbour in vertices) {
+			if (Object.ReferenceEquals(neighbour, v)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	public Enums.HexType getHexType() {
 		return this.hexType;
 	}
