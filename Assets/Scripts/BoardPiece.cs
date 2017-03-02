@@ -2,8 +2,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 using Enums;
+using UnityEngine.Networking;
 
-public abstract class BoardPiece : MonoBehaviour {
+public abstract class BoardPiece : NetworkBehaviour {
 
 	private GamePiece occupyingPiece;
 	private Enums.TerrainType terrainType;

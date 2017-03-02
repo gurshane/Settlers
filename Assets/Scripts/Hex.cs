@@ -2,12 +2,17 @@
 using System.Collections.Generic;
 using UnityEngine;
 using Enums;
+using UnityEngine.Networking;
 
 public class Hex : BoardPiece {
 
 	public List<Vertex> vertices;
-	private Enums.HexType hexType;
-	private int hexNumber;
+
+    [SyncVar]
+	public Enums.HexType hexType;
+
+    [SyncVar]
+	public int hexNumber;
 
 	public Hex(Enums.TerrainType terrain, Enums.HexType hexType) : base(terrain) {
 		this.vertices = new List<Vertex> ();
@@ -22,6 +27,15 @@ public class Hex : BoardPiece {
 
 	public List<Vertex> getVertices() {
 		return this.vertices;
+	}
+
+	public bool adjacentToVertex(Vertex v) {
+		foreach (Vertex neighbour in vertices) {
+			if (Object.ReferenceEquals(neighbour, v)) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	public Enums.HexType getHexType() {
@@ -40,10 +54,10 @@ public class Hex : BoardPiece {
 		this.hexNumber = hexNumber;
 	}
 
-	// Use this for initialization
-	void Start () {
-		
-	}
+    void Start()
+    {
+
+    }
 	
 	// Update is called once per frame
 	void Update () {

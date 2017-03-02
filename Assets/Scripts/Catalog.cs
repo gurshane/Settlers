@@ -32,6 +32,7 @@ public interface Catalog {
 
 	//Hex Class:
 	List<Vertex> getVertices();
+	bool adjacentToVertex (Vertex v);
 	Enums.HexType getHexType();
 	int getHexNumber();
 	void addVertex(Vertex v);
@@ -52,8 +53,10 @@ public interface Catalog {
 
 
 	//----------------------------
-	//Game Piece Class:
+	// Game Piece and Player Class:
 	Enums.Color getColor();
+
+	//Game Piece Class:
 	string getOwnerName();
 	Enums.PieceType getPieceType();
 	bool isOnBoard();            //returns true if piece is on board
@@ -76,6 +79,7 @@ public interface Catalog {
 	bool wasUpgraded();                             //returns true if the knight was upgraded this turn
 	bool wasActivatedThisTurn();                    //returns true if the knight was activated this turn
 	void notActivatedThisTurn ();                   //sets activatedThisTurn to false
+	void notUpgradedThisTurn();						//sets hasBeenUpgraded to false
 	Knight getFreeKnight (List<GamePiece> pieces);  //gets a knight that isn't on the board from a list of game pieces
 
 	//Road Class:
@@ -138,31 +142,30 @@ public interface Catalog {
 	bool canKnightDisplace (Vertex source, Vertex target, Enums.Color color);
 
 	// Given the resources, development chart, and vertex, can a knight be upgraded
-	bool canUpgradeKnight (Dictionary<Enums.ResourceType, int> resources, 
-	                      Dictionary<Enums.DevChartType, int> devChart, Vertex v);
+	bool canUpgradeKnight (int[] resources, int[] devChart, Vertex v);
 
 	// Given the resources, and vertex, can a knight be upgraded
-	bool canActivateKnight (Dictionary<Enums.ResourceType, int> resources, Vertex v);
+	bool canActivateKnight (int[] resources, Vertex v);
 
 	/* Given the commodities and development chart, can a development chart be upgraded
 	 * in the given development area
 	 * Note: a list of pieces must also be given to check if a city is on the board */
-	bool canUpgradeDevChart (Enums.DevChartType dev, Dictionary<Enums.CommodityType, int> commodities, 
-	                        List<GamePiece> pieces, Dictionary<Enums.DevChartType, int> devChart);
+	bool canUpgradeDevChart (Enums.DevChartType dev, int[] commodities, 
+		List<GamePiece> pieces, int[] devChart);
 
 	/* The canBuild... methods check if a piece can be built at the given location, with the
 	 * given resources and the piece list that player has */
-	bool canBuildSettlement (Vertex location, Dictionary<Enums.ResourceType, int> resources,
+	bool canBuildSettlement (Vertex location, int[] resources,
 	                        List<GamePiece> pieces, Enums.Color color);
-	bool canBuildCity (Vertex location, Dictionary<Enums.ResourceType, int> resources,
+	bool canBuildCity (Vertex location, int[] resources,
 	                  List<GamePiece> pieces, Enums.Color color);
-	bool canBuildCityWall (Vertex location, Dictionary<Enums.ResourceType, int> resources,
+	bool canBuildCityWall (Vertex location, int[] resources,
 	                      int cityWalls, Enums.Color color);
-	bool canBuildKnight (Vertex location, Dictionary<Enums.ResourceType, int> resources,
+	bool canBuildKnight (Vertex location, int[] resources,
 	                    List<GamePiece> pieces, Enums.Color color);
-	bool canBuildRoad (Edge location, Dictionary<Enums.ResourceType, int> resources,
+	bool canBuildRoad (Edge location, int[] resources,
 	                  List<GamePiece> pieces, Enums.Color color);
-	bool canBuildShip (Edge location, Dictionary<Enums.ResourceType, int> resources,
+	bool canBuildShip (Edge location, int[] resources,
 	                  List<GamePiece> pieces, Enums.Color color);
 
 	// Check if a ship can be moved from source to target
@@ -189,4 +192,161 @@ public interface Catalog {
 	bool placeInitialCity (Vertex v, List<GamePiece> pieces);
 	bool placeInitialRoad (Edge e, Enums.Color color, List<GamePiece> pieces);
 	bool placeInitialShip (Edge e, Enums.Color color, List<GamePiece> pieces);
+
+	/* The build... methods will check to see if the request is valid,
+	 * and then build the appropriate game piece adjusting all necessary
+	 * game state */
+	bool buidSettlement (Vertex location, int[] resources,
+	                    List<GamePiece> pieces, Enums.Color color);
+	bool buidCity (Vertex location, int[] resources,
+	                    List<GamePiece> pieces, Enums.Color color);
+	bool buildRoad (Edge location, int[] resources,
+	               List<GamePiece> pieces, Enums.Color color);
+	bool buildShip (Edge location, int[] resources,
+	               List<GamePiece> pieces, Enums.Color color);
+	//----------------------------
+
+
+	//----------------------------
+	// Game Manager Class (Static):
+
+	/* The following four classes return the constant number in each of the categories
+	 * Resources = 5 different resources
+	 * Commodities = 3 different commodities
+	 * DevChartType = 3 different Development Chart Types 
+	 * ProgressCardLimit = maximum of 4 progress cards at the end of the turn per player */
+	int getNumberResources ();
+	int getNumberCommodities ();
+	int getNumberDevChartType();
+	int getProgressCardLimit ();
+
+	/* These methods will conduct the way turns should go.
+	 * If the passed value for first is true, it means it is the very first 
+	 * time that the method is being called this game.
+	 * Initial first turn will recursively call itself until all the initial
+	 * first turns have been made. Then it will call initial second turn which 
+	 * will recursively call itself until it calls begin turn for regular turns. 
+	 * Begin turn sets up the turn and the the player will roll the dice. When
+	 * a player hits end turn, the end turn function will be called. */
+	void initialFirstTurn ();
+	void initialSecondTurn(bool first);
+	void beginTurn (bool first);
+	void endTurn();
+
+	List<string> getPlayerNames();    // Get all player names
+	Player getCurrentPlayer ();	      // Get the  current player
+	Player getPlayer (string name);   // Get a player from their name (returns null if player not in game)
+
+	Enums.GamePhase getGamePhase();
+	int getFirstDie();
+	int getSecondDie();
+	Enums.EventDie getEventDie();
+	string getMerchantController();
+	string getLongestRouteContoller ();
+	Hex getPirateLocation ();
+	Hex getRobberLocation();
+	int getPointsToWin ();
+
+	bool hasBarbarianAttacked();       // Returns true if barbarian has already attacked this game
+	void barbarianAttackedThisGame();  // Sets barbarianHasAttacked to true
+
+	/* Give a metropolis to the given player at the given vertex.
+	 * Remove a metropolis from the player who currently controls it if anyone does.
+	 * Returns true upon successful completion, false otherwise */
+	bool giveMetropolis (string player, Enums.DevChartType met, Vertex city);
+
+	// Not yet implemented
+	void determineLongestRoute();
+
+	void updateRobberLocation (Hex newLocation);
+	void updatePirateLocation (Hex newLocation);
+	void setMerchantController (Merchant m, string player);
+
+	void rollDice();					// Rolls the dice and commences all appropriate actions
+	void rollDice(int d1, int d2);      // Same as rollDice(), but sets dice for alchemist card
+
+	// Given a hex type, the following two methods will return the appropriate resource or commodity
+	Enums.ResourceType getResourceFromHex (Enums.HexType hType);
+	Enums.CommodityType getCommodityFromHex (Enums.HexType hType);
+	//----------------------------
+
+
+	//----------------------------
+	// Player Class:
+
+	List<GamePiece> getNotOnBoardPiece (); 			  // Get a list of the pieces that aren't on the board
+	List<GamePiece> getGamePieces ();                 // Get a list of all the game pieces
+	string getUserName();
+
+	int getVictoryCounts();
+	bool decrementVictoryPoints(int num);
+	void incrementVictoryPoints(int num);
+
+	int getGoldCount();
+	bool decrementGoldCount(int num);
+	void incrementGoldCount(int num);
+
+	Enums.Status getStatus();
+	void setStatus(Enums.Status newStatus);
+
+	// Upgrade the development chart for the given type
+	void upgradeDevChart(Enums.DevChartType devChartType);
+	int[] getDevFlipChart ();
+
+	List<Enums.ProgressCardName> getProgressCards();
+	void addProgressCard(Enums.ProgressCardName cardName);
+	bool discardProgressCard(Enums.ProgressCardName cardName);
+
+	int getSafeCardCount();
+	void increaseSafeCardCount(int count);
+	void decreaseSafeCardCount(int count);
+
+	int getCityWallCount();
+	void incrementCityWallCount ();
+	bool decrementCityWallCount ();
+
+	int[] getResourceRatios ();
+	void updateResourceRatio (Enums.ResourceType resourceType, int newRatio);
+	void updateResoureRatios(int [] newRatios);
+
+	int[] getCommodityRatios ();
+	void updateCommodityRatio(Enums.CommodityType commodity, int newRatio);
+	void updateCommodityRatios(int [] newRatios);
+
+	int[] getCommodities();
+	void addCommodity(Enums.CommodityType commodityType, int numToAdd);
+	bool discardCommodity(Enums.CommodityType commodityType, int numToRemove);
+
+	int[] getResources();
+	void addResource(Enums.ResourceType resourceType, int numToAdd);
+	bool discardResource(Enums.ResourceType resource, int numToRemove);
+
+	bool hasMovedRoad();
+	void movesRoad();
+	void roadNotMoved ();
+	//----------------------------
+
+
+	//----------------------------
+	// Bank Class:
+
+	int getResourceAmount (Enums.ResourceType res);
+	int getCommodityAmount (Enums.CommodityType com);
+	bool withdrawResource (Enums.ResourceType res, int amount);
+	bool withdrawCommodity (Enums.CommodityType com, int amount);
+	void depositResource(Enums.ResourceType res, int amount);
+	void depositCommodity(Enums.CommodityType com, int amount);
+
+	// Put the given progress card on the bottom of a progress card pile
+	void depositProgressCard (Enums.DevChartType progressType, 
+	                         Enums.ProgressCardName progressCard);
+
+	// Draw and return a progress card from the requested pile
+	Enums.ProgressCardName withdrawProgressCard (Enums.DevChartType progressType);
+
+	// Check if a trade is valid for the bank given certain trade ratios
+	bool isValidBankTrade(int[] resRatios, int[] comRatios, Trades trade);
+
+	// Make a trade with the bank, returns false if invalid, true if it goes through
+	bool tradeWithBank (int[] resRatios, int[] comRatios, Trades trade);
 }

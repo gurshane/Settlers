@@ -9,9 +9,6 @@ public class BoardGenerator : NetworkBehaviour {
     private List<GameObject> mainBoardHexSpawns;
     private List<GameObject> islandHexSpawns;
 
-    //Hexes
-    public List<GameObject> hexPieces;
-
     //Hex Prefabs
     public GameObject goldHex;
     public GameObject forestHex;
@@ -22,7 +19,6 @@ public class BoardGenerator : NetworkBehaviour {
     public GameObject fieldHex;
 
     //Number Tiles
-    public List<Transform> numberSpawnLocations;
     public List<GameObject> numberPieces;
 
     //Edges
@@ -99,6 +95,80 @@ public class BoardGenerator : NetworkBehaviour {
             Transform targetTransform = targetSpawn.transform;
             GameObject spawnedHex = Instantiate(hexToSpawn, targetTransform.position, Quaternion.identity, targetTransform);
 
+            GameObject targetNumber = numberPieces[Random.Range(0, numberPieces.Count)];
+            GameObject spawnedNumber = Instantiate(targetNumber, targetTransform.position, Quaternion.identity, targetTransform);
+
+            Hex hex = targetSpawn.gameObject.GetComponent<Hex>();
+            string name = hexToSpawn.name;
+            switch (name)
+            {
+                case "waterTile":
+                    hex.hexType = Enums.HexType.WATER;
+                    break;
+                case "brickTile":
+                    hex.hexType = Enums.HexType.HILL;
+                    break;
+                case "desertTile":
+                    hex.hexType = Enums.HexType.DESERT;
+                    break;
+                case "goldTile":
+                    hex.hexType = Enums.HexType.GOLD;
+                    break;
+                case "oreTile":
+                    hex.hexType = Enums.HexType.MOUNTAIN;
+                    break;
+                case "sheepTile":
+                    hex.hexType = Enums.HexType.PASTURE;
+                    break;
+                case "wheatTile":
+                    hex.hexType = Enums.HexType.FIELD;
+                    break;
+                case "woodTile":
+                    hex.hexType = Enums.HexType.FOREST;
+                    break;
+            }
+
+            string number = targetNumber.name;
+            switch (number)
+            {
+                case "one":
+                    hex.hexNumber = 1;
+                    break;
+                case "two":
+                    hex.hexNumber = 2;
+                    break;
+                case "three":
+                    hex.hexNumber = 3;
+                    break;
+                case "four":
+                    hex.hexNumber = 4;
+                    break;
+                case "five":
+                    hex.hexNumber = 5;
+                    break;
+                case "six":
+                    hex.hexNumber = 6;
+                    break;
+                case "seven":
+                    hex.hexNumber = 7;
+                    break;
+                case "eight":
+                    hex.hexNumber = 8;
+                    break;
+                case "nine":
+                    hex.hexNumber = 9;
+                    break;
+                case "ten":
+                    hex.hexNumber = 10;
+                    break;
+                case "eleven":
+                    hex.hexNumber = 11;
+                    break;
+                case "twelve":
+                    hex.hexNumber = 12;
+                    break;
+            }
+
             if (isOnMainBoard)
             {
                 spawnedMainBoardHexes.Add(spawnedHex);
@@ -109,6 +179,7 @@ public class BoardGenerator : NetworkBehaviour {
             }
 
             NetworkServer.Spawn(spawnedHex);
+            NetworkServer.Spawn(targetNumber);
             spawnPositions.Remove(targetSpawn);
         }
     }
