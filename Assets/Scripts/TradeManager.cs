@@ -1,8 +1,9 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Networking;
 
-public class TradeManager : MonoBehaviour {
+public class TradeManager : NetworkBehaviour {
 
 	// Use this for initialization
 	void Start () {

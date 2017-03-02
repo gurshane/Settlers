@@ -26,7 +26,7 @@ public class HighLighter : NetworkBehaviour {
             RaycastHit impact;
             if (Physics.Raycast(ray, out impact))
             {
-                gameManager.GetComponent<GlobalNetworkManager>().CmdHighlightThis( impact.collider.gameObject);
+                CmdHighlightThis( impact.collider.gameObject);
             }
         }
     }
@@ -43,5 +43,11 @@ public class HighLighter : NetworkBehaviour {
             target.GetComponent<MeshRenderer>().enabled = true;
             currentlyHighlighted = target;
         }
+    }
+
+    [Command]
+    public void CmdHighlightThis(GameObject target)
+    {
+        RpcHighlightThis(target);
     }
 }

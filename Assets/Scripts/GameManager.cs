@@ -2,8 +2,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 using Enums;
+using UnityEngine.Networking;
 
-public static class GameManager {
+public class GameManager : NetworkBehaviour {
 
 	// Overall Game State
 	private static List<Player> players;

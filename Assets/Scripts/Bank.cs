@@ -1,8 +1,9 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Networking;
 
-public static class Bank {
+public class Bank : NetworkBehaviour {
 
 	private static int[] resources;
 	private static int[] commodities;
