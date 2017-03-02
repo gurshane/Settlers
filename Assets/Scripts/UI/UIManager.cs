@@ -9,6 +9,12 @@ using Enums;
 public class UIManager : MonoBehaviour {
 
 
+	/// <summary>
+	/// The game manager object
+	/// </summary>
+	[SerializeField]
+	private GameObject _GameManager;
+
 	#region Player instance and Attributes
 
 	/// <summary>
@@ -58,7 +64,10 @@ public class UIManager : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
 
-		setPlayerInfoPanels();
+		//_GameManager = GameObject.FindGameObjectWithTag("GameManager");
+
+		//setPlayerInfoPanels();
+
 	}
 
 
@@ -87,6 +96,10 @@ public class UIManager : MonoBehaviour {
 		}
 	}
 
+	/// <summary>
+	/// Updates the player info panels to be displayed on the UI
+	/// </summary>
+	/*
 	private void updatePlayerInfoPanels ()
 	{
 		// Keep track of index to assign a player to a PlayerInfoPanel
@@ -140,13 +153,27 @@ public class UIManager : MonoBehaviour {
 
 			pIndex++;
 		}
-	}
+	}*/
 
+
+	private void highlightGameObject()
+	{
+		if (Input.GetButtonDown("Fire1"))
+		{
+			Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+			RaycastHit impact;
+			if (Physics.Raycast(ray, out impact))
+			{
+				_GameManager.GetComponent<GlobalNetworkManager>().CmdHighlightThis( impact.collider.gameObject);
+			}
+		}
+	}
 	#endregion
 		
 
 	// Update is called once per frame
 	void Update () {
-		
+
+		highlightGameObject ();
 	}
 }
