@@ -659,4 +659,14 @@ public class GameManager : NetworkBehaviour {
 			return false;
 		}
 	}
+
+     void Start()
+    {
+
+    }
+
+    void Update()
+    {
+
+    }
 }

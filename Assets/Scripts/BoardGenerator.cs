@@ -33,22 +33,33 @@ public class BoardGenerator : NetworkBehaviour {
     private List<GameObject> spawnedMainBoardHexes;
     private List<GameObject> spawnedIslandHexes;
 
-    // Use this for initialization
-    void Start ()
+    private bool doOnce;
+
+    void Start()
     {
-        spawned = new List<GameObject>();
-        spawnedNumbers = new List<GameObject>();
-        spawnedMainBoardHexes = new List<GameObject>();
-        spawnedIslandHexes = new List<GameObject>();
+        doOnce = true;
+    }
+    // Use this for initialization
+    void LateUpdate ()
+    {
+        if(doOnce)
+        {
+            doOnce = false;
 
-        edges = new List<GameObject>(GameObject.FindGameObjectsWithTag("Edge"));
-        vertices = new List<GameObject>(GameObject.FindGameObjectsWithTag("Vertex"));
+            spawned = new List<GameObject>();
+            spawnedNumbers = new List<GameObject>();
+            spawnedMainBoardHexes = new List<GameObject>();
+            spawnedIslandHexes = new List<GameObject>();
 
-        mainBoardHexSpawns = new List<GameObject>(GameObject.FindGameObjectsWithTag("MainHex"));
-        islandHexSpawns = new List<GameObject>(GameObject.FindGameObjectsWithTag("IslandHex"));
+            edges = new List<GameObject>(GameObject.FindGameObjectsWithTag("Edge"));
+            vertices = new List<GameObject>(GameObject.FindGameObjectsWithTag("Vertex"));
+
+            mainBoardHexSpawns = new List<GameObject>(GameObject.FindGameObjectsWithTag("MainHex"));
+            islandHexSpawns = new List<GameObject>(GameObject.FindGameObjectsWithTag("IslandHex"));
 
 
-        makeBoard();
+            makeBoard();
+        }
 	}
 
 	void makeBoard()

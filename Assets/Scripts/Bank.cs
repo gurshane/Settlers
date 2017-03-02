@@ -152,4 +152,14 @@ public class Bank : NetworkBehaviour {
 
 		return true;
 	}
+
+    void Start()
+    {
+
+    }
+
+    void Update()
+    {
+
+    }
 }

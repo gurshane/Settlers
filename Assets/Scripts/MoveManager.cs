@@ -368,4 +368,14 @@ public class MoveManager : NetworkBehaviour {
 			current.updateResourceRatio (getResourceFromPort (port), 2);
 		}
 	}
+
+    void Start()
+    {
+
+    }
+
+    void Update()
+    {
+
+    }
 }
