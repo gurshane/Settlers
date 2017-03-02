@@ -2,8 +2,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 using Enums;
+using UnityEngine.Networking;
 
-public static class MoveManager {
+public class MoveManager : NetworkBehaviour {
 
 	// Move a knight from source to target
 	public static bool moveKnight(Vertex source, Vertex target, Enums.Color color, int currentLongest) {
