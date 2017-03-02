@@ -660,9 +660,17 @@ public class GameManager : NetworkBehaviour {
 		}
 	}
 
-     void Start()
-    {
+    TradeManager tradeManager;
+    Bank bank;
+    BoardState boardState;
+    MoveManager moveManager;
 
+    void Start()
+    {
+        tradeManager = GetComponent<TradeManager>();
+        bank = GetComponent<Bank>();
+        boardState = GetComponent<BoardState>();
+        moveManager = GetComponent<MoveManager>();
     }
 
     void Update()

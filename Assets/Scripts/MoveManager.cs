@@ -369,13 +369,23 @@ public class MoveManager : NetworkBehaviour {
 		}
 	}
 
+    TradeManager tradeManager;
+    GameManager gameManager;
+    Bank bank;
+    BoardState boardState;
+
     void Start()
     {
-
+        tradeManager = GetComponent<TradeManager>();
+        gameManager = GetComponent<GameManager>();
+        bank = GetComponent<Bank>();
+        boardState = GetComponent<BoardState>();
     }
 
+    // Update is called once per frame
     void Update()
     {
 
     }
+    
 }

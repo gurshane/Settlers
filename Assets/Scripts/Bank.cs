@@ -153,9 +153,17 @@ public class Bank : NetworkBehaviour {
 		return true;
 	}
 
+    TradeManager tradeManager;
+    GameManager gameManager;
+    BoardState boardState;
+    MoveManager moveManager;
+
     void Start()
     {
-
+        tradeManager = GetComponent<TradeManager>();
+        gameManager = GetComponent<GameManager>();
+        boardState = GetComponent<BoardState>();
+        moveManager = GetComponent<MoveManager>();
     }
 
     void Update()

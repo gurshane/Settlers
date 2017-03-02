@@ -257,11 +257,21 @@ public class Player : NetworkBehaviour {
 		this.movedRoad = false;
 	}
 
-	// Use this for initialization
-	void Start () {
-		
-	}
-	
+    TradeManager tradeManager;
+    GameManager gameManager;
+    Bank bank;
+    BoardState boardState;
+    MoveManager moveManager;
+
+    void Start()
+    {
+        tradeManager = GetComponent<TradeManager>();
+        gameManager = GetComponent<GameManager>();
+        bank = GetComponent<Bank>();
+        boardState = GetComponent<BoardState>();
+        moveManager = GetComponent<MoveManager>();
+    }
+
 	// Update is called once per frame
 	void Update () {
 		
