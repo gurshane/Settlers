@@ -7,22 +7,26 @@ public class Player : MonoBehaviour {
 
     private List<GamePiece> pieces;
     private List<ProgressCardName> progressCards;
+
     private int[] resources;
     private int[] commodities;
     private int goldCount;
+
     private int[] devFlipChart;
     private int[] resourceRatios;
     private int[] commodityRatios;
+
     private string userName;
     private string password;
+	private Enums.Status status;
     private Enums.Color myColor;
+
     private int victoryPoints;
     private int safeCardCount;
-    private Enums.Status status;
     private bool movedRoad;
     
-    public List<GamePiece> getNotOnBoardPiece()
-    {
+    public List<GamePiece> getNotOnBoardPiece()//iterate through list of player's gamePieces
+    {//for each piece that isOnBoard equals false, add it to a new List
         List<GamePiece> notOnBoard = new List<GamePiece>();
         for (int i = 0; i < pieces.Count; i++)
         {
@@ -31,40 +35,50 @@ public class Player : MonoBehaviour {
                 notOnBoard.Add(pieces[i]);
             }
         }
-        return notOnBoard;
+        return notOnBoard;//return list of pieces that are not on board
     }
 
-    public List<GamePiece> getGamePieces()
+    public List<GamePiece> getGamePieces()//return player's pieces
     {
         return this.pieces;
     }
 
-    public List<ProgressCardName> getProgressCards()
+    public List<ProgressCardName> getProgressCards()//return player's progress cards
     {
         return this.progressCards;
     }
 
-    public int[] getResources()
+    public int[] getResources()//return player's resources
     {
         return this.resources; 
     }
 
-    public int[] getCommodities()
+    public int[] getCommodities()//return player's commodities
     {
         return this.commodities;
     }
 
-    public int [] getDevFlipChart()
+	public int[] getResourceRatios()//return player's trade ratios with bank for resources (ie ratios obtained from ports)
+	{
+		return this.resourceRatios; 
+	}
+
+	public int[] getCommodityRatios()//return player's trade ratios with bank for commodities
+	{
+		return this.commodityRatios;
+	}
+
+    public int [] getDevFlipChart()//return array of progress in the development flip chart
     {
         return this.devFlipChart;
     }
 
-    public int getVictoryCounts()
+    public int getVictoryCounts()//return victory points
     {
         return this.victoryPoints;
     }
 
-	public bool decrementVictoryPoints(int num) {
+	public bool decrementVictoryPoints(int num) {//decrease victory points
 		if (this.victoryPoints < num) {
 			return false;
 		}
@@ -72,16 +86,16 @@ public class Player : MonoBehaviour {
 		return true;
 	}
 
-	public void incrementVictoryPoints(int num) {
+	public void incrementVictoryPoints(int num) {//increase vicctory points
 		this.victoryPoints += num;
 	}
 
-    public int getGoldCount()
+    public int getGoldCount()//return gold count
     {
         return this.goldCount;
     }
 
-	public bool decrementGoldCount(int num) {
+	public bool decrementGoldCount(int num) {//decrease gold count
 		if (this.goldCount < num) {
 			return false;
 		}
@@ -89,16 +103,16 @@ public class Player : MonoBehaviour {
 		return true;
 	}
 
-	public void incrementGoldCount(int num) {
+	public void incrementGoldCount(int num) {//increase gold count
 		this.goldCount += num;
 	}
 
-    public int getSafeCardCount()
+    public int getSafeCardCount()//get safe card count (number of cards possible to carry in a hand)
     {
         return this.safeCardCount;
     }
 
-    public string getUserName()
+    public string getUserName()//return username
     {
         return this.userName;
     }
@@ -120,8 +134,8 @@ public class Player : MonoBehaviour {
 
     void upgradeDevChart(Enums.DevChartType devChartType)
     {
-        int devPosition = (int)devChartType;
-        this.devFlipChart[devPosition]++;
+        int devPosition = (int)devChartType;//casting a enum into an int returns the 0 based position of that enum specific
+        this.devFlipChart[devPosition]++;//access the devFlipChart at the position found above and increment it
     }
 
     public void addProgressCard(ProgressCardName cardName)
@@ -141,8 +155,8 @@ public class Player : MonoBehaviour {
 
     public void updateResourceRatio(ResourceType resourceType, int newRatio)
     {
-        int resPosition = (int)resourceType;
-        resourceRatios[resPosition] = newRatio;
+        int resPosition = (int)resourceType;//find index of resource Enum and set an int to this index
+        resourceRatios[resPosition] = newRatio;//access the array at this index and set the new ratio
         return;
     }
 
@@ -154,7 +168,7 @@ public class Player : MonoBehaviour {
     public void updateCommodityRatio(CommodityType commodity, int newRatio)
     {
         int comPosition = (int)commodity;
-        commodityRatios[comPosition] = newRatio;
+        commodityRatios[comPosition] = newRatio;//same as method above
         return;
     }
 
@@ -166,37 +180,37 @@ public class Player : MonoBehaviour {
     public bool discardCommodity(CommodityType commodityType, int numToRemove)
     {
 		int comPosition = (int)commodityType;
-		if (commodities[comPosition] < numToRemove)
+		if (commodities[comPosition] < numToRemove)//check if there are enough commodities
 		{
-			return false;
+			return false;//if there arent return false to denote an error
 		}
-		commodities[comPosition] -= numToRemove;
+		commodities[comPosition] -= numToRemove;//if there are decrease the number of commodities
 		return true;
     }
 
     public void addCommodity(CommodityType commodityType, int numToAdd)
     {
-        int comPosition = (int)commodityType;
-        commodities[comPosition] += numToAdd;
+        int comPosition = (int)commodityType;//casting to find index in enum 
+        commodities[comPosition] += numToAdd;//access index of enum and add numToAdd number of commodities
     }
 
     public void addResource(Enums.ResourceType resourceType, int numToAdd)
     {
-        int resPosition = (int)resourceType;
+        int resPosition = (int)resourceType;//same as above function
         resources[resPosition] += numToAdd;
     }
 
     public bool discardProgressCard(ProgressCardName cardName)
     {
-        for (int i = 0; i<progressCards.Count; i++)
+        for (int i = 0; i<progressCards.Count; i++)//cycle through progress cards
         {
-            if ((int)cardName == (int)progressCards[i])
+            if ((int)cardName == (int)progressCards[i])//find progress card that has been selected to be discarded
             {
-                progressCards.RemoveAt(i);
-                return true;
+                progressCards.RemoveAt(i);//discard from list
+                return true;// return confirmation of found progress card
             }
         }
-        return false;
+        return false;// if did not find progress card of the parameter type, return false denoting error
     }
 
     public bool discardResource(ResourceType resource, int numToRemove)
@@ -206,7 +220,7 @@ public class Player : MonoBehaviour {
         {
             return false;
         }
-        resources[resPosition] -= numToRemove;
+        resources[resPosition] -= numToRemove;//ykno
         return true;
     }
 
