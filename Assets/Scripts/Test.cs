@@ -315,7 +315,7 @@ public class Test : MonoBehaviour {
 		// Check all the knights that can be upgrade
 		Debug.Log ("canUpgradeKnight:\n");
 		for (int i = 0; i < vertexCount; i++) {
-			if (MoveAuthorizer.canUpgradeKnight(fullRes, fullDev, vertices[i])) {
+			if (MoveAuthorizer.canUpgradeKnight(fullRes, fullDev, vertices[i], pieces)) {
 				Debug.Log("Knight at vertex " + i + " can be upgraded\n");
 			}
 		}
@@ -444,6 +444,7 @@ public class Test : MonoBehaviour {
 		}
 		Debug.Log("\n");
 
+		/*
 		// Check where the initial town-piece can be placed
 		Debug.Log ("canPlaceInitialTownPiece:\n");
 		for (int i = 0; i < vertexCount; i++) {
@@ -452,6 +453,7 @@ public class Test : MonoBehaviour {
 			}
 		}
 		Debug.Log("\n");
+		*/
 
 		// Check where the initial road can be placed
 		Debug.Log ("canPlaceInitialRoad:\n");
