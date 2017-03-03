@@ -10,6 +10,8 @@ public class BoardState : NetworkBehaviour
     public Dictionary<Vector3, Edge> edgePosition;
     public Dictionary<Vector3, Hex> hexPoisition;
 
+    public Dictionary<Vector3, GameObject> spawnedObjects;
+
     bool doOnce;
 
 	// Use this for initialization
@@ -19,6 +21,7 @@ public class BoardState : NetworkBehaviour
         vertexPosition = new Dictionary<Vector3, Vertex>();
         edgePosition = new Dictionary<Vector3, Edge>();
         hexPoisition = new Dictionary<Vector3, Hex>();
+        spawnedObjects = new Dictionary<Vector3, GameObject>();
         
     }
 

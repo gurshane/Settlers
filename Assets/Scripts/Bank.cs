@@ -4,79 +4,178 @@ using UnityEngine;
 using UnityEngine.Networking;
 
 public class Bank : NetworkBehaviour {
+    
+	public int[] resources;
+    public int[] commodities;
 
-	private static int[] resources;
-	private static int[] commodities;
-	private static List<Enums.ProgressCardName> tradeCards;
-	private static List<Enums.ProgressCardName> politicsCards;
-	private static List<Enums.ProgressCardName> scienceCards;
+	private List<Enums.ProgressCardName> tradeCards;
+	private List<Enums.ProgressCardName> politicsCards;
+	private List<Enums.ProgressCardName> scienceCards;
 
-	public static int getResourceAmount(Enums.ResourceType res) {
+
+    void Start()
+    {
+        resources = new int[7];
+        commodities = new int[5];
+
+        tradeCards = new List<Enums.ProgressCardName>();
+        politicsCards = new List<Enums.ProgressCardName>();
+        scienceCards = new List<Enums.ProgressCardName>();
+    }
+
+    public int getResourceAmount(Enums.ResourceType res) {
 		return resources [(int)res];
 	}
 
-	public static int getCommodityAmount(Enums.CommodityType com) {
+	public int getCommodityAmount(Enums.CommodityType com) {
 		return commodities [(int)com];
 	}
 
-	public static bool withdrawResource(Enums.ResourceType res, int amount) {
+	public bool withdrawResource(Enums.ResourceType res, int amount) {
 		if (resources [(int)res] < amount) {
 			return false;
 		}
-		resources [(int)res] -= amount;
+        CmdDecrementResources(res, amount);
 		return true;
 	}
 
-	public static bool withdrawCommodity(Enums.CommodityType com, int amount) {
+    [Command]
+    void CmdDecrementResources(Enums.ResourceType res, int amount)
+    {
+        RpcDecrementResources(res, amount);
+    }
+
+    [ClientRpc]
+    void RpcDecrementResources(Enums.ResourceType res, int amount)
+    {
+        resources[(int)res] -= amount;
+    }
+
+	public bool withdrawCommodity(Enums.CommodityType com, int amount) {
 		if (commodities [(int)com] < amount) {
 			return false;
 		}
-		commodities [(int)com] -= amount;
+        CmdDecrementCommodities(com, amount);
 		return true;
 	}
 
-	public static void depositResource(Enums.ResourceType res, int amount) {
-		resources [(int)res] += amount;
+    [Command]
+    void CmdDecrementCommodities(Enums.CommodityType com, int amount)
+    {
+        RpcDecrementCommodities(com, amount);
+    }
+
+    [ClientRpc]
+    void RpcDecrementCommodities(Enums.CommodityType com, int amount)
+    {
+        commodities[(int)com] -= amount;
+    }
+
+    public void depositResource(Enums.ResourceType res, int amount) {
+        CmdIncreaseResources(res, amount);
 	}
 
-	public static void depositCommodity(Enums.CommodityType com, int amount) {
-		commodities [(int)com] += amount;
+    [Command]
+    void CmdIncreaseResources(Enums.ResourceType res, int amount)
+    {
+        RpcIncreaseResources(res, amount);
+    }
+
+    [ClientRpc]
+    void RpcIncreaseResources(Enums.ResourceType res, int amount)
+    {
+        resources[(int)res] += amount;
+    }
+
+	public void depositCommodity(Enums.CommodityType com, int amount) {
+        CmdIncreaseCommodities(com, amount);
 	}
+
+    [Command]
+    void CmdIncreaseCommodities(Enums.CommodityType com, int amount)
+    {
+        RpcIncreaseCommodities(com, amount);
+    }
+
+    [ClientRpc]
+    void RpcIncreaseCommodities(Enums.CommodityType com, int amount)
+    {
+        commodities[(int)com] += amount;
+    }
 
 	// Put the given progress card on the bottom of a progress card pile
-	public static void depositProgressCard(Enums.DevChartType progressType, 
+	public void depositProgressCard(Enums.DevChartType progressType, 
 		Enums.ProgressCardName progressCard){
-
-		if (progressType == Enums.DevChartType.TRADE) {
-			tradeCards.Add (progressCard);
-		} else if (progressType == Enums.DevChartType.POLITICS) {
-			politicsCards.Add (progressCard);
-		} else if (progressType == Enums.DevChartType.SCIENCE) {
-			scienceCards.Add (progressCard);
-		}
+        CmdAddProgressCard(progressType, progressCard);
 	}
 
+    [Command]
+    void CmdAddProgressCard(Enums.DevChartType progressType, Enums.ProgressCardName progressCard)
+    {
+        RpcAddProgressCard(progressType, progressCard);
+    }
+
+    [ClientRpc]
+    void RpcAddProgressCard(Enums.DevChartType progressType, Enums.ProgressCardName progressCard)
+    {
+        if (progressType == Enums.DevChartType.TRADE)
+        {
+            tradeCards.Add(progressCard);
+        }
+        else if (progressType == Enums.DevChartType.POLITICS)
+        {
+            politicsCards.Add(progressCard);
+        }
+        else if (progressType == Enums.DevChartType.SCIENCE)
+        {
+            scienceCards.Add(progressCard);
+        }
+    }
+
 	// Draw and return a progress card from the requested pile
-	public static Enums.ProgressCardName withdrawProgressCard(Enums.DevChartType progressType) {
+	public Enums.ProgressCardName withdrawProgressCard(Enums.DevChartType progressType) {
 		Enums.ProgressCardName ret;
 
 		if (progressType == Enums.DevChartType.TRADE) {
 			ret = tradeCards [0];
-			tradeCards.RemoveAt (0);
-			return ret;
 		} else if (progressType == Enums.DevChartType.POLITICS) {
 			ret = politicsCards [0];
-			politicsCards.RemoveAt (0);
-			return ret;
 		} else {
 			ret = scienceCards [0];
-			scienceCards.RemoveAt (0);
-			return ret;
 		}
-	}
+
+        CmdDrawProgressCard(progressType);
+
+        return ret;
+    }
+
+    [Command]
+    void CmdDrawProgressCard(Enums.DevChartType progressType)
+    {
+        RpcDrawProgressCard(progressType);
+    }
+
+    [ClientRpc]
+    void RpcDrawProgressCard(Enums.DevChartType progressType)
+    {
+        if (progressType == Enums.DevChartType.TRADE)
+        {
+            tradeCards.RemoveAt(0);
+        }
+        else if (progressType == Enums.DevChartType.POLITICS)
+        {
+            politicsCards.RemoveAt(0);
+        }
+        else
+        {
+            scienceCards.RemoveAt(0);
+        }
+    }
+
+    
 
 	// Make sure a given trade is valid
-	public static bool isValidBankTrade(int[] resRatios, int[] comRatios, Trades trade) {
+	public bool isValidBankTrade(int[] resRatios, int[] comRatios, Trades trade) {
 		int totalAvailable = 0;
 		int totalWanted = 0;
 
@@ -118,7 +217,7 @@ public class Bank : NetworkBehaviour {
 	}
 
 	// Make a trade with the bank
-	public static bool tradeWithBank(int[] resRatios, int[] comRatios, Trades trade) {
+	public bool tradeWithBank(int[] resRatios, int[] comRatios, Trades trade) {
 		if (!isValidBankTrade (resRatios, comRatios, trade)) {
 			return false;
 		}
@@ -153,21 +252,5 @@ public class Bank : NetworkBehaviour {
 		return true;
 	}
 
-    TradeManager tradeManager;
-    GameManager gameManager;
-    BoardState boardState;
-    MoveManager moveManager;
-
-    void Start()
-    {
-        tradeManager = GetComponent<TradeManager>();
-        gameManager = GetComponent<GameManager>();
-        boardState = GetComponent<BoardState>();
-        moveManager = GetComponent<MoveManager>();
-    }
-
-    void Update()
-    {
-
-    }
+    
 }
