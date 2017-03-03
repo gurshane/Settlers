@@ -6,7 +6,7 @@ using Enums;
 public static class MoveManager {
 
 	// Move a knight from source to target
-	public static bool moveKnight(Vertex source, Vertex target, Enums.Color color, int currentLongest) {
+	public static bool moveKnight(Vertex source, Vertex target, Enums.Color color) {
 
 		// Check if the knight can be moved
 		if (!MoveAuthorizer.canKnightMove (source, target, color)) {
@@ -55,12 +55,42 @@ public static class MoveManager {
 
 	// Upgrade a knight at vertex v
 	public static bool upgradeKnight(int[] resources, int[] devChart, Vertex v) {
+		if (!MoveAuthorizer.canUpgradeKnight (resources, devChart, v)) {
+			return false;
+		}
+
+		// Get the knight and upgrade it
+		Knight knight = (Knight)v.getOccupyingPiece ();
+		knight.upgrade ();
+
+		Player current = GameManager.getCurrentPlayer ();
+
+		// Pay for the upgrade
+		current.discardResource (Enums.ResourceType.WOOL, 1);
+		Bank.depositResource (Enums.ResourceType.WOOL, 1);
+
+		current.discardResource (Enums.ResourceType.ORE, 1);
+		Bank.depositResource (Enums.ResourceType.ORE, 1);
 
 		return true;
 	}
 
 	// Activate a knight at vertex v
 	public static bool activateKnight(int[] resources, Vertex v) {
+		if (!MoveAuthorizer.canActivateKnight (resources, v)) {
+			return false;
+		}
+
+		// Get the knight and activate it
+		Knight knight = (Knight)v.getOccupyingPiece ();
+		knight.activateKnight ();
+
+		Player current = GameManager.getCurrentPlayer ();
+
+		// Pay for the activation
+		current.discardResource (Enums.ResourceType.GRAIN, 1);
+		Bank.depositResource (Enums.ResourceType.GRAIN, 1);
+
 		return true;
 	}
 
@@ -68,6 +98,41 @@ public static class MoveManager {
 	public static bool upgradeDevChart(Enums.DevChartType dev, int[] commodities, 
 		List<GamePiece> pieces, int[] devChart) {
 
+		if (!MoveAuthorizer.canUpgradeDevChart (dev, commodities, pieces, devChart)) {
+			return false;
+		}
+
+		int currentLevel = devChart [(int)dev];
+
+		// Upgrade the development chart in the given field
+		Player current = GameManager.getCurrentPlayer ();
+		current.upgradeDevChart (dev);
+
+		// Pay for the upgrade
+		current.discardCommodity (getCommodityFromDev(dev), currentLevel);
+		Bank.depositCommodity (getCommodityFromDev(dev), currentLevel);
+
+		int newLevel = currentLevel + 1;
+
+		// Give Metropolis
+
+		// Give the appropriate special properties
+		if (newLevel == 3) {
+			switch (dev) {
+			case Enums.DevChartType.SCIENCE:
+				current.giveAqueduct ();
+				break;
+			case Enums.DevChartType.TRADE:
+				int[] ratios = current.getCommodityRatios ();
+				for (int i = 0; i < ratios.Length; i++) {
+					ratios [i] = 2;
+				}
+				current.updateCommodityRatios (ratios);
+				break;
+			default:
+				break;
+			}
+		}
 		return true;
 	}
 
@@ -344,6 +409,20 @@ public static class MoveManager {
 			return Enums.ResourceType.GRAIN;
 		default:
 			return Enums.ResourceType.NONE;
+		}
+	}
+
+	private static Enums.CommodityType getCommodityFromDev(Enums.DevChartType dev) {
+
+		switch (dev) {
+		case Enums.DevChartType.TRADE:
+			return Enums.CommodityType.CLOTH;
+		case Enums.DevChartType.POLITICS:
+			return Enums.CommodityType.COIN;
+		case Enums.DevChartType.SCIENCE:
+			return Enums.CommodityType.PAPER;
+		default:
+			return Enums.CommodityType.NONE;
 		}
 	}
 

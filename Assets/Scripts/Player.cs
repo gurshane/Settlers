@@ -25,6 +25,7 @@ public class Player : MonoBehaviour {
     private int safeCardCount;
 	private int cityWallsLeft;
     private bool movedRoad;
+	private bool aqueduct;
     
     public List<GamePiece> getNotOnBoardPiece()//iterate through list of player's gamePieces
     {//for each piece that isOnBoard equals false, add it to a new List
@@ -133,7 +134,15 @@ public class Player : MonoBehaviour {
         this.status = newStatus;
     }
 
-    void upgradeDevChart(Enums.DevChartType devChartType)
+	public bool getAqueduct() {
+		return this.aqueduct;
+	}
+
+	public void giveAqueduct() {
+		this.aqueduct = true;
+	}
+
+    public void upgradeDevChart(Enums.DevChartType devChartType)
     {
         int devPosition = (int)devChartType;//casting a enum into an int returns the 0 based position of that enum specific
         this.devFlipChart[devPosition]++;//access the devFlipChart at the position found above and increment it

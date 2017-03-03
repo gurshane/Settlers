@@ -86,16 +86,17 @@ public static class MoveAuthorizer {
 	}
 
 	// Check if a knight can be upgraded
-	public static bool canUpgradeKnight(int[] resources, int[] devChart, Vertex v) {
+	public static bool canUpgradeKnight(int[] resources, int[] devChart,
+		Vertex v, List<GamePiece> pieces) {
 
 		// Make sure there are enough resources
 		int wool = resources [(int)Enums.ResourceType.WOOL];
-		int sheep = resources [(int)Enums.ResourceType.ORE];
+		int ore = resources [(int)Enums.ResourceType.ORE];
 
 		if (wool < 1) {
 			return false;
 		}
-		if (sheep < 1) {
+		if (ore < 1) {
 			return false;
 		}
 
@@ -109,9 +110,29 @@ public static class MoveAuthorizer {
 		}
 
 		Knight sourceKnight = (Knight)sourcePiece;
+		int upgradeLevel = sourceKnight.getLevel () + 1;
 		if (sourceKnight.wasUpgraded ()) {
 			return false;
 		}
+
+		// Make sure there are enough knights of that level available
+		int total = 0;
+		foreach (GamePiece p in pieces) {
+			if (p.getPieceType () != Enums.PieceType.KNIGHT) {
+				continue;
+			} else if (!p.isOnBoard ()) {
+				continue;
+			}
+
+			Knight k = (Knight)p;
+			if (k.getLevel() == upgradeLevel) {
+				total++;
+				if (total == 2){
+					return false;
+				}
+			}
+		}
+
 
 		// Check the politics level for high-level knights
 		int level = devChart [(int)Enums.DevChartType.POLITICS];
@@ -341,6 +362,24 @@ public static class MoveAuthorizer {
 		}
 		if (!availablePiece) {
 			return false;
+		}
+
+		// Make sure there are enough level 1 knights available
+		int total = 0;
+		foreach (GamePiece p in pieces) {
+			if (p.getPieceType () != Enums.PieceType.KNIGHT) {
+				continue;
+			} else if (!p.isOnBoard ()) {
+				continue;
+			}
+
+			Knight k = (Knight)p;
+			if (k.getLevel() == 1) {
+				total++;
+				if (total == 2){
+					return false;
+				}
+			}
 		}
 
 		// Make sure there are enough resources
