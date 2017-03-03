@@ -4,10 +4,10 @@ using UnityEngine;
 using Enums;
 using UnityEngine.Networking;
 
-public abstract class BoardPiece : NetworkBehaviour {
+public class BoardPiece : NetworkBehaviour {
 
 	private GamePiece occupyingPiece;
-	private Enums.TerrainType terrainType;
+	public Enums.TerrainType terrainType;
 
 	public BoardPiece (Enums.TerrainType terrain) {
 		this.terrainType = terrain;
@@ -23,15 +23,5 @@ public abstract class BoardPiece : NetworkBehaviour {
 
 	public void setOccupyingPiece(GamePiece gamePiece) {
 		this.occupyingPiece = gamePiece;
-	}
-
-	// Use this for initialization
-	void Start () {
-		
-	}
-	
-	// Update is called once per frame
-	void Update () {
-		
 	}
 }

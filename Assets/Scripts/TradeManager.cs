@@ -5,6 +5,7 @@ using UnityEngine.Networking;
 
 public class TradeManager : NetworkBehaviour {
 
+
 	// Use this for initialization
 	void Start () {
 		
