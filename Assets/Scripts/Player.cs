@@ -22,13 +22,26 @@ public class Player : NetworkBehaviour {
 	private Enums.Status status;
     private Enums.Color myColor;
 
-    private int victoryPoints;
+    [SyncVar]
+    public int victoryPoints;
+
     private int safeCardCount;
 	private int cityWallsLeft;
     private bool movedRoad;
 
     private Dictionary<Vector3, GamePiece> spawnedPieces;
-    
+
+    void Start()
+    {
+        spawnedPieces = new Dictionary<Vector3, GamePiece>();
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+
+    }
+
     public List<GamePiece> getNotOnBoardPiece()//iterate through list of player's gamePieces
     {//for each piece that isOnBoard equals false, add it to a new List
         List<GamePiece> notOnBoard = new List<GamePiece>();
@@ -258,26 +271,5 @@ public class Player : NetworkBehaviour {
 	{
 		this.movedRoad = false;
 	}
-
-    TradeManager tradeManager;
-    GameManager gameManager;
-    Bank bank;
-    BoardState boardState;
-    MoveManager moveManager;
-
-    void Start()
-    {
-        tradeManager = GetComponent<TradeManager>();
-        gameManager = GetComponent<GameManager>();
-        bank = GetComponent<Bank>();
-        boardState = GetComponent<BoardState>();
-        moveManager = GetComponent<MoveManager>();
-
-        spawnedPieces = new Dictionary<Vector3, GamePiece>();
-    }
-
-	// Update is called once per frame
-	void Update () {
-		
-	}
+    
 }
