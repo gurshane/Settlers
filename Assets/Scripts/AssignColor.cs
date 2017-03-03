@@ -3,13 +3,14 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
 
-public class AssignColor : MonoBehaviour {
+public class AssignColor : NetworkBehaviour {
 
-    void OnConnectedToServer()
+    void Update()
     {
-        Debug.Log("Yo");
-        GetComponent<GameManager>().UpdateColor();
-        //CmdUpdatePlayerNameList(Network.player.ipAddress);
+        if(isServer && isLocalPlayer)
+        {
+            //GetComponent<GameManager>().UpdateColor();
+        }
     }
 
 }
