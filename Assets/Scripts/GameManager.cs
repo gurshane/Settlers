@@ -60,11 +60,14 @@ public class GameManager : NetworkBehaviour {
     Bank bank;
     BoardState boardState;
     MoveManager moveManager;
-
+    
     [SyncVar]
     public int color = 0;
 
     private bool doOnce;
+
+    [SyncVar]
+    public bool updating;
 
     public List<string> playerNames;
 
@@ -76,12 +79,32 @@ public class GameManager : NetworkBehaviour {
         boardState = GetComponent<BoardState>();
         moveManager = GetComponent<MoveManager>();
         playerNames = new List<string>();
+        updating = false;
     }
     
+    void LateUpdate()
+    {
+        if(isLocalPlayer && doOnce)
+        {
+            UpdateColor();
+            doOnce = false;
+        }
+    }
 
     public void UpdateColor()
     {
-        GetComponent<Player>().SetColor((Enums.Color)color);
+        CmdUpdateColor();
+    }
+
+    [Command]
+    void CmdUpdateColor()
+    {
+        RpcUpdateColor();
+    }
+
+    [ClientRpc]
+    void RpcUpdateColor()
+    {
         color++;
     }
 
