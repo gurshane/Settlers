@@ -2,11 +2,12 @@
 using System.Collections.Generic;
 using UnityEngine;
 using Enums;
+using UnityEngine.Networking;
 
 /// <summary>
 /// Handles update and display of all Player attributes to HUD
 /// </summary>
-public class UIManager : MonoBehaviour {
+public class UIManager : NetworkBehaviour {
 
 
 	/// <summary>
@@ -75,34 +76,37 @@ public class UIManager : MonoBehaviour {
 	[SerializeField]
 	private Transform _EdgeButtonsPanel;
 
-	#endregion
-
+    #endregion
 
 
 	// Use this for initialization
 	void Start () {
+        
+        _CurrentPlayer = GameObject.Find(Network.player.ipAddress).GetComponent<Player>();
 
-		// Hide ContextPanel and its contents on startup
-		setContextPanelChildren();
-
-		_ContextPanel.gameObject.SetActive (false);
-		_VertexButtonsPanel.gameObject.SetActive (false);
-		_EdgeButtonsPanel.gameObject.SetActive (false);
-
-
-		//_GameManager = GameObject.FindGameObjectWithTag("GameManager");
-		//setPlayerInfoPanels();
-
-	}
+        if (_CurrentPlayer.gameObject.GetComponent<NetworkIdentity>().isLocalPlayer)
+        {
+            // Hide ContextPanel and its contents on startup
+            setContextPanelChildren();
+            _ContextPanel.gameObject.SetActive(false);
+            _VertexButtonsPanel.gameObject.SetActive(false);
+            _EdgeButtonsPanel.gameObject.SetActive(false);
 
 
+            //_GameManager = GameObject.FindGameObjectWithTag("GameManager");
+            //setPlayerInfoPanels();
+
+        }
+    }
 
 
-	#region Update Methods
-	/// <summary>
-	/// Updates the resources of the currentPlayer to be displayed on the UI
-	/// </summary>
-	public void updateResources()
+
+
+    #region Update Methods
+    /// <summary>
+    /// Updates the resources of the currentPlayer to be displayed on the UI
+    /// </summary>
+    public void updateResources()
 	{
 		foreach (Transform resource in _ResourcesPanel)
 		{
@@ -272,16 +276,18 @@ public class UIManager : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 
-		// DEBUGGING -----
-
-
-		// Check whether _CurrentPlayer has been initialised
-		if (!isCurrentPlayerNull ()) 
-		{
-			updateResources ();
-			updateCommodities ();
-			updateMyPlayerPanel ();
-		}
+        // DEBUGGING -----
+        if (_CurrentPlayer.gameObject.GetComponent<NetworkIdentity>().isLocalPlayer)
+        {
+            // Check whether _CurrentPlayer has been initialised
+            if (!isCurrentPlayerNull())
+            {
+                updateResources();
+                updateCommodities();
+                updateMyPlayerPanel();
+            }
+        }
 	
 	}
+    
 }
