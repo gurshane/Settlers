@@ -11,7 +11,8 @@ public class Hex : BoardPiece {
     [SyncVar]
 	public Enums.HexType hexType;
 
-	private int hexNumber;
+    [SyncVar]
+	public int hexNumber;
 
 	public Hex(Enums.TerrainType terrain, Enums.HexType hexType) : base(terrain) {
 		this.vertices = new List<Vertex> ();
@@ -26,6 +27,15 @@ public class Hex : BoardPiece {
 
 	public List<Vertex> getVertices() {
 		return this.vertices;
+	}
+
+	public bool adjacentToVertex(Vertex v) {
+		foreach (Vertex neighbour in vertices) {
+			if (Object.ReferenceEquals(neighbour, v)) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	public Enums.HexType getHexType() {

@@ -444,6 +444,7 @@ public class Test : MonoBehaviour {
 		}
 		Debug.Log("\n");
 
+		/*
 		// Check where the initial town-piece can be placed
 		Debug.Log ("canPlaceInitialTownPiece:\n");
 		for (int i = 0; i < vertexCount; i++) {
@@ -452,6 +453,7 @@ public class Test : MonoBehaviour {
 			}
 		}
 		Debug.Log("\n");
+		*/
 
 		// Check where the initial road can be placed
 		Debug.Log ("canPlaceInitialRoad:\n");

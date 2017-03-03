@@ -2,44 +2,302 @@
 using System.Collections.Generic;
 using UnityEngine;
 using Enums;
+using UnityEngine.Networking;
 
-public static class GameManager {
+public class GameManager : NetworkBehaviour {
 
 	// Overall Game State
-	private static List<Player> players;
-	private static List<Enums.TurnOrder> playOrder;
-	private static Player currentPlayer;
-	private static Enums.GamePhase gamePhase;
+	private List<Player> players;
+	private List<Enums.TurnOrder> playOrder;
+	private Player currentPlayer;
 
-	private static Edge edge1;
-	private static Vertex vertex1;
-	private static List<Hex> hexes;
+    [SyncVar]
+	public Enums.GamePhase gamePhase;
+
+    [SyncVar]
+	public int pointsToWin;
+
+    [SyncVar]
+    public Enums.Color colorToPick;
+
+	private Edge edge1;
+	private Vertex vertex1;
+	private List<Hex> hexes;
 
 	// The dice
-	private static int firstDie;
-	private static int secondDie;
-	private static Enums.EventDie eventDie;
+    [SyncVar]
+	public int firstDie;
+
+    [SyncVar]
+	public int secondDie;
+
+    [SyncVar]
+	public Enums.EventDie eventDie;
 
 	// Some important state info
-	private static int longestRouteLength;
-	private static string merchantController;
-	private static string longestRouteController;
+    [SyncVar]
+	public int longestRouteLength;
 
-	private static Hex pirateLocation;
-	private static Hex robberLocation;
-	private static Dictionary<Enums.DevChartType, Vertex> metropolises;
-	private static bool barbarianHasAttacked;
+    [SyncVar]
+	public string merchantController;
 
+    [SyncVar]
+	public string longestRouteController;
+
+	private Hex pirateLocation;
+	private Hex robberLocation;
+	private Dictionary<Enums.DevChartType, Vertex> metropolises;
+
+    [SyncVar]
+	public bool barbarianHasAttacked;
+
+	private const int numCommodities = 3;
+	private const int numResources = 5;
+	private const int numDevChartType = 3;
+	private const int progressCardLimit = 4;
+
+    TradeManager tradeManager;
+    Bank bank;
+    BoardState boardState;
+    MoveManager moveManager;
+
+    [SyncVar]
+    public bool giveWhite;
+
+    [SyncVar]
+    public bool giveOrange;
+
+    [SyncVar]
+    public bool giveBlue;
+
+    [SyncVar]
+    public bool giveRed;
+
+    private bool doOnce;
+    
+
+    void Start()
+    {
+
+        tradeManager = GetComponent<TradeManager>();
+        bank = GetComponent<Bank>();
+        boardState = GetComponent<BoardState>();
+        moveManager = GetComponent<MoveManager>();
+
+        giveWhite = true;
+        giveOrange = true;
+        giveBlue = true;
+        giveRed = true;
+    }
+    
+    void OnPlayerConnected(NetworkPlayer np)
+    {
+        Debug.Log(np.externalIP);
+
+        /*
+         * if (giveWhite)
+            {
+                giveWhite = false;
+                GetComponent<Player>().SetColor(Enums.Color.WHITE);
+            }
+            else if (giveOrange)
+            {
+                giveOrange = false;
+                GetComponent<Player>().SetColor(Enums.Color.ORANGE);
+            }
+            else if (giveBlue)
+            {
+                giveBlue = false;
+                GetComponent<Player>().SetColor(Enums.Color.BLUE);
+            }
+            else if (giveRed)
+            {
+                giveRed = false;
+                GetComponent<Player>().SetColor(Enums.Color.RED);
+            } */
+    }
+
+    public int getNumberResources() {
+		return numResources;
+	}
+
+	public int getNumberCommodities() {
+		return numCommodities;
+	}
+
+	public int getNumberDevChartType() {
+		return numDevChartType;
+	}
+
+	public int getProgressCardLimit() {
+		return progressCardLimit;
+	}
+
+	public int getPointsToWin() {
+		return pointsToWin;
+	}
+
+	// Complete an initial first turn
+	public void initialFirstTurn() {
+		currentPlayer = getNextPlayer (false);
+		gamePhase = Enums.GamePhase.SETUP_ONE;
+
+		// Current player places pieces
+
+		if (getCurrentTurn () == getLastTurn ()) {
+			initialSecondTurn (true);
+		} else {
+			initialFirstTurn ();
+		}
+	}
+		
+	// Complete an initial second turn
+	public void initialSecondTurn(bool first) {
+		if (first && getCurrentTurn () == getLastTurn ()) {
+			currentPlayer = currentPlayer;
+		} else {
+			currentPlayer = getNextPlayer (true);
+		}
+		gamePhase = Enums.GamePhase.SETUP_TWO;
+
+		// Current player places pieces
+
+		if (getCurrentTurn () == Enums.TurnOrder.FIRST) {
+			beginTurn (true);
+		} else {
+			initialSecondTurn (false);
+		}
+	}
 
 	// Begin Game
 
 	// End Game
 
-	// Begin Turn
+	public void endGame() {
+	}
 
-	// End Turn
+	// Begin a Turn
+	public void beginTurn(bool first) {
+		if (first) {
+			currentPlayer = currentPlayer;
+		} else {
+			currentPlayer = getNextPlayer (false);
+		}
+		gamePhase = Enums.GamePhase.PHASE_ONE;
 
-	public static List<string> getPlayerNames() {
+		// current player rolls dice
+	}
+
+	// End a turn
+	public void endTurn() {
+
+		// If a player has won, end the game
+		foreach (Player p in players) {
+			if (p.getVictoryCounts () >= pointsToWin) {
+				endGame ();
+				return;
+			}
+		}
+
+		// Do some cleanup steps
+		foreach (Player p in players) {
+			p.roadNotMoved ();
+
+			// If any player has more than 4 progress cards, they must discard
+			if (p.getProgressCards ().Count > progressCardLimit) {
+
+				// Those players discard down to 4 progress cards
+
+			}
+
+			// Set some turn specific booleans to false
+			List<GamePiece> pieceList = p.getGamePieces ();
+			foreach (GamePiece piece in pieceList) {
+				if (piece.getPieceType () == Enums.PieceType.KNIGHT) {
+					Knight k = (Knight)piece;
+					k.notActivatedThisTurn ();
+					k.notUpgradedThisTurn ();
+				} else if (piece.getPieceType () == Enums.PieceType.ROAD) {
+					Road r = (Road)piece;
+					r.notBuiltThisTurn ();
+				}
+			}
+		}
+
+		// Begin the next turn
+		beginTurn (false);
+	}
+
+	// Find the next player
+	private Player getNextPlayer(bool reverse) {
+
+		// If current player is null, get the first player in the turn order
+		if (Object.ReferenceEquals(currentPlayer, null)) {
+			for (int i = 0; i < playOrder.Count; i++) {
+				if (playOrder[i] == Enums.TurnOrder.FIRST) {
+					return players[i];
+				}
+			}
+		}
+
+		Enums.TurnOrder currentTurn = getCurrentTurn();
+		Enums.TurnOrder nextTurn;
+		Enums.TurnOrder lastTurn = getLastTurn ();
+
+		// Check if turns are moving in reverse order
+		if (!reverse) {
+			if (currentTurn == lastTurn) {
+				nextTurn = Enums.TurnOrder.FIRST;
+			} else {
+				int next = ((int)currentTurn) + 1;
+				nextTurn = (Enums.TurnOrder)next;
+			}
+		} else {
+			if (currentTurn == Enums.TurnOrder.FIRST) {
+				nextTurn = lastTurn;
+			} else {
+				int next = ((int)currentTurn) - 1;
+				nextTurn = (Enums.TurnOrder)next;
+			}
+		}
+
+		// Find the next player based on the next turn
+		int index = 0;
+		for (int i = 0; i < playOrder.Count; i++) {
+			if (playOrder [i] == nextTurn) {
+				index = i;
+			}
+		}
+
+		// Return the next player
+		return players [index];
+	}
+
+	// Get the current turn based on the current player
+	private Enums.TurnOrder getCurrentTurn() {
+		int index = 0;
+		for (int i = 0; i < players.Count; i++) {
+			if (Object.ReferenceEquals (currentPlayer, players [i])) {
+				index = i;
+			}
+		}
+		return playOrder [index];
+	}
+
+	// Get the last turn based on the number of people playing
+	private Enums.TurnOrder getLastTurn() {
+		if (playOrder.Count == 1) {
+			return Enums.TurnOrder.FIRST;
+		} else if (playOrder.Count == 2) {
+			return Enums.TurnOrder.SECOND;
+		} else if (playOrder.Count == 3) {
+			return Enums.TurnOrder.THIRD;
+		} else {
+			return Enums.TurnOrder.FOURTH;
+		}
+	}
+
+	public List<string> getPlayerNames() {
 		List<string> ret = new List<string> ();
 		foreach(Player p in players) {
 			ret.Add (p.getUserName());
@@ -47,11 +305,11 @@ public static class GameManager {
 		return ret;
 	}
 
-	public static Player getCurrentPlayer() {
+	public Player getCurrentPlayer() {
 		return currentPlayer;
 	}
 
-	public static Player getPlayer(string name) {
+	public Player getPlayer(string name) {
 		foreach (Player p in players) {
 			if (p.getUserName().Equals(name)) {
 				return p;
@@ -60,50 +318,50 @@ public static class GameManager {
 		return null;
 	}
 
-	public static Enums.GamePhase getGamePhase() {
+	public Enums.GamePhase getGamePhase() {
 		return gamePhase;
 	}
 
-	public static int getFirstDie() {
+	public int getFirstDie() {
 		return firstDie;
 	}
 
-	public static int getSecondDie() {
+	public int getSecondDie() {
 		return secondDie;
 	}
 
-	public static Enums.EventDie getEventDie() {
+	public Enums.EventDie getEventDie() {
 		return eventDie;
 	}
 
-	public static string getMerchantController() {
+	public string getMerchantController() {
 		return merchantController;
 	}
 
-	public static string getLongestRouteContoller() {
+	public string getLongestRouteContoller() {
 		return longestRouteController;
 	}
 
-	public static Hex getPirateLocation() {
+	public Hex getPirateLocation() {
 		return pirateLocation;
 	}
 
-	public static Hex getRobberLocation() {
+	public Hex getRobberLocation() {
 		return robberLocation;
 	}
 
-	public static bool hasBarbarianAttacked() {
+	public bool hasBarbarianAttacked() {
 		return barbarianHasAttacked;
 	}
 
-	public static void barbarianAttackedThisGame() {
+	public void barbarianAttackedThisGame() {
 		barbarianHasAttacked = true;
 	}
 
 	// return true upon success, false upon failure
 	// give the given player a metropolis on the chosen city
 	// remove it from another player if another player controlled it
-	public static bool giveMetropolis(string player, Enums.DevChartType met, Vertex city) {
+	public bool giveMetropolis(string player, Enums.DevChartType met, Vertex city) {
 		GamePiece p = city.getOccupyingPiece ();
 		if (Object.ReferenceEquals (p, null)) {
 			return false;
@@ -133,19 +391,19 @@ public static class GameManager {
 		return true;
 	}
 		
-	public static void determineLongestRoute() {
+	public void determineLongestRoute() {
 	}
 
-	public static void updateRobberLocation(Hex newLocation) {
+	public void updateRobberLocation(Hex newLocation) {
 		robberLocation = newLocation;
 	}
 
-	public static void updatePirateLocation(Hex newLocation) {
+	public void updatePirateLocation(Hex newLocation) {
 		pirateLocation = newLocation;
 	}
 
 	// Remove the old merchant controller, and set the new one, assigning victory points
-	public static void setMerchantController(Merchant m, string player) {
+	public void setMerchantController(Merchant m, string player) {
 		if (merchantController != "") {
 			Player p = getPlayer (merchantController);
 			if (!Object.ReferenceEquals (p, null)) {
@@ -162,7 +420,7 @@ public static class GameManager {
 	}
 
 	// Get a dice roll, randomly
-	public static void rollDice() {
+	public void rollDice() {
 
 		// Get random values for all the dice
 		firstDie = (int)Random.Range (1, 7);
@@ -190,7 +448,7 @@ public static class GameManager {
 	}
 
 	// Pick the dice (for alchemist)
-	public static void rollDice(int d1, int d2) {
+	public void rollDice(int d1, int d2) {
 		
 		firstDie = d1;
 		secondDie = d2;
@@ -217,7 +475,7 @@ public static class GameManager {
 	}
 
 	// Resolve a dice roll
-	private static void resolveDice() {
+	private void resolveDice() {
 
 		// Check if a seven was rolled
 		if (firstDie + secondDie == 7) {
@@ -230,15 +488,11 @@ public static class GameManager {
 
 		//Event Die
 
-		if (gamePhase == Enums.GamePhase.PHASE_ONE) {
-			gamePhase = Enums.GamePhase.PHASE_TWO;
-		} else if (gamePhase == Enums.GamePhase.SETUP_ONE) {
-			gamePhase = Enums.GamePhase.SETUP_TWO; 
-		}
+		gamePhase = Enums.GamePhase.PHASE_TWO;
 	}
 
 	// Resolve a seven if it is rolled
-	private static void resolveSeven() {
+	private void resolveSeven() {
 
 		// If the barbarian has not attacked, nothing happens
 		if (!barbarianHasAttacked) {
@@ -259,7 +513,7 @@ public static class GameManager {
 	}
 
 	// Distribute the appropriate resources to all players
-	private static void distribute() {
+	private void distribute() {
 		Graph.vertexReset (vertex1);
 		int num = firstDie + secondDie;
 
@@ -267,10 +521,10 @@ public static class GameManager {
 		Dictionary<Enums.ResourceType, bool> enoughRes = new Dictionary<Enums.ResourceType, bool> ();
 		Dictionary<Enums.CommodityType, bool> enoughComs = new Dictionary<Enums.CommodityType, bool> ();
 
-		for (int i = 0; i < 5; i++) {
+		for (int i = 0; i < numResources; i++) {
 			enoughRes.Add ((Enums.ResourceType)i, checkResources ((Enums.ResourceType)i, num));
 		}
-		for (int i = 0; i < 3; i++) {
+		for (int i = 0; i < numCommodities; i++) {
 			enoughComs.Add ((Enums.CommodityType)i, checkCommodities ((Enums.CommodityType)i, num));
 		}
 
@@ -278,6 +532,10 @@ public static class GameManager {
 
 			// If a hex isn't the right number, or doesn't produce cards, continue
 			if (h.getHexNumber () != num) {
+				continue;
+			}
+
+			if (Object.ReferenceEquals(h, robberLocation)) {
 				continue;
 			}
 			Enums.HexType hType = h.getHexType();
@@ -311,7 +569,7 @@ public static class GameManager {
 					string owner = current.getOwnerName ();
 					Player p = getPlayer (owner);
 					if (res != Enums.ResourceType.NONE && enoughRes[res]) {
-						//Bank.withdrawResource (res, 1);
+						bank.withdrawResource (res, 1);
 						p.addResource (res, 1);
 					} else if (gold) {
 						p.incrementGoldCount (2);
@@ -324,18 +582,18 @@ public static class GameManager {
 					Player p = getPlayer (owner);
 					if (com != Enums.CommodityType.NONE) {
 						if (enoughRes [res]) {
-							//Bank.withdrawResource (res, 1);
+							bank.withdrawResource (res, 1);
 							p.addResource (res, 1);
 						}
 						if (enoughComs [com]) {
-							//Bank.withdrawCommodity (com, 1);
+							bank.withdrawCommodity (com, 1);
 							p.addCommodity (com, 1);
 						}
 					} else if (res == Enums.ResourceType.BRICK && enoughRes[res]) {
-						//Bank.withdrawResource (res, 2);
+						bank.withdrawResource (res, 2);
 						p.addResource (res, 2);
 					} else if (res == Enums.ResourceType.GRAIN && enoughRes[res]) {
-						//Bank.withdrawResource (res, 2);
+						bank.withdrawResource (res, 2);
 						p.addResource (res, 2);
 					} else if (gold) {
 						p.incrementGoldCount (2);
@@ -348,7 +606,7 @@ public static class GameManager {
 	}
 
 	// get a resource from a hex
-	private static Enums.ResourceType getResourceFromHex(Enums.HexType hType) {
+	public Enums.ResourceType getResourceFromHex(Enums.HexType hType) {
 
 		switch (hType) {
 		case Enums.HexType.FIELD:
@@ -367,7 +625,7 @@ public static class GameManager {
 	}
 
 	// Get a commodity from a hex
-	private static Enums.CommodityType getCommodityFromHex(Enums.HexType hType) {
+	public Enums.CommodityType getCommodityFromHex(Enums.HexType hType) {
 
 		switch (hType) {
 		case Enums.HexType.FOREST:
@@ -382,7 +640,7 @@ public static class GameManager {
 	}
 				
 	// Make sure there are enough resources in the bank for a given dice roll
-	private static bool checkResources(Enums.ResourceType res, int n) {
+	private bool checkResources(Enums.ResourceType res, int n) {
 		Graph.vertexReset (vertex1);
 		int total = 0;
 
@@ -425,7 +683,7 @@ public static class GameManager {
 		}
 
 		// Check the amount against the bank
-		int bankAmount = 100; //Bank.getResourceAmount (res);
+		int bankAmount = bank.getResourceAmount (res);
 		if (bankAmount >= total) {
 			return true;
 		} else {
@@ -434,7 +692,7 @@ public static class GameManager {
 	}
 
 	// Make sure there are enough commodities in the bank for a given dice roll
-	private static bool checkCommodities(Enums.CommodityType com, int n) {
+	private bool checkCommodities(Enums.CommodityType com, int n) {
 		Graph.vertexReset (vertex1);
 		int total = 0;
 
@@ -474,11 +732,12 @@ public static class GameManager {
 		}
 
 		// Check the amount against the bank
-		int bankAmount = 100; //Bank.getCommodityAmount (com);
+		int bankAmount = bank.getCommodityAmount (com);
 		if (bankAmount >= total) {
 			return true;
 		} else {
 			return false;
 		}
 	}
+
 }

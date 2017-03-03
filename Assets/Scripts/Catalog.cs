@@ -32,6 +32,7 @@ public interface Catalog {
 
 	//Hex Class:
 	List<Vertex> getVertices();
+	bool adjacentToVertex (Vertex v);
 	Enums.HexType getHexType();
 	int getHexNumber();
 	void addVertex(Vertex v);
@@ -78,6 +79,7 @@ public interface Catalog {
 	bool wasUpgraded();                             //returns true if the knight was upgraded this turn
 	bool wasActivatedThisTurn();                    //returns true if the knight was activated this turn
 	void notActivatedThisTurn ();                   //sets activatedThisTurn to false
+	void notUpgradedThisTurn();						//sets hasBeenUpgraded to false
 	Knight getFreeKnight (List<GamePiece> pieces);  //gets a knight that isn't on the board from a list of game pieces
 
 	//Road Class:
@@ -190,11 +192,46 @@ public interface Catalog {
 	bool placeInitialCity (Vertex v, List<GamePiece> pieces);
 	bool placeInitialRoad (Edge e, Enums.Color color, List<GamePiece> pieces);
 	bool placeInitialShip (Edge e, Enums.Color color, List<GamePiece> pieces);
+
+	/* The build... methods will check to see if the request is valid,
+	 * and then build the appropriate game piece adjusting all necessary
+	 * game state */
+	bool buidSettlement (Vertex location, int[] resources,
+	                    List<GamePiece> pieces, Enums.Color color);
+	bool buidCity (Vertex location, int[] resources,
+	                    List<GamePiece> pieces, Enums.Color color);
+	bool buildRoad (Edge location, int[] resources,
+	               List<GamePiece> pieces, Enums.Color color);
+	bool buildShip (Edge location, int[] resources,
+	               List<GamePiece> pieces, Enums.Color color);
 	//----------------------------
 
 
 	//----------------------------
 	// Game Manager Class (Static):
+
+	/* The following four classes return the constant number in each of the categories
+	 * Resources = 5 different resources
+	 * Commodities = 3 different commodities
+	 * DevChartType = 3 different Development Chart Types 
+	 * ProgressCardLimit = maximum of 4 progress cards at the end of the turn per player */
+	int getNumberResources ();
+	int getNumberCommodities ();
+	int getNumberDevChartType();
+	int getProgressCardLimit ();
+
+	/* These methods will conduct the way turns should go.
+	 * If the passed value for first is true, it means it is the very first 
+	 * time that the method is being called this game.
+	 * Initial first turn will recursively call itself until all the initial
+	 * first turns have been made. Then it will call initial second turn which 
+	 * will recursively call itself until it calls begin turn for regular turns. 
+	 * Begin turn sets up the turn and the the player will roll the dice. When
+	 * a player hits end turn, the end turn function will be called. */
+	void initialFirstTurn ();
+	void initialSecondTurn(bool first);
+	void beginTurn (bool first);
+	void endTurn();
 
 	List<string> getPlayerNames();    // Get all player names
 	Player getCurrentPlayer ();	      // Get the  current player
@@ -208,6 +245,7 @@ public interface Catalog {
 	string getLongestRouteContoller ();
 	Hex getPirateLocation ();
 	Hex getRobberLocation();
+	int getPointsToWin ();
 
 	bool hasBarbarianAttacked();       // Returns true if barbarian has already attacked this game
 	void barbarianAttackedThisGame();  // Sets barbarianHasAttacked to true
@@ -226,6 +264,10 @@ public interface Catalog {
 
 	void rollDice();					// Rolls the dice and commences all appropriate actions
 	void rollDice(int d1, int d2);      // Same as rollDice(), but sets dice for alchemist card
+
+	// Given a hex type, the following two methods will return the appropriate resource or commodity
+	Enums.ResourceType getResourceFromHex (Enums.HexType hType);
+	Enums.CommodityType getCommodityFromHex (Enums.HexType hType);
 	//----------------------------
 
 
@@ -259,6 +301,10 @@ public interface Catalog {
 	void increaseSafeCardCount(int count);
 	void decreaseSafeCardCount(int count);
 
+	int getCityWallCount();
+	void incrementCityWallCount ();
+	bool decrementCityWallCount ();
+
 	int[] getResourceRatios ();
 	void updateResourceRatio (Enums.ResourceType resourceType, int newRatio);
 	void updateResoureRatios(int [] newRatios);
@@ -277,5 +323,30 @@ public interface Catalog {
 
 	bool hasMovedRoad();
 	void movesRoad();
+	void roadNotMoved ();
 	//----------------------------
+
+
+	//----------------------------
+	// Bank Class:
+
+	int getResourceAmount (Enums.ResourceType res);
+	int getCommodityAmount (Enums.CommodityType com);
+	bool withdrawResource (Enums.ResourceType res, int amount);
+	bool withdrawCommodity (Enums.CommodityType com, int amount);
+	void depositResource(Enums.ResourceType res, int amount);
+	void depositCommodity(Enums.CommodityType com, int amount);
+
+	// Put the given progress card on the bottom of a progress card pile
+	void depositProgressCard (Enums.DevChartType progressType, 
+	                         Enums.ProgressCardName progressCard);
+
+	// Draw and return a progress card from the requested pile
+	Enums.ProgressCardName withdrawProgressCard (Enums.DevChartType progressType);
+
+	// Check if a trade is valid for the bank given certain trade ratios
+	bool isValidBankTrade(int[] resRatios, int[] comRatios, Trades trade);
+
+	// Make a trade with the bank, returns false if invalid, true if it goes through
+	bool tradeWithBank (int[] resRatios, int[] comRatios, Trades trade);
 }

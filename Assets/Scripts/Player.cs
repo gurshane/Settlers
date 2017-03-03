@@ -1,9 +1,10 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using Enums; 
+using Enums;
+using UnityEngine.Networking;
 
-public class Player : MonoBehaviour {
+public class Player : NetworkBehaviour {
 
     private List<GamePiece> pieces;
     private List<ProgressCardName> progressCards;
@@ -20,11 +21,55 @@ public class Player : MonoBehaviour {
     private string password;
 	private Enums.Status status;
     private Enums.Color myColor;
-
-    private int victoryPoints;
-    private int safeCardCount;
-    private bool movedRoad;
     
+    public int victoryPoints;
+
+    private int safeCardCount;
+	private int cityWallsLeft;
+    private bool movedRoad;
+
+    private Dictionary<Vector3, GamePiece> spawnedPieces;
+
+    void Start()
+    {
+        spawnedPieces = new Dictionary<Vector3, GamePiece>();
+
+        //initialize gamePieces list with 
+        pieces = new List<GamePiece>();
+        /*
+         * 4 cities
+5 settlement
+15 roads
+3 city walls (represented by an integer in player)
+15 ships*/
+
+        progressCards = new List<ProgressCardName>();
+        
+        resources = new int[7];
+        commodities = new int[5];
+        goldCount = 0;
+        
+        devFlipChart = new int[4];
+        resourceRatios = new int[7];
+        commodityRatios = new int[5];
+
+        userName = "";
+        password = "";
+
+        status = Enums.Status.ACTIVE;
+
+        safeCardCount = 7;
+        cityWallsLeft = 3;
+
+        movedRoad = false;
+    }
+
+    public void SetColor(Enums.Color color)
+    {
+        myColor = color;
+        Debug.Log(color);
+    }
+
     public List<GamePiece> getNotOnBoardPiece()//iterate through list of player's gamePieces
     {//for each piece that isOnBoard equals false, add it to a new List
         List<GamePiece> notOnBoard = new List<GamePiece>();
@@ -153,6 +198,22 @@ public class Player : MonoBehaviour {
         this.safeCardCount -= count;
     }
 
+	public int getCityWallCount() {
+		return this.cityWallsLeft;
+	}
+
+	public void incrementCityWallCount() {
+		this.cityWallsLeft++;
+	}
+
+	public bool decrementCityWallCount() {
+		if (this.cityWallsLeft <= 0) {
+			return false;
+		}
+		this.cityWallsLeft++;
+		return true;
+	}
+
     public void updateResourceRatio(ResourceType resourceType, int newRatio)
     {
         int resPosition = (int)resourceType;//find index of resource Enum and set an int to this index
@@ -233,13 +294,10 @@ public class Player : MonoBehaviour {
     {
         this.movedRoad = true;
     }
-	// Use this for initialization
-	void Start () {
-		
+
+	public void roadNotMoved()
+	{
+		this.movedRoad = false;
 	}
-	
-	// Update is called once per frame
-	void Update () {
-		
-	}
+    
 }
