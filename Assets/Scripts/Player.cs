@@ -26,6 +26,8 @@ public class Player : NetworkBehaviour {
     private int safeCardCount;
 	private int cityWallsLeft;
     private bool movedRoad;
+
+    private Dictionary<Vector3, GamePiece> spawnedPieces;
     
     public List<GamePiece> getNotOnBoardPiece()//iterate through list of player's gamePieces
     {//for each piece that isOnBoard equals false, add it to a new List
@@ -270,6 +272,8 @@ public class Player : NetworkBehaviour {
         bank = GetComponent<Bank>();
         boardState = GetComponent<BoardState>();
         moveManager = GetComponent<MoveManager>();
+
+        spawnedPieces = new Dictionary<Vector3, GamePiece>();
     }
 
 	// Update is called once per frame
