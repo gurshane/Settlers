@@ -169,11 +169,6 @@ public class MoveManager : NetworkBehaviour {
 		current.discardResource (Enums.ResourceType.LUMBER, 1);
 		bank.depositResource (Enums.ResourceType.LUMBER, 1);
 
-        /*
-         * 
-         * 
-         *network this
-         */
 		// Check if there is a port
 		updatePort (location);
 
@@ -360,17 +355,7 @@ public class MoveManager : NetworkBehaviour {
 			return false;
 		}
 
-		// Put a road on the given edge
-		Road ship = Road.getFreeShip (pieces);
-        /*
-         * 
-         * NETWORK THIS
-         * 
-         * 
-         */
-        location.setOccupyingPiece (ship);
-		ship.putOnBoard ();
-		ship.wasBuiltThisTurn ();
+        CmdBuildShip(location.transform.position);
 
 		Player current = gameManager.getCurrentPlayer ();
 
@@ -386,50 +371,129 @@ public class MoveManager : NetworkBehaviour {
 		return true;
 	}
 
+    [Command]
+    void CmdBuildShip(Vector3 location)
+    {
+        RpcBuildShip(location);
+
+        GameObject spawnedBoat = Instantiate<GameObject>(prefabHolder.boat, location, Quaternion.identity);
+        boardState.spawnedObjects.Add(location, spawnedBoat);
+        NetworkServer.Spawn(spawnedBoat);
+    }
+
+    [ClientRpc]
+    void RpcBuildShip(Vector3 location)
+    {
+        Edge edge = boardState.edgePosition[location];
+
+        // Put a road on the given edge
+        List<GamePiece> pieces = gameManager.getCurrentPlayer().getGamePieces();
+        Road ship = Road.getFreeShip(pieces);
+
+        edge.setOccupyingPiece(ship);
+        ship.putOnBoard();
+        ship.wasBuiltThisTurn();
+    }
+
 	// Move a ship from source to target
 	public bool moveShip(Edge source, Edge target, Enums.Color color) {
+        CmdMoveShip(source.transform.position, target.transform.position);
 		return true;
 	}
+
+    [Command]
+    void CmdMoveShip(Vector3 source, Vector3 target)
+    {
+        RpcMoveShip(source, target);
+    }
+
+    [ClientRpc]
+    void RpcMoveShip(Vector3 source, Vector3 target)
+    {
+
+    }
 
 	// Chase robber from source
 	public bool chaseRobber(Vertex source) {
+        CmdChaseRobber(source.transform.position);
 		return true;
 	}
+
+    [Command]
+    void CmdChaseRobber(Vector3 source)
+    {
+        RpcChaseRobber(source);
+    }
+
+    [ClientRpc]
+    void RpcChaseRobber(Vector3 source)
+    {
+
+    }
 
 	// Move robber to target
 	public bool moveRobber(Hex target) {
+        CmdMoveRobber(target.transform.position);
 		return true;
 	}
 
+    [Command]
+    void CmdMoveRobber(Vector3 target)
+    {
+        RpcMoveRobber(target);
+    }
+
+    [ClientRpc]
+    void RpcMoveRobber(Vector3 target)
+    {
+
+    }
+
 	// Move Pirate to target
 	public bool movePirate(Hex target) {
+        CmdMovePirate(target.transform.position);
 		return true;
 	}
+
+    [Command]
+    void CmdMovePirate(Vector3 target)
+    {
+        RpcMovePirate(target);
+    }
+
+    [ClientRpc]
+    void RpcMovePirate(Vector3 target)
+    {
+
+    }
 
 	// Place Merchant at target
 	public bool placeMerchant(Hex target) {
 
-
+        CmdPlaceMerchant(target.transform.position);
 
 		return true;
 	}
+
+    [Command]
+    void CmdPlaceMerchant(Vector3 target)
+    {
+        RpcPlaceMerchant(target);
+    }
+
+    [ClientRpc]
+    void RpcPlaceMerchant(Vector3 target)
+    {
+
+    }
 
 	// Place an initial settlement
 	public bool placeInitialSettlement (Vertex v, List<GamePiece> pieces, List<Hex> validHexes) {
 		if (!MoveAuthorizer.canPlaceInitialTownPiece (v, validHexes)) {
 			return false;
 		}
-	
-		// Place a settlement
-		Settlement settlement = Settlement.getFreeSettlement (pieces);
-        /*
-         * 
-         * NETWORK THIS
-         * 
-         * 
-         */
-        v.setOccupyingPiece (settlement);
-		settlement.putOnBoard ();
+
+        CmdBuildSettlement(v.transform.position);
 
 		// Get the resources around the settlement
 		Player current = gameManager.getCurrentPlayer ();
@@ -445,33 +509,19 @@ public class MoveManager : NetworkBehaviour {
 
 		// Update the victory points and add a port
 		current.incrementVictoryPoints (1);
-        /*
-         * 
-         * NETWORK THIS
-         * 
-         * 
-         */
+        
         updatePort(v);
 
 		return true;
 	}
 
-	// Place an initial city
-	public bool placeInitialCity (Vertex v, List<GamePiece> pieces, List<Hex> validHexes) {
+    // Place an initial city
+    public bool placeInitialCity (Vertex v, List<GamePiece> pieces, List<Hex> validHexes) {
 		if (!MoveAuthorizer.canPlaceInitialTownPiece (v, validHexes)) {
 			return false;
 		}
 
-		// Place a city
-		City city = City.getFreeCity (pieces);
-        /*
-         * 
-         * NETWORK THIS
-         * 
-         * 
-         */
-        v.setOccupyingPiece (city);
-		city.putOnBoard ();
+        CmdBuildCity(v.transform.position);
 
 		// Get the resources around the city
 		Player current = gameManager.getCurrentPlayer ();
@@ -487,12 +537,7 @@ public class MoveManager : NetworkBehaviour {
 
 		// Update the victory points and add a port 
 		current.incrementVictoryPoints (2);
-        /*
-         * 
-         * NETWORK THIS
-         * 
-         * 
-         */
+        
         updatePort(v);
 
 		return true;
@@ -504,16 +549,7 @@ public class MoveManager : NetworkBehaviour {
 			return false;
 		}
 
-		// Put a road on the given edge
-		Road road = Road.getFreeRoad (pieces);
-        /*
-         * 
-         * NETWORK THIS
-         * 
-         * 
-         */
-        e.setOccupyingPiece (road);
-		road.putOnBoard ();
+        CmdBuildRoad(e.transform.position);
 
 		return true;
 	}
@@ -523,17 +559,8 @@ public class MoveManager : NetworkBehaviour {
 		if (!MoveAuthorizer.canPlaceInitialShip (e, color)) {
 			return false;
 		}
-			
-		// Put a ship on the given edge
-		Road ship = Road.getFreeShip (pieces);
-        /*
-         * 
-         * NETWORK THIS
-         * 
-         * 
-         */
-        e.setOccupyingPiece (ship);
-		ship.putOnBoard ();
+
+        CmdBuildShip(e.transform.position);
 
 		return true;
 	}
