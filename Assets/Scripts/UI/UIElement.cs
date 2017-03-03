@@ -25,6 +25,22 @@ public abstract class UIElement : MonoBehaviour, IDescribable<string>, IPointerE
 	/// <param name="p_Player">P player.</param>
 	public abstract void uiUpdate (Player p_Player);
 
+
+	/// <summary>
+	/// Checks whether number of contents of parameter are greater than 0
+	/// </summary>
+	/// <returns><c>true</c>, if check was nulled, <c>false</c> otherwise.</returns>
+	/// <param name="p_Array">P array.</param>
+	protected virtual bool isArrayEmpty(int[] p_Array)
+	{
+		return (p_Array.Length <= 0);
+	}
+
+	protected virtual bool isStringNull(string p_String)
+	{
+		return (p_String == null);
+	}
+
 	/// <summary>
 	/// Shows the description of the UI element being hovered
 	/// </summary>

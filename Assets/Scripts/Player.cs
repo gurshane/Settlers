@@ -6,6 +6,8 @@ using UnityEngine.Networking;
 
 public class Player : NetworkBehaviour {
 
+    public GameObject myHud;
+
     private List<GamePiece> pieces;
     private List<ProgressCardName> progressCards;
 
@@ -52,16 +54,23 @@ public class Player : NetworkBehaviour {
         devFlipChart = new int[4];
         resourceRatios = new int[7];
         commodityRatios = new int[5];
-
-        userName = "";
+        
+        
         password = "";
-
+        
         status = Enums.Status.ACTIVE;
 
         safeCardCount = 7;
         cityWallsLeft = 3;
 
         movedRoad = false;
+
+        if(isLocalPlayer)
+        {
+            gameObject.name = Network.player.ipAddress;
+            userName = gameObject.name;
+            Instantiate(myHud);
+        }
     }
 
     public void SetColor(Enums.Color color)
