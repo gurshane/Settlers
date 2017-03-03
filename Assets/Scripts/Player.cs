@@ -22,13 +22,14 @@ public class Player : NetworkBehaviour {
     private string userName;
     private string password;
 	private Enums.Status status;
-    private Enums.Color myColor;
+    public Enums.Color myColor;
     
     public int victoryPoints;
 
     private int safeCardCount;
 	private int cityWallsLeft;
     private bool movedRoad;
+    private bool myTurn;
 
     private Dictionary<Vector3, GamePiece> spawnedPieces;
 
@@ -70,6 +71,16 @@ public class Player : NetworkBehaviour {
             gameObject.name = Network.player.ipAddress;
             userName = gameObject.name;
             Instantiate(myHud);
+            myTurn = false;
+        }
+    }
+
+    public void Update()
+    {
+        if(isLocalPlayer)
+        {
+            //myTurn = GetComponent<GameManager>().getCurrentPlayer().Equals(gameObject.name);
+            
         }
     }
 
