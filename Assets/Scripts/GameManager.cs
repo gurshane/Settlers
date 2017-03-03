@@ -17,6 +17,9 @@ public class GameManager : NetworkBehaviour {
     [SyncVar]
 	public int pointsToWin;
 
+    [SyncVar]
+    public Enums.Color colorToPick;
+
 	private Edge edge1;
 	private Vertex vertex1;
 	private List<Hex> hexes;
@@ -58,17 +61,60 @@ public class GameManager : NetworkBehaviour {
     BoardState boardState;
     MoveManager moveManager;
 
+    [SyncVar]
+    public bool giveWhite;
+
+    [SyncVar]
+    public bool giveOrange;
+
+    [SyncVar]
+    public bool giveBlue;
+
+    [SyncVar]
+    public bool giveRed;
+
+    private bool doOnce;
+    
+
     void Start()
     {
+
         tradeManager = GetComponent<TradeManager>();
         bank = GetComponent<Bank>();
         boardState = GetComponent<BoardState>();
         moveManager = GetComponent<MoveManager>();
+
+        giveWhite = true;
+        giveOrange = true;
+        giveBlue = true;
+        giveRed = true;
     }
-
-    void Update()
+    
+    void OnPlayerConnected(NetworkPlayer np)
     {
+        Debug.Log(np.externalIP);
 
+        /*
+         * if (giveWhite)
+            {
+                giveWhite = false;
+                GetComponent<Player>().SetColor(Enums.Color.WHITE);
+            }
+            else if (giveOrange)
+            {
+                giveOrange = false;
+                GetComponent<Player>().SetColor(Enums.Color.ORANGE);
+            }
+            else if (giveBlue)
+            {
+                giveBlue = false;
+                GetComponent<Player>().SetColor(Enums.Color.BLUE);
+            }
+            else if (giveRed)
+            {
+                giveRed = false;
+                GetComponent<Player>().SetColor(Enums.Color.RED);
+            } */
     }
 
     public int getNumberResources() {

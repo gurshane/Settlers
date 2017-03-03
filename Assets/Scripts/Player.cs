@@ -21,8 +21,7 @@ public class Player : NetworkBehaviour {
     private string password;
 	private Enums.Status status;
     private Enums.Color myColor;
-
-    [SyncVar]
+    
     public int victoryPoints;
 
     private int safeCardCount;
@@ -34,12 +33,41 @@ public class Player : NetworkBehaviour {
     void Start()
     {
         spawnedPieces = new Dictionary<Vector3, GamePiece>();
+
+        //initialize gamePieces list with 
+        pieces = new List<GamePiece>();
+        /*
+         * 4 cities
+5 settlement
+15 roads
+3 city walls (represented by an integer in player)
+15 ships*/
+
+        progressCards = new List<ProgressCardName>();
+        
+        resources = new int[7];
+        commodities = new int[5];
+        goldCount = 0;
+        
+        devFlipChart = new int[4];
+        resourceRatios = new int[7];
+        commodityRatios = new int[5];
+
+        userName = "";
+        password = "";
+
+        status = Enums.Status.ACTIVE;
+
+        safeCardCount = 7;
+        cityWallsLeft = 3;
+
+        movedRoad = false;
     }
 
-    // Update is called once per frame
-    void Update()
+    public void SetColor(Enums.Color color)
     {
-
+        myColor = color;
+        Debug.Log(color);
     }
 
     public List<GamePiece> getNotOnBoardPiece()//iterate through list of player's gamePieces
