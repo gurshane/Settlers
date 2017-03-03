@@ -9,7 +9,7 @@ public class GameManager : NetworkBehaviour {
 	// Overall Game State
 	private static List<Player> players;
 	private static List<Enums.TurnOrder> playOrder;
-	private static Player currentPlayer;
+	private Player currentPlayer;
 	private static Enums.GamePhase gamePhase;
 	private static int pointsToWin;
 
@@ -225,7 +225,7 @@ public class GameManager : NetworkBehaviour {
 		return ret;
 	}
 
-	public static Player getCurrentPlayer() {
+	public Player getCurrentPlayer() {
 		return currentPlayer;
 	}
 

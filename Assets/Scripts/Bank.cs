@@ -68,7 +68,7 @@ public class Bank : NetworkBehaviour {
         commodities[(int)com] -= amount;
     }
 
-    void depositResource(Enums.ResourceType res, int amount) {
+    public void depositResource(Enums.ResourceType res, int amount) {
         CmdIncreaseResources(res, amount);
 	}
 
