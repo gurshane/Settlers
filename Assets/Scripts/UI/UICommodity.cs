@@ -8,11 +8,15 @@ public class UICommodity : UIElement  {
 
 	#region Private Attributes
 	/// <summary>
-	/// The resource type of this instance
+	/// The Commodity type of this instance
 	/// </summary>
 	[SerializeField]
 	private CommodityType _Commodity;
+	/// <summary>
 
+	/// The text component attached to this instance
+	/// </summary>
+	[SerializeField]
 	private Text _CommodityCount;
 
 	#endregion
@@ -21,6 +25,7 @@ public class UICommodity : UIElement  {
 	void Start () {
 
 		setCommodityType ();
+		_CommodityCount = transform.GetChild (0).GetComponent<Text> ();
 	}
 
 
@@ -35,8 +40,11 @@ public class UICommodity : UIElement  {
 		int[] commodityList = p_Player.getCommodities();
 		int commodityIndex = (int)_Commodity;
 
+		// Check whether the player commodity list has been initialised or not
+		if ( isArrayEmpty (commodityList) ) return;
+
 		// Update UI Text to display the new value
-		_CommodityCount.text = "x " + commodityList [commodityIndex];
+		_CommodityCount.text = "x" + commodityList [commodityIndex];
 
 	}
 

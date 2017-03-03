@@ -5,7 +5,7 @@ using UnityEngine.UI;
 using Enums;
 
 /// <summary>
-/// User interface resource.
+/// User interface resource element.
 /// </summary>
 public class UIResource : UIElement {
 
@@ -16,7 +16,11 @@ public class UIResource : UIElement {
 	/// </summary>
 	[SerializeField]
 	private ResourceType _Resource;
+	/// <summary>
 
+	/// The text component attached to this instance
+	/// </summary>
+	[SerializeField]
 	private Text _ResourceCount;
 
 	#endregion
@@ -25,6 +29,7 @@ public class UIResource : UIElement {
 	void Start () {
 
 		setResourceType ();
+		_ResourceCount = transform.GetChild (0).GetComponent<Text>();
 	}
 		
 
@@ -34,13 +39,17 @@ public class UIResource : UIElement {
 	/// <param name="p_Player">P player.</param>
 	public override void uiUpdate(Player p_Player)
 	{
+
 		// Get Player's resource list, find the index in the list
 		// which corresponds to this instance's ResourceType
 		int[] resourceList = p_Player.getResources ();
 		int resourceIndex = (int)_Resource;
 
+		// Check whether the player resource list has been initialised or not
+		if ( isArrayEmpty (resourceList) ) return;
+
 		// Update UI Text to display the new value
-		_ResourceCount.text = "x " + resourceList [resourceIndex];
+		_ResourceCount.text = "x" + resourceList [resourceIndex];
 
 	}
 
