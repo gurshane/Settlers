@@ -15,6 +15,9 @@ public class Bank : NetworkBehaviour {
 
     void Start()
     {
+        resources = new int[7];
+        commodities = new int[5];
+
         tradeCards = new List<Enums.ProgressCardName>();
         politicsCards = new List<Enums.ProgressCardName>();
         scienceCards = new List<Enums.ProgressCardName>();
