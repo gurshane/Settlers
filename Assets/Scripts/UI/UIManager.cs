@@ -164,7 +164,7 @@ public class UIManager : MonoBehaviour {
 			RaycastHit impact;
 			if (Physics.Raycast(ray, out impact))
 			{
-				_GameManager.GetComponent<GlobalNetworkManager>().CmdHighlightThis( impact.collider.gameObject);
+				//_GameManager.GetComponent<GlobalNetworkManager>().CmdHighlightThis( impact.collider.gameObject);
 			}
 		}
 	}
