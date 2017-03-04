@@ -28,21 +28,31 @@ public class BoardState : NetworkBehaviour
     // Update is called once per frame
     void LateUpdate ()
     {
-        if (doOnce)
+        if(vertexPosition.Count < 112)
         {
-            doOnce = false;
+            vertexPosition.Clear();
             foreach (GameObject vertex in GameObject.FindGameObjectsWithTag("Vertex"))
             {
                 vertexPosition.Add(vertex.transform.position, vertex.GetComponent<Vertex>());
             }
+        }
+        if(edgePosition.Count < 155)
+        {
+            edgePosition.Clear();
             foreach (GameObject edge in GameObject.FindGameObjectsWithTag("Edge"))
             {
                 edgePosition.Add(edge.transform.position, edge.GetComponent<Edge>());
             }
+        }
+        if(hexPoisition.Count < 27)
+        {
+            hexPoisition.Clear();
             foreach (GameObject hex in GameObject.FindGameObjectsWithTag("MainHex"))
             {
                 hexPoisition.Add(hex.transform.position, hex.GetComponent<Hex>());
             }
         }
+            
+            
 	}
 }
