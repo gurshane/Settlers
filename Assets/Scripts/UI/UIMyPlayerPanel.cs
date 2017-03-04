@@ -35,10 +35,5 @@ public class UIMyPlayerPanel : UIElement {
 		_PlayerName.text = "\"" + p_Player.getUserName() + "\"";
 
 	}
-
-	
-	// Update is called once per frame
-	void Update () {
 		
-	}
 }
