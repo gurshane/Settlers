@@ -281,7 +281,7 @@ public class UIManager : NetworkBehaviour {
 		setToResource (p_ToResource);
 
 		// Make the Maritime Trade using the FromResource and ToResource Attributes
-		_CurrentPlayer.GetComponent<HighLighter> ().makeMaritimeTrade ();
+		_CurrentPlayer.GetComponent<HighLighter> ().makeMaritimeTrade (_FromResource, _ToResource);
 
 		// Revert the trade attributes to NONE so no residual trades carry over to subsequent ones
 		//_ToResource = Enums.ResourceType.NONE;
