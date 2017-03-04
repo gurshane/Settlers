@@ -26,6 +26,19 @@ public class UIManager : NetworkBehaviour {
 
 	#endregion
 
+	#region Trade Attributes
+	/// <summary>
+	/// Resource that Player proposes in a trade
+	/// </summary>
+	[SerializeField]
+	private Enums.ResourceType _FromResource;
+
+	/// <summary>
+	/// Resource that Player hopes to receive from a trade
+	/// </summary>
+	[SerializeField]
+	private Enums.ResourceType _ToResource;
+	#endregion
 
 	#region UI Panels
 
@@ -106,10 +119,9 @@ public class UIManager : NetworkBehaviour {
 			// Get the GameManager Component off of the CurrentPlayer object
 			_GameManager = _CurrentPlayer.GetComponent<GameManager>();
 
-
-
-            //_GameManager = GameObject.FindGameObjectWithTag("GameManager");
-            //setPlayerInfoPanels();
+			// Set the Trade Attributes to NONE
+			_FromResource = Enums.ResourceType.NONE;
+			_ToResource = Enums.ResourceType.NONE;
 
         }
     }
@@ -228,7 +240,7 @@ public class UIManager : NetworkBehaviour {
 
 	#endregion
 
-	#region OnClick methods (Board and Smart Menu)
+	#region OnClick method
 	/// <summary>
 	/// Handles response for when a Vertex or Edge on the board is clicked
 	/// </summary>
@@ -256,20 +268,29 @@ public class UIManager : NetworkBehaviour {
 			break;
 		}
 	}
-
-
-	/// <summary>
-	/// Initiates Trade when called. 
-	/// 
-	/// TODO: Rename later
-	/// </summary>
-	public void tradeButtonClicked()
-	{
-		_CurrentPlayer.GetComponent<HighLighter> ().makeMaritimeTrade ();
-	}
+		
 
 	#endregion
 		
+
+	#region Trade Methods
+
+	public void maritimeTrade(string p_ToResource)
+	{
+		// Set ToResource from parameter info
+		setToResource (p_ToResource);
+
+		// Make the Maritime Trade using the FromResource and ToResource Attributes
+		_CurrentPlayer.GetComponent<HighLighter> ().makeMaritimeTrade ();
+
+		// Revert the trade attributes to NONE so no residual trades carry over to subsequent ones
+		//_ToResource = Enums.ResourceType.NONE;
+		//_FromResource = Enums.ResourceType.NONE;
+	}
+		
+
+	#endregion
+
 
 	// DEBUGGING
 	/// <summary>
@@ -311,6 +332,62 @@ public class UIManager : NetworkBehaviour {
 	}
 
 	/// <summary>
+	/// Sets the FromResource attribute of this instance of UI manager that the Player wants to give in a trade
+	/// </summary>
+	public void setFromResource(string p_ResourceType)
+	{
+		
+		switch (p_ResourceType) 
+		{
+		case "Brick":
+			_FromResource = Enums.ResourceType.BRICK;
+			break;
+		case "Wool":
+			_FromResource = Enums.ResourceType.WOOL;
+			break;
+		case "Grain":
+			_FromResource = Enums.ResourceType.GRAIN;
+			break;
+		case "Lumber":
+			_FromResource = Enums.ResourceType.LUMBER;
+			break;
+		case "Ore":
+			_FromResource = Enums.ResourceType.ORE;
+			break;
+		}
+
+	}
+
+	/// <summary>
+	/// Sets the ToResource attribute of this instance of UI manager that the Player wants to get from a trade
+	/// This is Private, because it is only called when the actual trade with bank is called as well
+	/// </summary>
+	/// <param name="p_ResourceType">P resource type.</param>
+	private void setToResource(string p_ResourceType)
+	{
+		switch (p_ResourceType) 
+		{
+		case "Brick":
+			_ToResource = Enums.ResourceType.BRICK;
+			break;
+		case "Wool":
+			_ToResource = Enums.ResourceType.WOOL;
+			break;
+		case "Grain":
+			_ToResource = Enums.ResourceType.GRAIN;
+			break;
+		case "Lumber":
+			_ToResource = Enums.ResourceType.LUMBER;
+			break;
+		case "Ore":
+			_ToResource = Enums.ResourceType.ORE;
+			break;
+		}
+
+	}
+
+
+	/// <summary>
 	/// Sets the context panel contents for selecting options of either a vertex or edge
 	/// </summary>
 	private void setContextPanelChildren()
@@ -318,6 +395,7 @@ public class UIManager : NetworkBehaviour {
 		_VertexButtonsPanel = _ContextContentPanel.GetChild (0);
 		_EdgeButtonsPanel = _ContextContentPanel.GetChild (1);
 	}
+
 
 	#endregion
 
