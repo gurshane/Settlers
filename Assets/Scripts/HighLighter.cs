@@ -11,13 +11,27 @@ public class HighLighter : NetworkBehaviour {
     public bool placedFirstSettlement;
     public bool placedFirstEdge;
     private List<Edge> validEdges;
-    
+
+    private bool doOnce;
+    public bool secondTurn;
+    public Enums.Color myColor;
+    public List<Enums.Color> myColors;
+
+    public PrefabHolder prefabHolder;
+    public BoardState boardState;
+
     void Start()
     {
         gameManager = GameObject.FindGameObjectWithTag("GameManager");
         firstTurn = true;
         placedFirstSettlement = false;
         placedFirstEdge = false;
+        doOnce = true;
+        secondTurn = false;
+        prefabHolder = GetComponent<PrefabHolder>();
+        myColors = new List<Enums.Color>();
+        boardState = GetComponent<BoardState>();
+        StartCoroutine(pickColor());
     }
 
     // Update is called once per frame
@@ -45,6 +59,14 @@ public class HighLighter : NetworkBehaviour {
                         }
                         //Have to place a settlement first
                         Vertex v = pieceHit.GetComponent<Vertex>();
+                        if(v.getOccupyingPiece() != null)
+                        {
+                            return;
+                        }
+                        if(!v.isOnMainland)
+                        {
+                            return;
+                        }
                         //If not on land, gtfo
                         if((int)v.terrainType != (int)Enums.TerrainType.LAND)
                         {
@@ -53,10 +75,10 @@ public class HighLighter : NetworkBehaviour {
                         placedFirstSettlement = true;
                         //Keep track of valid positions to spawn the next edge
                         validEdges = pieceHit.GetComponent<Vertex>().neighbouringEdges;
-                        GameObject newSettlement = Instantiate<GameObject>(GetComponent<PrefabHolder>().settlement, pieceHit.transform.position, Quaternion.identity);
+                        //GameObject newSettlement = Instantiate<GameObject>(GetComponent<PrefabHolder>().settlement, pieceHit.transform.position, Quaternion.identity);
                         
 
-                        CmdSpawnSettlement(pieceHit.transform.position);
+                        CmdSpawnSettlement(pieceHit.transform.position, pieceHit.transform.rotation, (int) myColor);
 
                     }
                     else if (!placedFirstEdge) //always have to do settlement then edge
@@ -67,6 +89,10 @@ public class HighLighter : NetworkBehaviour {
                             return;
                         }
                         Edge e = pieceHit.GetComponent<Edge>();
+                        if(e.getOccupyingPiece() != null)
+                        {
+                            return;
+                        }
                         bool validE = false;
                         //Has to place edge adjacent to 
                         foreach(Edge currentEdge in validEdges)
@@ -85,16 +111,17 @@ public class HighLighter : NetworkBehaviour {
                         placedFirstEdge = true;
                         if((int)e.terrainType == (int)Enums.TerrainType.LAND)
                         {
-                            GameObject newRoad = Instantiate<GameObject>(GetComponent<PrefabHolder>().road, pieceHit.transform.position, pieceHit.transform.rotation);
+                            //GameObject newRoad = Instantiate<GameObject>(GetComponent<PrefabHolder>().road, pieceHit.transform.position, pieceHit.transform.rotation);
 
-                            CmdSpawnRoad(pieceHit.transform.position, pieceHit.transform.rotation, false);
+                            CmdSpawnRoad(pieceHit.transform.position, pieceHit.transform.rotation.eulerAngles.y, false, (int) myColor);
+                            Debug.Log(pieceHit.transform.rotation.eulerAngles.y);
 
                         }
                         else
                         {
-                            GameObject newRoad = Instantiate<GameObject>(GetComponent<PrefabHolder>().boat, pieceHit.transform.position, pieceHit.transform.rotation);
+                            //GameObject newRoad = Instantiate<GameObject>(GetComponent<PrefabHolder>().boat, pieceHit.transform.position, pieceHit.transform.rotation);
 
-                            CmdSpawnRoad(pieceHit.transform.position, pieceHit.transform.rotation, true);
+                            CmdSpawnRoad(pieceHit.transform.position, pieceHit.transform.rotation.eulerAngles.y, true, (int) myColor);
                         }
                     }
 
@@ -106,45 +133,119 @@ public class HighLighter : NetworkBehaviour {
 
 
                 }
+
+                if(secondTurn)
+                {
+                    //let people build cities or more settlements
+                    //let people roll the die
+                }
             }
         }
     }
 
     [Command]
-    void CmdSpawnSettlement(Vector3 v)
+    void CmdSpawnSettlement(Vector3 v, Quaternion q, int mymat)
     {
-        RpcSpawnSettlement(v);
+        RpcSpawnSettlement(v, q, mymat);
     }
 
     [ClientRpc]
-    void RpcSpawnSettlement(Vector3 v)
+    void RpcSpawnSettlement(Vector3 v, Quaternion q, int mymat)
     {
-        Instantiate<GameObject>(GetComponent<PrefabHolder>().settlement, v, Quaternion.identity);
+        GameObject go = Instantiate<GameObject>(GetComponent<PrefabHolder>().settlement, v, q);
+        go.transform.Rotate(new Vector3(-90.0f, 0f, 0f));
+        go.transform.Translate(0f, 0f, 10f);
+        go.GetComponent<MeshRenderer>().material = prefabHolder.materials[mymat];
+
+        Vertex source = boardState.vertexPosition[v];
+        // Put a settlement on the board
+        Settlement settlement = new Settlement(myColor);
+        source.setOccupyingPiece(settlement);
+        settlement.putOnBoard();
+        boardState.vertexPosition.Remove(v);
+        boardState.vertexPosition.Add(v, source);
     }
 
     [Command]
-    void CmdSpawnRoad(Vector3 v, Quaternion q, bool isBoat)
+    void CmdSpawnRoad(Vector3 v, float q, bool isBoat, int mymat)
     {
-        RpcSpawnRoad(v, q, isBoat);
+        RpcSpawnRoad(v, q, isBoat, mymat);
     }
 
     [ClientRpc]
-    void RpcSpawnRoad(Vector3 v, Quaternion q, bool isBoat)
+    void RpcSpawnRoad(Vector3 v, float q, bool isBoat, int mymat)
     {
+        GameObject go;
         if(isBoat)
         {
-            Instantiate<GameObject>(GetComponent<PrefabHolder>().boat, v, q);
+            go = Instantiate<GameObject>(GetComponent<PrefabHolder>().boat, v, Quaternion.identity);
         }
         else
         {
-            Instantiate<GameObject>(GetComponent<PrefabHolder>().road, v, q);
+            go = Instantiate<GameObject>(GetComponent<PrefabHolder>().road, v, Quaternion.identity);
         }
+
+        go.transform.Rotate(new Vector3(-90f, 0f, 0f));
+        go.transform.Translate(0f, 0f, 5f);
+        go.GetComponent<MeshRenderer>().material = prefabHolder.materials[mymat];
+
+        Edge source = boardState.edgePosition[v];
+        // Put a road on the board
+        Road road = new Road(myColor, isBoat);
+        source.setOccupyingPiece(road);
+        road.putOnBoard();
+
+        boardState.edgePosition.Remove(v);
+        boardState.edgePosition.Add(v, source);
     }
 
     public void makeMaritimeTrade()
     {
 
     }
+
+    IEnumerator pickColor()
+    {
+        yield return new WaitForSeconds(Random.Range(3.0f, 5.0f)+Random.Range(0.1f, 0.3f));
+        if (!myColors.Contains(Enums.Color.WHITE))
+        {
+            Debug.Log("I'm white");
+            myColor = Enums.Color.WHITE;
+            CmdUpdateColorList((int)Enums.Color.WHITE);
+        }
+        else if (!myColors.Contains(Enums.Color.ORANGE))
+        {
+            Debug.Log("I'm orange");
+            myColor = Enums.Color.ORANGE;
+            CmdUpdateColorList((int)Enums.Color.ORANGE);
+        }
+        else if (!myColors.Contains(Enums.Color.RED))
+        {
+            Debug.Log("I'm red");
+            myColor = Enums.Color.RED;
+            CmdUpdateColorList((int)Enums.Color.RED);
+        }
+        else if (!myColors.Contains(Enums.Color.BLUE))
+        {
+            Debug.Log("I'm blue");
+            myColor = Enums.Color.BLUE;
+            CmdUpdateColorList((int)Enums.Color.BLUE);
+        }
+    }
+
+
+    [Command]
+    void CmdUpdateColorList(int color)
+    {
+        RpcUpdateColorList(color);
+    }
+
+    [ClientRpc]
+    void RpcUpdateColorList(int color)
+    {
+        myColors.Add((Enums.Color)color);
+    }
+
 
     //[ClientRpc]
     //public void RpcHighlightThis(GameObject target)

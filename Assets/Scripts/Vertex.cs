@@ -6,6 +6,7 @@ using Enums;
 public class Vertex : BoardPiece {
 
 	public List<Edge> neighbouringEdges;
+    public bool isOnMainland;
 	private bool hasWall;
 	private int chits;
 	private bool adjacentToRobber;
