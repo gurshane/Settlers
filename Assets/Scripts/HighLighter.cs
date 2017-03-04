@@ -20,8 +20,10 @@ public class HighLighter : NetworkBehaviour {
     private PrefabHolder prefabHolder;
     private BoardState boardState;
 
-    int numPlayers;
-    int numPlayersReady;
+    public int numPlayers;
+    public int numPlayersReady;
+
+    public Enums.TurnOrder currentTurn;
 
     void Start()
     {
@@ -34,17 +36,20 @@ public class HighLighter : NetworkBehaviour {
         prefabHolder = GetComponent<PrefabHolder>();
         myColors = new List<Enums.Color>();
         boardState = GetComponent<BoardState>();
+        currentTurn = Enums.TurnOrder.FIRST;
         StartCoroutine(pickColor());
         numPlayers = 2;
         numPlayersReady = 0;
+       
     }
-
+    
     // Update is called once per frame
     void Update() {
         if(!isLocalPlayer)
         {
             return;
         }
+
         if (Input.GetButtonDown("Fire1"))
         {
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
@@ -54,6 +59,12 @@ public class HighLighter : NetworkBehaviour {
                 //CmdHighlightThis( impact.collider.gameObject);
                 if (firstTurn)
                 {
+                    if ((int)currentTurn != (int)myColor)
+                    {
+                        Debug.Log((int)currentTurn + " " + (int)myColor);
+                        Debug.Log("not my turn");
+                        return;
+                    }
                     GameObject pieceHit = impact.collider.gameObject;
                     if (!placedFirstSettlement)
                     {
@@ -119,7 +130,6 @@ public class HighLighter : NetworkBehaviour {
                             //GameObject newRoad = Instantiate<GameObject>(GetComponent<PrefabHolder>().road, pieceHit.transform.position, pieceHit.transform.rotation);
 
                             CmdSpawnRoad(pieceHit.transform.position, pieceHit.transform.rotation.eulerAngles.y, false, (int) myColor);
-                            Debug.Log(pieceHit.transform.rotation.eulerAngles.y);
 
                         }
                         else
@@ -134,36 +144,39 @@ public class HighLighter : NetworkBehaviour {
                     if(placedFirstEdge && placedFirstSettlement)
                     {
                         firstTurn = false;
-                        CmdPlayerDoneFirstTurn();
+                        Debug.Log("done");
+                        CmdPlayerDoneFirstTurn(((int)currentTurn) + 1);
                     }
 
 
                 }
-
-                if (numPlayersReady == numPlayers)
-                {
-                    secondTurn = true;
-                }
-
-                if(secondTurn)
+                else if (secondTurn)
                 {
                     //let people build cities or more settlements
                     //let people roll the die
                 }
+
+                if ((numPlayersReady == numPlayers) && !secondTurn)
+                {
+                    secondTurn = true;
+                }
+
+                
             }
         }
     }
 
     [Command]
-    void CmdPlayerDoneFirstTurn()
+    void CmdPlayerDoneFirstTurn(int turn)
     {
-        RpcPlayerDoneFirstTurn();
+        RpcPlayerDoneFirstTurn(turn);
     }
 
     [ClientRpc]
-    void RpcPlayerDoneFirstTurn()
+    void RpcPlayerDoneFirstTurn(int turn)
     {
-        numPlayersReady++;
+        currentTurn = (Enums.TurnOrder)turn;
+
     }
 
     [Command]
@@ -269,6 +282,30 @@ public class HighLighter : NetworkBehaviour {
         myColors.Add((Enums.Color)color);
     }
 
+    public void tradeMaritimeWool()
+    {
+
+    }
+
+    public void tradeMaritimeLumber()
+    {
+
+    }
+
+    public void tradeMaritimeOre()
+    {
+       
+    }
+
+    public void tradeMaritimeBrick()
+    {
+
+    }
+
+    public void tradeMaritimeGrain()
+    {
+
+    }
 
     //[ClientRpc]
     //public void RpcHighlightThis(GameObject target)

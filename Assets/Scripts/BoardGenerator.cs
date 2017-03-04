@@ -42,7 +42,7 @@ public class BoardGenerator : NetworkBehaviour {
     // Use this for initialization
     void LateUpdate ()
     {
-        if(doOnce)
+        if(doOnce && isServer)
         {
             doOnce = false;
 
