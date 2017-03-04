@@ -17,8 +17,11 @@ public class HighLighter : NetworkBehaviour {
     public Enums.Color myColor;
     public List<Enums.Color> myColors;
 
-    public PrefabHolder prefabHolder;
-    public BoardState boardState;
+    private PrefabHolder prefabHolder;
+    private BoardState boardState;
+
+    int numPlayers;
+    int numPlayersReady;
 
     void Start()
     {
@@ -32,6 +35,8 @@ public class HighLighter : NetworkBehaviour {
         myColors = new List<Enums.Color>();
         boardState = GetComponent<BoardState>();
         StartCoroutine(pickColor());
+        numPlayers = 2;
+        numPlayersReady = 0;
     }
 
     // Update is called once per frame
@@ -129,9 +134,15 @@ public class HighLighter : NetworkBehaviour {
                     if(placedFirstEdge && placedFirstSettlement)
                     {
                         firstTurn = false;
+                        CmdPlayerDoneFirstTurn();
                     }
 
 
+                }
+
+                if (numPlayersReady == numPlayers)
+                {
+                    secondTurn = true;
                 }
 
                 if(secondTurn)
@@ -141,6 +152,18 @@ public class HighLighter : NetworkBehaviour {
                 }
             }
         }
+    }
+
+    [Command]
+    void CmdPlayerDoneFirstTurn()
+    {
+        RpcPlayerDoneFirstTurn();
+    }
+
+    [ClientRpc]
+    void RpcPlayerDoneFirstTurn()
+    {
+        numPlayersReady++;
     }
 
     [Command]
