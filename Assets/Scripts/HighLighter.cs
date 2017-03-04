@@ -12,6 +12,7 @@ public class HighLighter : NetworkBehaviour {
     public bool placedFirstSettlement;
     public bool placedFirstEdge;
     private List<Edge> validEdges;
+    private List<Vertex> validVertexes;
 
     private bool doOnce;
     public bool secondTurn;
@@ -35,6 +36,8 @@ public class HighLighter : NetworkBehaviour {
         placedFirstEdge = false;
         doOnce = true;
         secondTurn = false;
+        validEdges = new List<Edge>();
+        validVertexes = new List<Vertex>();
         prefabHolder = GetComponent<PrefabHolder>();
         myColors = new List<Enums.Color>();
         boardState = GetComponent<BoardState>();
@@ -128,6 +131,8 @@ public class HighLighter : NetworkBehaviour {
                             return;
                         }
                         placedFirstEdge = true;
+                        validVertexes.Add(e.getLeftVertex());
+                        validVertexes.Add(e.getRightVertex());
                         if((int)e.terrainType == (int)Enums.TerrainType.LAND)
                         {
                             //GameObject newRoad = Instantiate<GameObject>(GetComponent<PrefabHolder>().road, pieceHit.transform.position, pieceHit.transform.rotation);
@@ -148,6 +153,7 @@ public class HighLighter : NetworkBehaviour {
                     {
                         firstTurn = false;
                         secondTurn = true; //Remove this eventuallys
+                        Debug.Log("bru");
                         CmdPlayerDoneFirstTurn(((int)currentTurn) + 1);
                     }
 
@@ -162,16 +168,17 @@ public class HighLighter : NetworkBehaviour {
                     {
                         Vertex v = pieceHit.GetComponent<Vertex>();
                         GamePiece g = v.getOccupyingPiece();
+                        if(!validPlaceForVertex(pieceHit))
+                        {
+                            return;
+                        }
                         if(g == null)
                         {
-                            if(v.isOnMainland)
+                            foreach(Edge e in v.getNeighbouringEdges())
                             {
-                                foreach(Edge e in v.getNeighbouringEdges())
-                                {
-                                    validEdges.Add(e);
-                                }
-                                makeSettlmentHere(v);
+                                validEdges.Add(e);
                             }
+                            makeSettlmentHere(v);
                             return;
                         }
 
@@ -198,12 +205,16 @@ public class HighLighter : NetworkBehaviour {
                     {
                         Edge e = pieceHit.GetComponent<Edge>();
                         GamePiece g = e.getOccupyingPiece();
+
+                        if (!validPlaceForEdge(pieceHit))
+                        {
+                            return;
+                        }
+
                         if (g == null)
                         {
-                            if(!validPlaceForEdge(pieceHit))
-                            {
-                                return;
-                            }
+                            validVertexes.Add(e.getRightVertex());
+                            validVertexes.Add(e.getLeftVertex());
                             makeRoadHere(e);
                         }
                     }
@@ -219,12 +230,36 @@ public class HighLighter : NetworkBehaviour {
         }
     }
 
+    bool validPlaceForVertex(GameObject pieceHit)
+    {
+        bool validV = false;
+
+        foreach(Vertex v in validVertexes)
+        {
+            if(v == null)
+            {
+                continue;
+            }
+            validV = pieceHit.name.Equals(v.gameObject.name);
+            if(validV)
+            {
+                break;
+            }
+        }
+
+        return validV;
+    }
+
     bool validPlaceForEdge(GameObject pieceHit)
     {
         bool validE = false;
         //Has to place edge adjacent to 
         foreach (Edge currentEdge in validEdges)
         {
+            if(currentEdge == null)
+            {
+                continue;
+            }
             validE = pieceHit.name.Equals(currentEdge.gameObject.name);
             if (validE)
             {
