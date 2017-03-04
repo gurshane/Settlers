@@ -14,4 +14,6 @@ public class PrefabHolder : MonoBehaviour {
     public GameObject metropolis;
     public GameObject boat;
 
+    public List<Material> materials;
+
 }
