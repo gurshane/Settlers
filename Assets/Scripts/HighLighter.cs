@@ -297,7 +297,7 @@ public class HighLighter : NetworkBehaviour {
        
     }
 
-    public void tradeMaritimeBrikc()
+    public void tradeMaritimeBrick()
     {
 
     }
