@@ -20,8 +20,8 @@ public class HighLighter : NetworkBehaviour {
     private PrefabHolder prefabHolder;
     private BoardState boardState;
 
-    int numPlayers;
-    int numPlayersReady;
+    public int numPlayers;
+    public int numPlayersReady;
 
     public Enums.TurnOrder currentTurn;
 
@@ -36,6 +36,7 @@ public class HighLighter : NetworkBehaviour {
         prefabHolder = GetComponent<PrefabHolder>();
         myColors = new List<Enums.Color>();
         boardState = GetComponent<BoardState>();
+        currentTurn = Enums.TurnOrder.FIRST;
         StartCoroutine(pickColor());
         numPlayers = 2;
         numPlayersReady = 0;
@@ -48,6 +49,7 @@ public class HighLighter : NetworkBehaviour {
         {
             return;
         }
+
         if (Input.GetButtonDown("Fire1"))
         {
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
@@ -59,6 +61,7 @@ public class HighLighter : NetworkBehaviour {
                 {
                     if ((int)currentTurn != (int)myColor)
                     {
+                        Debug.Log((int)currentTurn + " " + (int)myColor);
                         Debug.Log("not my turn");
                         return;
                     }
@@ -141,7 +144,8 @@ public class HighLighter : NetworkBehaviour {
                     if(placedFirstEdge && placedFirstSettlement)
                     {
                         firstTurn = false;
-                        CmdPlayerDoneFirstTurn();
+                        Debug.Log("done");
+                        CmdPlayerDoneFirstTurn(((int)currentTurn) + 1);
                     }
 
 
@@ -163,18 +167,16 @@ public class HighLighter : NetworkBehaviour {
     }
 
     [Command]
-    void CmdPlayerDoneFirstTurn()
+    void CmdPlayerDoneFirstTurn(int turn)
     {
-        RpcPlayerDoneFirstTurn();
+        RpcPlayerDoneFirstTurn(turn);
     }
 
     [ClientRpc]
-    void RpcPlayerDoneFirstTurn()
+    void RpcPlayerDoneFirstTurn(int turn)
     {
-        numPlayersReady++;
-        Debug.Log("done");
-        currentTurn = ((Enums.TurnOrder)(((int)currentTurn + 1)%4));
-        Debug.Log(currentTurn);
+        currentTurn = (Enums.TurnOrder)turn;
+
     }
 
     [Command]
@@ -280,6 +282,30 @@ public class HighLighter : NetworkBehaviour {
         myColors.Add((Enums.Color)color);
     }
 
+    public void tradeMaritimeWool()
+    {
+
+    }
+
+    public void tradeMaritimeLumber()
+    {
+
+    }
+
+    public void tradeMaritimeOre()
+    {
+       
+    }
+
+    public void tradeMaritimeBrikc()
+    {
+
+    }
+
+    public void tradeMaritimeGrain()
+    {
+
+    }
 
     //[ClientRpc]
     //public void RpcHighlightThis(GameObject target)
