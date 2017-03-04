@@ -19,6 +19,7 @@ public class HighLighter : NetworkBehaviour {
 
     private PrefabHolder prefabHolder;
     private BoardState boardState;
+    private Player p;
 
     public int numPlayers;
     public int numPlayersReady;
@@ -36,6 +37,7 @@ public class HighLighter : NetworkBehaviour {
         prefabHolder = GetComponent<PrefabHolder>();
         myColors = new List<Enums.Color>();
         boardState = GetComponent<BoardState>();
+        p = GetComponent<Player>();
         currentTurn = Enums.TurnOrder.FIRST;
         StartCoroutine(pickColor());
         numPlayers = 2;
@@ -59,12 +61,12 @@ public class HighLighter : NetworkBehaviour {
                 //CmdHighlightThis( impact.collider.gameObject);
                 if (firstTurn)
                 {
-                    if ((int)currentTurn != (int)myColor)
-                    {
-                        Debug.Log((int)currentTurn + " " + (int)myColor);
-                        Debug.Log("not my turn");
-                        return;
-                    }
+                    //if ((int)currentTurn != (int)myColor)
+                    //{
+                    //    Debug.Log((int)currentTurn + " " + (int)myColor);
+                    //    Debug.Log("not my turn");
+                    //    return;
+                    //}
                     GameObject pieceHit = impact.collider.gameObject;
                     if (!placedFirstSettlement)
                     {
@@ -240,6 +242,11 @@ public class HighLighter : NetworkBehaviour {
 
     }
 
+    public void makeMaritimeTrade(Enums.ResourceType from, Enums.ResourceType to)
+    {
+
+    }
+
     IEnumerator pickColor()
     {
         yield return new WaitForSeconds(Random.Range(3.0f, 5.0f)+Random.Range(0.1f, 0.3f));
@@ -281,31 +288,7 @@ public class HighLighter : NetworkBehaviour {
     {
         myColors.Add((Enums.Color)color);
     }
-
-    public void tradeMaritimeWool()
-    {
-
-    }
-
-    public void tradeMaritimeLumber()
-    {
-
-    }
-
-    public void tradeMaritimeOre()
-    {
-       
-    }
-
-    public void tradeMaritimeBrick()
-    {
-
-    }
-
-    public void tradeMaritimeGrain()
-    {
-
-    }
+    
 
     //[ClientRpc]
     //public void RpcHighlightThis(GameObject target)
