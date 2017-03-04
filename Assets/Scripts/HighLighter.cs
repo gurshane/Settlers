@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
+using System;
 
 public class HighLighter : NetworkBehaviour {
 
@@ -58,6 +59,7 @@ public class HighLighter : NetworkBehaviour {
             RaycastHit impact;
             if (Physics.Raycast(ray, out impact))
             {
+                GameObject pieceHit = impact.collider.gameObject;
                 //CmdHighlightThis( impact.collider.gameObject);
                 if (firstTurn)
                 {
@@ -67,7 +69,6 @@ public class HighLighter : NetworkBehaviour {
                     //    Debug.Log("not my turn");
                     //    return;
                     //}
-                    GameObject pieceHit = impact.collider.gameObject;
                     if (!placedFirstSettlement)
                     {
                         //Didnt hit a vertex, gtfo
@@ -146,7 +147,7 @@ public class HighLighter : NetworkBehaviour {
                     if(placedFirstEdge && placedFirstSettlement)
                     {
                         firstTurn = false;
-                        Debug.Log("done");
+                        secondTurn = true; //Remove this eventuallys
                         CmdPlayerDoneFirstTurn(((int)currentTurn) + 1);
                     }
 
@@ -154,17 +155,123 @@ public class HighLighter : NetworkBehaviour {
                 }
                 else if (secondTurn)
                 {
+                    Debug.Log("second phase");
                     //let people build cities or more settlements
                     //let people roll the die
+                    if(pieceHit.tag.Equals("Vertex"))
+                    {
+                        Vertex v = pieceHit.GetComponent<Vertex>();
+                        GamePiece g = v.getOccupyingPiece();
+                        if(g == null)
+                        {
+                            if(v.isOnMainland)
+                            {
+                                foreach(Edge e in v.getNeighbouringEdges())
+                                {
+                                    validEdges.Add(e);
+                                }
+                                makeSettlmentHere(v);
+                            }
+                            return;
+                        }
+
+                        //Same colour as me
+                        if ((int)g.getColor() != (int)myColor)
+                        {
+                            return;
+                        }
+
+                        try
+                        {
+                            City c = (City) v.getOccupyingPiece();
+                        }
+                        catch(Exception e)
+                        {
+                            foreach (Edge ed in v.getNeighbouringEdges())
+                            {
+                                validEdges.Add(ed);
+                            }
+                            makeCityHere(v);
+                        }
+                    }
+                    else if(pieceHit.tag.Equals("Edge"))
+                    {
+                        Edge e = pieceHit.GetComponent<Edge>();
+                        GamePiece g = e.getOccupyingPiece();
+                        if (g == null)
+                        {
+                            if(!validPlaceForEdge(pieceHit))
+                            {
+                                return;
+                            }
+                            makeRoadHere(e);
+                        }
+                    }
                 }
 
-                if ((numPlayersReady == numPlayers) && !secondTurn)
-                {
-                    secondTurn = true;
-                }
+                //if ((numPlayersReady == numPlayers) && !secondTurn)
+                //{
+                //    secondTurn = true;
+                //}
 
                 
             }
+        }
+    }
+
+    bool validPlaceForEdge(GameObject pieceHit)
+    {
+        bool validE = false;
+        //Has to place edge adjacent to 
+        foreach (Edge currentEdge in validEdges)
+        {
+            validE = pieceHit.name.Equals(currentEdge.gameObject.name);
+            if (validE)
+            {
+                break;
+            }
+        }
+
+        return validE;
+    }
+    
+    void makeRoadHere(Edge e)
+    {
+        if ((p.getResources()[(int)Enums.ResourceType.BRICK] >= 1) && (p.getResources()[(int)Enums.ResourceType.LUMBER] >= 1))
+        {
+            p.discardResource(Enums.ResourceType.BRICK, 1);
+            p.discardResource(Enums.ResourceType.LUMBER, 1);
+            if((int)e.terrainType == (int)Enums.TerrainType.LAND)
+            {
+                CmdSpawnRoad(e.gameObject.transform.position, e.gameObject.transform.rotation.eulerAngles.y, false, (int)myColor);
+            }
+            else
+            {
+                CmdSpawnRoad(e.gameObject.transform.position, e.gameObject.transform.rotation.eulerAngles.y, true, (int)myColor);
+            }
+        }
+    }
+
+    void makeSettlmentHere(Vertex v)
+    {
+        if((p.getResources()[(int)Enums.ResourceType.BRICK] >= 1) && (p.getResources()[(int)Enums.ResourceType.GRAIN] >= 1) 
+            && (p.getResources()[(int)Enums.ResourceType.LUMBER] >= 1) && (p.getResources()[(int)Enums.ResourceType.ORE] >= 1))
+        {
+            p.discardResource(Enums.ResourceType.BRICK, 1);
+            p.discardResource(Enums.ResourceType.GRAIN, 1);
+            p.discardResource(Enums.ResourceType.LUMBER, 1);
+            p.discardResource(Enums.ResourceType.ORE, 1);
+            CmdSpawnSettlement(v.gameObject.transform.position, v.gameObject.transform.rotation, (int)myColor);
+        }
+    }
+
+    void makeCityHere(Vertex v)
+    {
+        if ((p.getResources()[(int)Enums.ResourceType.GRAIN] >= 2) && (p.getResources()[(int)Enums.ResourceType.ORE] >= 3))
+        {
+            p.discardResource(Enums.ResourceType.GRAIN, 2);
+            p.discardResource(Enums.ResourceType.ORE, 3);
+            CmdSpawnCity(v.gameObject.transform.position, v.gameObject.transform.rotation, (int)myColor);
         }
     }
 
@@ -179,6 +286,36 @@ public class HighLighter : NetworkBehaviour {
     {
         currentTurn = (Enums.TurnOrder)turn;
 
+    }
+
+    [Command]
+    void CmdSpawnCity(Vector3 v, Quaternion q, int mymat)
+    {
+        RpcSpawnCity(v, q, mymat);
+    }
+
+    [ClientRpc]
+    void RpcSpawnCity(Vector3 v, Quaternion q, int mymat)
+    {
+        //Spawn city
+        GameObject go = Instantiate<GameObject>(GetComponent<PrefabHolder>().city, v, q);
+        go.transform.Rotate(new Vector3(-90.0f, 0f, 0f));
+        go.transform.Translate(0f, 0f, 10f);
+        go.GetComponent<MeshRenderer>().material = prefabHolder.materials[mymat];
+
+        //Destory whats already there
+        GameObject oldGo = boardState.spawnedObjects[v];
+        boardState.spawnedObjects.Remove(v);
+        Destroy(oldGo);
+
+        Vertex source = boardState.vertexPosition[v];
+        City c = new City(myColor, false);
+        c.putOnBoard();
+        source.setOccupyingPiece(c);
+        boardState.vertexPosition.Remove(v);
+        boardState.vertexPosition.Add(v, source);
+
+        boardState.spawnedObjects.Add(v, go);
     }
 
     [Command]
@@ -202,6 +339,8 @@ public class HighLighter : NetworkBehaviour {
         settlement.putOnBoard();
         boardState.vertexPosition.Remove(v);
         boardState.vertexPosition.Add(v, source);
+
+        boardState.spawnedObjects.Add(v, go);
     }
 
     [Command]
@@ -235,6 +374,8 @@ public class HighLighter : NetworkBehaviour {
 
         boardState.edgePosition.Remove(v);
         boardState.edgePosition.Add(v, source);
+
+        boardState.spawnedObjects.Add(v, go);
     }
 
     public void makeMaritimeTrade()
@@ -244,12 +385,21 @@ public class HighLighter : NetworkBehaviour {
 
     public void makeMaritimeTrade(Enums.ResourceType from, Enums.ResourceType to)
     {
-
+        if(!secondTurn)
+        {
+            return;
+        }
+        if(p.getResources()[(int)from] < 4)
+        {
+            return;
+        }
+        p.discardResource(from, 4);
+        p.addResource(to, 1);
     }
 
     IEnumerator pickColor()
     {
-        yield return new WaitForSeconds(Random.Range(3.0f, 5.0f)+Random.Range(0.1f, 0.3f));
+        yield return new WaitForSeconds(UnityEngine.Random.Range(3.0f, 5.0f)+UnityEngine.Random.Range(0.1f, 0.3f));
         if (!myColors.Contains(Enums.Color.WHITE))
         {
             Debug.Log("I'm white");
