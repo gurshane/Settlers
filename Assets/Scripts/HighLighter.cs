@@ -23,6 +23,8 @@ public class HighLighter : NetworkBehaviour {
     int numPlayers;
     int numPlayersReady;
 
+    public Enums.TurnOrder currentTurn;
+
     void Start()
     {
         gameManager = GameObject.FindGameObjectWithTag("GameManager");
@@ -37,8 +39,9 @@ public class HighLighter : NetworkBehaviour {
         StartCoroutine(pickColor());
         numPlayers = 2;
         numPlayersReady = 0;
+       
     }
-
+    
     // Update is called once per frame
     void Update() {
         if(!isLocalPlayer)
@@ -54,6 +57,11 @@ public class HighLighter : NetworkBehaviour {
                 //CmdHighlightThis( impact.collider.gameObject);
                 if (firstTurn)
                 {
+                    if ((int)currentTurn != (int)myColor)
+                    {
+                        Debug.Log("not my turn");
+                        return;
+                    }
                     GameObject pieceHit = impact.collider.gameObject;
                     if (!placedFirstSettlement)
                     {
@@ -119,7 +127,6 @@ public class HighLighter : NetworkBehaviour {
                             //GameObject newRoad = Instantiate<GameObject>(GetComponent<PrefabHolder>().road, pieceHit.transform.position, pieceHit.transform.rotation);
 
                             CmdSpawnRoad(pieceHit.transform.position, pieceHit.transform.rotation.eulerAngles.y, false, (int) myColor);
-                            Debug.Log(pieceHit.transform.rotation.eulerAngles.y);
 
                         }
                         else
@@ -139,17 +146,18 @@ public class HighLighter : NetworkBehaviour {
 
 
                 }
-
-                if (numPlayersReady == numPlayers)
-                {
-                    secondTurn = true;
-                }
-
-                if(secondTurn)
+                else if (secondTurn)
                 {
                     //let people build cities or more settlements
                     //let people roll the die
                 }
+
+                if ((numPlayersReady == numPlayers) && !secondTurn)
+                {
+                    secondTurn = true;
+                }
+
+                
             }
         }
     }
@@ -164,6 +172,9 @@ public class HighLighter : NetworkBehaviour {
     void RpcPlayerDoneFirstTurn()
     {
         numPlayersReady++;
+        Debug.Log("done");
+        currentTurn = ((Enums.TurnOrder)(((int)currentTurn + 1)%4));
+        Debug.Log(currentTurn);
     }
 
     [Command]
