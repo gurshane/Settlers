@@ -98,6 +98,12 @@ public class UIManager : NetworkBehaviour {
 	[SerializeField]
 	private Transform _DiceRollPanel;
 
+	/// <summary>
+	/// The maritime trade panel displayed once it is SecondTurn
+	/// </summary>
+	[SerializeField]
+	private Transform _MaritimeTradePanel;
+
 
     #endregion
 
@@ -122,6 +128,7 @@ public class UIManager : NetworkBehaviour {
 			// Set the Trade Attributes to NONE
 			_FromResource = Enums.ResourceType.NONE;
 			_ToResource = Enums.ResourceType.NONE;
+			_MaritimeTradePanel.gameObject.SetActive (false);
 
         }
     }
@@ -176,8 +183,14 @@ public class UIManager : NetworkBehaviour {
 	public void updateTurnsPanel()
 	{
 		_TurnsPanel.uiUpdate (_CurrentPlayer);
-	}
 
+		// Get the Highlighter component from the player parameter
+		HighLighter _PlayerHighlighter = _CurrentPlayer.GetComponent<HighLighter> ();
+
+		// If it is second turn, set MaritimeTradePanel active to true
+		if (_PlayerHighlighter.secondTurn == true) _MaritimeTradePanel.gameObject.SetActive (true);
+	}
+		
 
 	/// <summary>
 	/// Updates the player info panels to be displayed on the UI
