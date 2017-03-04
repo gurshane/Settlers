@@ -7,9 +7,9 @@ public class HighLighter : NetworkBehaviour {
 
     private GameObject currentlyHighlighted;
     private GameObject gameManager;
-    private bool firstTurn;
-    private bool placedFirstSettlement;
-    private bool placedFirstEdge;
+    public bool firstTurn;
+    public bool placedFirstSettlement;
+    public bool placedFirstEdge;
     private List<Edge> validEdges;
     
     void Start()
@@ -139,6 +139,11 @@ public class HighLighter : NetworkBehaviour {
         {
             Instantiate<GameObject>(GetComponent<PrefabHolder>().road, v, q);
         }
+    }
+
+    public void makeMaritimeTrade()
+    {
+
     }
 
     //[ClientRpc]
