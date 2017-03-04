@@ -49,6 +49,12 @@ public class Player : NetworkBehaviour {
         progressCards = new List<ProgressCardName>();
         
         resources = new int[7];
+        resources[(int)Enums.ResourceType.BRICK] = 5;
+        resources[(int)Enums.ResourceType.WOOL] = 5;
+        resources[(int)Enums.ResourceType.GRAIN] = 5;
+        resources[(int)Enums.ResourceType.ORE] = 5;
+        resources[(int)Enums.ResourceType.LUMBER] = 5;
+
         commodities = new int[5];
         goldCount = 0;
         
