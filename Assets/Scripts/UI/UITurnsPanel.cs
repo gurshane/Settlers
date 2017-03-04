@@ -12,7 +12,7 @@ public class UITurnsPanel : UIElement {
 	/// The text component attached to this instance saying whether it is the first turn
 	/// </summary>
 	[SerializeField]
-	private Text _FirstTurnText;
+	private Text _TurnText;
 
 	/// <summary>
 	/// The text component attached to this instance, saying what piece to place
@@ -25,7 +25,7 @@ public class UITurnsPanel : UIElement {
 	void Start () {
 		
 		// Get the text components to be modified during updates
-		_FirstTurnText = transform.GetChild (0).GetComponent<Text>();
+		_TurnText = transform.GetChild (0).GetComponent<Text>();
 		_PlacementText = transform.GetChild (1).GetComponent<Text>();
 	}
 
@@ -53,14 +53,18 @@ public class UITurnsPanel : UIElement {
 	private void updateFirstTurnText(HighLighter p_Highlighter)
 	{
 		if (p_Highlighter.firstTurn == true) {
-			_FirstTurnText.text = "  FIRST TURN";
+			_TurnText.text = "  FIRST TURN";
 			updatePlacementText (p_Highlighter);
 		}
-		else 
+		else if (p_Highlighter.firstTurn == false) {
+			_TurnText.text = "";
+			_PlacementText.text = "  Waiting for Other Players";
+		} 
+		/*else if (p_Highlighter.secondTurn = true) 
 		{
-			_FirstTurnText.text = "  SECOND TURN";
+			_TurnText.text = "  SECOND TURN";
 			_PlacementText.text = "";
-		}
+		}*/
 	}
 
 	/// <summary>
