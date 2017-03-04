@@ -14,7 +14,7 @@ public class UIManager : NetworkBehaviour {
 	/// The game manager object
 	/// </summary>
 	[SerializeField]
-	private GameObject _GameManager;
+	private GameManager _GameManager;
 
 	#region Player instance and Attributes
 
@@ -53,6 +53,9 @@ public class UIManager : NetworkBehaviour {
 	[SerializeField]
 	private UIElement _MyPlayerPanel;
 
+	[SerializeField]
+	private UIElement _TurnsPanel;
+
 	/// <summary>
 	/// Panel containing Barbarian slider
 	/// </summary>
@@ -76,6 +79,13 @@ public class UIManager : NetworkBehaviour {
 	[SerializeField]
 	private Transform _EdgeButtonsPanel;
 
+	/// <summary>
+	/// The dice roll panel displayed on the UI after a dice roll has occurred
+	/// </summary>
+	[SerializeField]
+	private Transform _DiceRollPanel;
+
+
     #endregion
 
 
@@ -91,6 +101,11 @@ public class UIManager : NetworkBehaviour {
             _ContextPanel.gameObject.SetActive(false);
             _VertexButtonsPanel.gameObject.SetActive(false);
             _EdgeButtonsPanel.gameObject.SetActive(false);
+
+
+			// Get the GameManager Component off of the CurrentPlayer object
+			_GameManager = _CurrentPlayer.GetComponent<GameManager>();
+
 
 
             //_GameManager = GameObject.FindGameObjectWithTag("GameManager");
@@ -130,9 +145,27 @@ public class UIManager : NetworkBehaviour {
 	/// </summary>
 	public void updateMyPlayerPanel()
 	{
-		// Update the CurrentPlayer panel using information from this instance's CurrentPlayer attribute
+		// Update the CurrentPlayer panel using information from this instance's CurrentPlayer attributes
 		_MyPlayerPanel.uiUpdate (_CurrentPlayer);
 	}
+
+
+	/// <summary>
+	/// Updates the dice roll panel using _GameManager's dice information
+	/// </summary>
+	public void updateDiceRollPanel()
+	{
+		_DiceRollPanel.GetComponent<UIDiceRollPanel> ().updatePanel(_GameManager);
+	}
+
+	/// <summary>
+	/// Updates the panel stating whether it is the First Turn, and if so, what pieces to place
+	/// </summary>
+	public void updateTurnsPanel()
+	{
+		_TurnsPanel.uiUpdate (_CurrentPlayer);
+	}
+
 
 	/// <summary>
 	/// Updates the player info panels to be displayed on the UI
@@ -193,6 +226,9 @@ public class UIManager : NetworkBehaviour {
 		}
 	}*/
 
+	#endregion
+
+	#region OnClick methods (Board and Smart Menu)
 	/// <summary>
 	/// Handles response for when a Vertex or Edge on the board is clicked
 	/// </summary>
@@ -221,7 +257,19 @@ public class UIManager : NetworkBehaviour {
 		}
 	}
 
+
+	/// <summary>
+	/// Initiates Trade when called. 
+	/// 
+	/// TODO: Rename later
+	/// </summary>
+	public void tradeButtonClicked()
+	{
+		_CurrentPlayer.GetComponent<HighLighter> ().makeMaritimeTrade ();
+	}
+
 	#endregion
+		
 
 	// DEBUGGING
 	/// <summary>
@@ -279,12 +327,16 @@ public class UIManager : NetworkBehaviour {
         // DEBUGGING -----
         if (_CurrentPlayer.gameObject.GetComponent<NetworkIdentity>().isLocalPlayer)
         {
-            // Check whether _CurrentPlayer has been initialised
+            // Check whether _CurrentPlayer has been initialised before running these checks
+			// These are all here for DEBUGGING only
+			// Each of these methods must be placed in the appropriate class in final version
             if (!isCurrentPlayerNull())
             {
                 updateResources();
                 updateCommodities();
                 updateMyPlayerPanel();
+				updateDiceRollPanel ();
+				updateTurnsPanel();
             }
         }
 	
