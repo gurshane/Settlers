@@ -58,13 +58,14 @@ public class UITurnsPanel : UIElement {
 		}
 		else if (p_Highlighter.firstTurn == false) {
 			_TurnText.text = "";
-			_PlacementText.text = "  Waiting for Other Players";
+			_PlacementText.text = "  WAITING FOR OTHER PLAYERS";
 		} 
-		/*else if (p_Highlighter.secondTurn = true) 
+
+		if (p_Highlighter.secondTurn == true) 
 		{
 			_TurnText.text = "  SECOND TURN";
 			_PlacementText.text = "";
-		}*/
+		}
 	}
 
 	/// <summary>

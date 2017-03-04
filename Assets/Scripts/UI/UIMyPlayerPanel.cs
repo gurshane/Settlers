@@ -52,8 +52,42 @@ public class UIMyPlayerPanel : UIElement {
 	/// <param name="p_Player">P player.</param>
 	public void updateIconColor(Player p_Player)
 	{
-		//Color playerHighlighter = p_Player.GetComponent<HighLighter> ().myColor;
+		// Get the color of the player from its Highlighter Component
+		Color playerColor = convert( p_Player.GetComponent<HighLighter> ().myColor );
+
+		// Get the Fill image on the UI - 
+		// the first child of the _PlayerIcon attribute of this instance of myPlayerPanel
 		Image playerIconFillImage = _PlayerIcon.transform.GetChild (0).GetComponent<Image> ();
-		//playerIconFillImage.color =  
+
+		// Set the Fill image color to the newly acquired color
+		playerIconFillImage.color = playerColor;
+	}
+
+	/// <summary>
+	/// Convert the specified p_Color Enum into a Color for an image to use
+	/// </summary>
+	/// <param name="p_Color">P color.</param>
+	private Color convert(Enums.Color p_Color)
+	{
+		Color rColor = new Color (0, 0, 0);
+		switch (p_Color) 
+		{
+		case Enums.Color.BLUE:
+			rColor = Color.blue;
+			break;
+		case Enums.Color.ORANGE:
+			rColor = new Color32(0xF6, 0xA1,0x09,0xFF);
+			break;
+		case Enums.Color.RED:
+			rColor = Color.red;
+			break;
+		case Enums.Color.WHITE:
+			rColor = Color.white;
+			break;
+		default:
+			break;
+		}
+
+		return rColor;
 	}
 }
