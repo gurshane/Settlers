@@ -6,7 +6,7 @@ using UnityEngine.UI;
 /// <summary>
 /// User interface for the dice roll panel, shown at the beginning of each player's turn
 /// </summary>
-public class UIDiceRollPanel : MonoBehaviour {
+public class UIDiceRollPanel : UIElement {
 
 	/// <summary>
 	/// Text displaying FirstDie's value
@@ -40,14 +40,17 @@ public class UIDiceRollPanel : MonoBehaviour {
 
 	/// <summary>
 	/// Updates the Dice Roll panel to display the value of the dice after a roll
-	/// Renders the roll button inactive afterwards, so another roll cannot occur until the next player's turn
+	/// Renders the roll button inactive afterwards, so another roll cannot occur until the next player's turn (NOT YET IMPLEMENTED)
 	/// </summary>
 	/// <param name="p_GameManager">P game manager.</param>
-	public void updatePanel(GameManager p_GameManager)
+	public override void uiUpdate(Player p_Player)
 	{
-		_FirstDieText.text = "" + p_GameManager.getFirstDie();
-		_SecondDieText.text = "" + p_GameManager.getSecondDie();
-		_EventDieText.text = convert (p_GameManager.getEventDie() );
+
+		HighLighter _PlayerHighlighter = p_Player.GetComponent<HighLighter> ();
+
+		_FirstDieText.text = "" + _PlayerHighlighter.firstDieNum;
+		_SecondDieText.text = "" + _PlayerHighlighter.secondDieNum;
+		//_EventDieText.text = convert (_PlayerHighlighter.resourceDieNum );
 
 		// After updating values, deactivate Roll button (Uncomment Later)
 		//_DiceRollButton.gameObject.SetActive (false);
@@ -55,6 +58,7 @@ public class UIDiceRollPanel : MonoBehaviour {
 
 	/// <summary>
 	/// Displays the Roll button if this particular player is the one who's turn it is
+	/// NOT YET IMPLEMENTED
 	/// </summary>
 	/// <param name="p_Player">P player.</param>
 	public void showRollButton(Player p_Player)
