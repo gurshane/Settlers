@@ -15,6 +15,11 @@ public class UIMyPlayerPanel : UIElement {
 	[SerializeField]
 	private Text _PlayerName;
 
+	/// The text component attached to this instance which displays player's current victory points
+	/// </summary>
+	[SerializeField]
+	private Text _VictoryPoints;
+
 	/// <summary>
 	/// Image showing Player's color
 	/// </summary>
@@ -28,6 +33,7 @@ public class UIMyPlayerPanel : UIElement {
 
 		_PlayerName = transform.GetChild (0).GetComponent<Text>();
 		_PlayerIcon = transform.GetChild (1).GetComponent<Image> ();
+		_VictoryPoints = transform.GetChild (2).GetComponent<Text> ();
 	}
 
 	/// <summary>
@@ -41,6 +47,8 @@ public class UIMyPlayerPanel : UIElement {
 
 		// Update UI Text to display the Player's name
 		_PlayerName.text = "\"" + p_Player.getUserName() + "\"";
+
+		_VictoryPoints.text = "  Victory Points: " + p_Player.victoryPoints;
 
 		// Update UI Image to display appropriate colour
 		updateIconColor(p_Player);
