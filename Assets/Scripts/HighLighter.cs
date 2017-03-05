@@ -13,7 +13,6 @@ public class HighLighter : NetworkBehaviour {
     public bool placedFirstEdge;
     private List<Edge> validEdges;
     private List<Vertex> validVertexes;
-
     private bool doOnce;
     public bool secondTurn;
     public Enums.Color myColor;
@@ -305,6 +304,7 @@ public class HighLighter : NetworkBehaviour {
             p.discardResource(Enums.ResourceType.GRAIN, 1);
             p.discardResource(Enums.ResourceType.LUMBER, 1);
             p.discardResource(Enums.ResourceType.ORE, 1);
+            p.incrementVictoryPoints(1);
             CmdSpawnSettlement(v.gameObject.transform.position, v.gameObject.transform.rotation, (int)myColor);
         }
     }
@@ -315,6 +315,7 @@ public class HighLighter : NetworkBehaviour {
         {
             p.discardResource(Enums.ResourceType.GRAIN, 2);
             p.discardResource(Enums.ResourceType.ORE, 3);
+            p.incrementVictoryPoints(1);//because you lose one point for removing the settlement and gain two for the new city
             CmdSpawnCity(v.gameObject.transform.position, v.gameObject.transform.rotation, (int)myColor);
         }
     }
@@ -442,7 +443,7 @@ public class HighLighter : NetworkBehaviour {
 
     IEnumerator pickColor()
     {
-        yield return new WaitForSeconds(UnityEngine.Random.Range(3.0f, 5.0f)+UnityEngine.Random.Range(0.1f, 0.3f));
+        yield return new WaitForSeconds(UnityEngine.Random.Range(0.0f, 3.0f)+UnityEngine.Random.Range(1f, 3f) + UnityEngine.Random.Range(0f, 2f));
         if (!myColors.Contains(Enums.Color.WHITE))
         {
             Debug.Log("I'm white");
