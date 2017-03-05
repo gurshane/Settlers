@@ -26,7 +26,11 @@ public class HighLighter : NetworkBehaviour {
     public int numPlayers;
     public int numPlayersReady;
 
-    public Enums.TurnOrder currentTurn;
+    public int firstDieNum;
+    public int secondDieNum;
+    public int resourceDieNum;
+
+    public turnOrder currentTurn;
 
     void Start()
     {
@@ -42,10 +46,10 @@ public class HighLighter : NetworkBehaviour {
         myColors = new List<Enums.Color>();
         boardState = GetComponent<BoardState>();
         p = GetComponent<Player>();
-        currentTurn = Enums.TurnOrder.FIRST;
         StartCoroutine(pickColor());
         numPlayers = 2;
         numPlayersReady = 0;
+        currentTurn = GetComponent<turnOrder>();
        
     }
     
@@ -56,12 +60,19 @@ public class HighLighter : NetworkBehaviour {
             return;
         }
 
+        
+
         if (Input.GetButtonDown("Fire1"))
         {
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
             RaycastHit impact;
             if (Physics.Raycast(ray, out impact))
             {
+                //if ((int)GetComponent<turnOrder>().currentTurn != (int)myColor)
+                //{
+                //    Debug.Log("bollocks");
+                //    return;
+                //}
                 GameObject pieceHit = impact.collider.gameObject;
                 //CmdHighlightThis( impact.collider.gameObject);
                 if (firstTurn)
@@ -153,15 +164,13 @@ public class HighLighter : NetworkBehaviour {
                     {
                         firstTurn = false;
                         secondTurn = true; //Remove this eventuallys
-                        Debug.Log("bru");
-                        CmdPlayerDoneFirstTurn(((int)currentTurn) + 1);
+                        CmdPlayerDoneFirstTurn();
                     }
 
 
                 }
                 else if (secondTurn)
                 {
-                    Debug.Log("second phase");
                     //let people build cities or more settlements
                     //let people roll the die
                     if(pieceHit.tag.Equals("Vertex"))
@@ -253,7 +262,7 @@ public class HighLighter : NetworkBehaviour {
     bool validPlaceForEdge(GameObject pieceHit)
     {
         bool validE = false;
-        //Has to place edge adjacent to 
+        //Has to place edge adjacent to some 
         foreach (Edge currentEdge in validEdges)
         {
             if(currentEdge == null)
@@ -311,16 +320,15 @@ public class HighLighter : NetworkBehaviour {
     }
 
     [Command]
-    void CmdPlayerDoneFirstTurn(int turn)
+    void CmdPlayerDoneFirstTurn()
     {
-        RpcPlayerDoneFirstTurn(turn);
+        RpcPlayerDoneFirstTurn();
     }
 
     [ClientRpc]
-    void RpcPlayerDoneFirstTurn(int turn)
+    void RpcPlayerDoneFirstTurn()
     {
-        currentTurn = (Enums.TurnOrder)turn;
-
+        GetComponent<turnOrder>().nextTurn();
     }
 
     [Command]
@@ -439,6 +447,7 @@ public class HighLighter : NetworkBehaviour {
         {
             Debug.Log("I'm white");
             myColor = Enums.Color.WHITE;
+            
             CmdUpdateColorList((int)Enums.Color.WHITE);
         }
         else if (!myColors.Contains(Enums.Color.ORANGE))
@@ -461,6 +470,28 @@ public class HighLighter : NetworkBehaviour {
         }
     }
 
+    public void rollDice()
+    {
+        int firstDie = UnityEngine.Random.Range(1, 6);
+        int secondDie = UnityEngine.Random.Range(1, 6);
+        int resourceDie = UnityEngine.Random.Range(1, 6);
+
+        CmdRollDie(firstDie, secondDie, resourceDie);
+    }
+
+    [Command]
+    void CmdRollDie(int first, int second, int resource)
+    {
+        RpcRollDie(first, second, resource);
+    }
+
+    [ClientRpc]
+    void RpcRollDie(int first, int second, int resource)
+    {
+        firstDieNum = first;
+        secondDieNum = second;
+        resourceDieNum = resource;
+    }
 
     [Command]
     void CmdUpdateColorList(int color)
