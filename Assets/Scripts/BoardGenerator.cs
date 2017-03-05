@@ -169,7 +169,7 @@ public class BoardGenerator : NetworkBehaviour {
                     hex.hexNumber = 6;
                     break;
                 case "seven":
-                    hex.hexNumber = 7;
+                    hex.hexNumber = Random.Range(1, 6);
                     break;
                 case "eight":
                     hex.hexNumber = 8;
