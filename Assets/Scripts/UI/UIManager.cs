@@ -24,6 +24,11 @@ public class UIManager : NetworkBehaviour {
 	[SerializeField]
 	private Player _CurrentPlayer;
 
+	/// <summary>
+	/// The player's highlighter component
+	/// </summary>
+	HighLighter _PlayerHighlighter;
+
 	#endregion
 
 	#region Trade Attributes
@@ -112,6 +117,7 @@ public class UIManager : NetworkBehaviour {
 	void Start () {
         
         _CurrentPlayer = GameObject.Find(Network.player.ipAddress).GetComponent<Player>();
+		_PlayerHighlighter = _CurrentPlayer.GetComponent<HighLighter> ();
 
         if (_CurrentPlayer.gameObject.GetComponent<NetworkIdentity>().isLocalPlayer)
         {
@@ -125,11 +131,14 @@ public class UIManager : NetworkBehaviour {
 			// Get the GameManager Component off of the CurrentPlayer object
 			_GameManager = _CurrentPlayer.GetComponent<GameManager>();
 
-			// Set the Trade Attributes to NONE
+			// Set the Trade Attributes to NONE. And the Maritime panel active to false
 			_FromResource = Enums.ResourceType.NONE;
 			_ToResource = Enums.ResourceType.NONE;
 			_MaritimeTradePanel.gameObject.SetActive (false);
 
+
+			// Set the Dice Roll panel to false at start. Only shows during second turn
+			_DiceRollPanel.gameObject.SetActive(false);
         }
     }
 
@@ -174,7 +183,11 @@ public class UIManager : NetworkBehaviour {
 	/// </summary>
 	public void updateDiceRollPanel()
 	{
-		_DiceRollPanel.GetComponent<UIDiceRollPanel> ().updatePanel(_GameManager);
+		_DiceRollPanel.GetComponent<UIElement> ().uiUpdate(_CurrentPlayer);
+
+
+		// If it is second turn, set DiceRoll Panel active to true
+		if (_PlayerHighlighter.secondTurn == true) _DiceRollPanel.gameObject.SetActive (true);
 	}
 
 	/// <summary>
@@ -183,9 +196,6 @@ public class UIManager : NetworkBehaviour {
 	public void updateTurnsPanel()
 	{
 		_TurnsPanel.uiUpdate (_CurrentPlayer);
-
-		// Get the Highlighter component from the player parameter
-		HighLighter _PlayerHighlighter = _CurrentPlayer.GetComponent<HighLighter> ();
 
 		// If it is second turn, set MaritimeTradePanel active to true
 		if (_PlayerHighlighter.secondTurn == true) _MaritimeTradePanel.gameObject.SetActive (true);
@@ -257,7 +267,7 @@ public class UIManager : NetworkBehaviour {
 	/// <summary>
 	/// Handles response for when a Vertex or Edge on the board is clicked
 	/// </summary>
-	public void boardClicked(string p_TargetTag)
+	public void showContextPanel(string p_TargetTag)
 	{
 		// Set Context Panel to Active
 		_ContextPanel.gameObject.SetActive (true);
@@ -282,6 +292,14 @@ public class UIManager : NetworkBehaviour {
 		}
 	}
 		
+
+	/// <summary>
+	/// Calls the Highlighter method to roll the dice and change first, second, (third) dice values for a turn
+	/// </summary>
+	public void rollDice()
+	{
+		_PlayerHighlighter.rollDice ();
+	}
 
 	#endregion
 		
