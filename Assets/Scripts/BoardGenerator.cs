@@ -115,27 +115,35 @@ public class BoardGenerator : NetworkBehaviour {
             {
                 case "waterTile":
                     hex.hexType = Enums.HexType.WATER;
+                    hex.resourceType = Enums.ResourceType.NONE;
                     break;
                 case "brickTile":
                     hex.hexType = Enums.HexType.HILL;
+                    hex.resourceType = Enums.ResourceType.BRICK;
                     break;
                 case "desertTile":
                     hex.hexType = Enums.HexType.DESERT;
+                    hex.resourceType = Enums.ResourceType.NONE;
                     break;
                 case "goldTile":
                     hex.hexType = Enums.HexType.GOLD;
+                    hex.resourceType = Enums.ResourceType.NONE;
                     break;
                 case "oreTile":
                     hex.hexType = Enums.HexType.MOUNTAIN;
+                    hex.resourceType = Enums.ResourceType.ORE;
                     break;
                 case "sheepTile":
                     hex.hexType = Enums.HexType.PASTURE;
+                    hex.resourceType = Enums.ResourceType.WOOL;
                     break;
                 case "wheatTile":
                     hex.hexType = Enums.HexType.FIELD;
+                    hex.resourceType = Enums.ResourceType.GRAIN;
                     break;
                 case "woodTile":
                     hex.hexType = Enums.HexType.FOREST;
+                    hex.resourceType = Enums.ResourceType.LUMBER;
                     break;
             }
 
