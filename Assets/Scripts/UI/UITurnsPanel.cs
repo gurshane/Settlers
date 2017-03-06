@@ -89,10 +89,17 @@ public class UITurnsPanel : UIElement {
 			return;
 		}
 
-		// If second settlement not placed, print a prompt saying so
-		if (p_Highlighter.placedFirstEdge == false) 
+		// If first city not placed, print a prompt saying so
+		if (p_Highlighter.placedFirstCity == false) 
 		{
-			_PlacementText.text = "  - Place First Road/Boat";
+			_PlacementText.text = "  - Place First City";
+			return;
+		}
+
+		// If second road/boat not placed, print a prompt saying so
+		if (p_Highlighter.placedFirstCity == false) 
+		{
+			_PlacementText.text = "  - Place Second Road/Boat";
 			return;
 		}
 	}
