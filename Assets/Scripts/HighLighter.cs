@@ -221,6 +221,17 @@ public class HighLighter : NetworkBehaviour {
                         //iAmTheSpawner = true;
                         p.incrementVictoryPoints(2);
                         CmdSpawnCity(pieceHit.transform.position, pieceHit.transform.rotation, (int)myColor, red, green, blue);
+
+                        foreach(Hex h in boardState.hexPoisition.Values)
+                        {
+                            if (h.gameObject.tag.Equals("MainHex"))
+                            {
+                                if(h.adjacentToVertex(v))
+                                {
+                                    p.addResource(h.resourceType, 1);
+                                }
+                            }
+                        }
                     }
                     else if (!placedSecondEdge)
                     {
