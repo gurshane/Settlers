@@ -107,7 +107,7 @@ public class BoardGenerator : NetworkBehaviour {
             GameObject spawnedHex = Instantiate(hexToSpawn, targetTransform.position, Quaternion.identity, targetTransform);
 
             GameObject targetNumber = numberPieces[Random.Range(0, numberPieces.Count)];
-            GameObject spawnedNumber = Instantiate(targetNumber, targetTransform.position, Quaternion.identity, targetTransform);
+            //GameObject spawnedNumber = Instantiate(targetNumber, targetTransform.position, Quaternion.identity, targetTransform);
 
             Hex hex = targetSpawn.gameObject.GetComponent<Hex>();
             string name = hexToSpawn.name;
@@ -198,7 +198,7 @@ public class BoardGenerator : NetworkBehaviour {
             }
 
             NetworkServer.Spawn(spawnedHex);
-            NetworkServer.Spawn(targetNumber);
+            //NetworkServer.Spawn(targetNumber);
             spawnPositions.Remove(targetSpawn);
         }
     }
