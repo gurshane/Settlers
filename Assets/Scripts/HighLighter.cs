@@ -32,6 +32,9 @@ public class HighLighter : NetworkBehaviour {
 
     public turnOrder currentTurn;
 
+    public bool placedFirstCity;
+    public bool placedSecondEdge;
+
 
     public int red;
     public int green;
@@ -39,6 +42,8 @@ public class HighLighter : NetworkBehaviour {
     public bool iAmTheSpawner;
     void Start()
     {
+        placedFirstCity = false;
+        placedSecondEdge = false;
         iAmTheSpawner = false;
         gameManager = GameObject.FindGameObjectWithTag("GameManager");
         firstTurn = true;
@@ -107,16 +112,16 @@ public class HighLighter : NetworkBehaviour {
                         }
                         //Have to place a settlement first
                         Vertex v = pieceHit.GetComponent<Vertex>();
-                        if(v.getOccupyingPiece() != null)
+                        if (v.getOccupyingPiece() != null)
                         {
                             return;
                         }
-                        if(!v.isOnMainland)
+                        if (!v.isOnMainland)
                         {
                             return;
                         }
                         //If not on land, gtfo
-                        if((int)v.terrainType != (int)Enums.TerrainType.LAND)
+                        if ((int)v.terrainType != (int)Enums.TerrainType.LAND)
                         {
                             return;
                         }
@@ -129,47 +134,47 @@ public class HighLighter : NetworkBehaviour {
                         //newSettlement.transform.Translate(0f, 0f, 10f);
                         //iAmTheSpawner = true;
                         p.incrementVictoryPoints(1);
-                        CmdSpawnSettlement(pieceHit.transform.position, pieceHit.transform.rotation, (int) myColor, red, green, blue);
+                        CmdSpawnSettlement(pieceHit.transform.position, pieceHit.transform.rotation, (int)myColor, red, green, blue);
 
                     }
                     else if (!placedFirstEdge) //always have to do settlement then edge
                     {
                         //Didnt hit an edge, gtfo
-                        if(!pieceHit.tag.Equals("Edge"))
+                        if (!pieceHit.tag.Equals("Edge"))
                         {
                             return;
                         }
                         Edge e = pieceHit.GetComponent<Edge>();
-                        if(e.getOccupyingPiece() != null)
+                        if (e.getOccupyingPiece() != null)
                         {
                             return;
                         }
                         bool validE = false;
                         //Has to place edge adjacent to 
-                        foreach(Edge currentEdge in validEdges)
+                        foreach (Edge currentEdge in validEdges)
                         {
                             validE = pieceHit.name.Equals(currentEdge.gameObject.name);
-                            if(validE)
+                            if (validE)
                             {
                                 break;
                             }
                         }
                         //Not adjacent to the v you placed, gtfo
-                        if(!validE)
+                        if (!validE)
                         {
                             return;
                         }
                         placedFirstEdge = true;
                         validVertexes.Add(e.getLeftVertex());
                         validVertexes.Add(e.getRightVertex());
-                        if((int)e.terrainType == (int)Enums.TerrainType.LAND)
+                        if ((int)e.terrainType == (int)Enums.TerrainType.LAND)
                         {
                             //GameObject newRoad = Instantiate<GameObject>(GetComponent<PrefabHolder>().road, pieceHit.transform.position, pieceHit.transform.rotation);
                             //newRoad.transform.localScale = newRoad.transform.localScale * 1.5f;
                             //iAmTheSpawner = true;
                             //newRoad.transform.Rotate(new Vector3(-90f, 0f, 0f));
                             //newRoad.transform.Translate(0f, 0f, 5f);
-                            CmdSpawnRoad(pieceHit.transform.position, pieceHit.transform.rotation.eulerAngles.y, false, (int) myColor, red, green, blue);
+                            CmdSpawnRoad(pieceHit.transform.position, pieceHit.transform.rotation.eulerAngles.y, false, (int)myColor, red, green, blue);
 
                         }
                         else
@@ -179,12 +184,96 @@ public class HighLighter : NetworkBehaviour {
                             //iAmTheSpawner = true;
                             //newRoad.transform.Rotate(new Vector3(-90f, 0f, 0f));
                             //newRoad.transform.Translate(0f, 0f, 5f);
-                            CmdSpawnRoad(pieceHit.transform.position, pieceHit.transform.rotation.eulerAngles.y, true, (int) myColor, red, green, blue);
+                            CmdSpawnRoad(pieceHit.transform.position, pieceHit.transform.rotation.eulerAngles.y, true, (int)myColor, red, green, blue);
                         }
                     }
+                    else if (!placedFirstCity)
+                    {
+                        if (!pieceHit.tag.Equals("Vertex"))
+                        {
+                            return;
+                        }
+                        //Have to place a settlement first
+                        Vertex v = pieceHit.GetComponent<Vertex>();
+                        if (v.getOccupyingPiece() != null)
+                        {
+                            return;
+                        }
+                        if (!v.isOnMainland)
+                        {
+                            return;
+                        }
+                        //If not on land, gtfo
+                        if ((int)v.terrainType != (int)Enums.TerrainType.LAND)
+                        {
+                            return;
+                        }
+                        placedFirstCity = true;
+                        //Keep track of valid positions to spawn the next edge
+                        foreach(Edge e in pieceHit.GetComponent<Vertex>().neighbouringEdges)
+                        {
+                            validEdges.Add(e);
+                        }
+                        //GameObject newSettlement = Instantiate<GameObject>(GetComponent<PrefabHolder>().settlement, pieceHit.transform.position, Quaternion.identity);
+                        //newSettlement.transform.localScale = newSettlement.transform.localScale * 1.5f;
+                        //newSettlement.transform.Rotate(new Vector3(-90f, 0f, 0f));
+                        //newSettlement.transform.Translate(0f, 0f, 10f);
+                        //iAmTheSpawner = true;
+                        p.incrementVictoryPoints(2);
+                        CmdSpawnCity(pieceHit.transform.position, pieceHit.transform.rotation, (int)myColor, red, green, blue);
+                    }
+                    else if (!placedSecondEdge)
+                    {
+                        //Didnt hit an edge, gtfo
+                        if (!pieceHit.tag.Equals("Edge"))
+                        {
+                            return;
+                        }
+                        Edge e = pieceHit.GetComponent<Edge>();
+                        if (e.getOccupyingPiece() != null)
+                        {
+                            return;
+                        }
+                        bool validE = false;
+                        //Has to place edge adjacent to 
+                        foreach (Edge currentEdge in validEdges)
+                        {
+                            validE = pieceHit.name.Equals(currentEdge.gameObject.name);
+                            if (validE)
+                            {
+                                break;
+                            }
+                        }
+                        //Not adjacent to the v you placed, gtfo
+                        if (!validE)
+                        {
+                            return;
+                        }
+                        placedSecondEdge = true;
+                        validVertexes.Add(e.getLeftVertex());
+                        validVertexes.Add(e.getRightVertex());
+                        if ((int)e.terrainType == (int)Enums.TerrainType.LAND)
+                        {
+                            //GameObject newRoad = Instantiate<GameObject>(GetComponent<PrefabHolder>().road, pieceHit.transform.position, pieceHit.transform.rotation);
+                            //newRoad.transform.localScale = newRoad.transform.localScale * 1.5f;
+                            //iAmTheSpawner = true;
+                            //newRoad.transform.Rotate(new Vector3(-90f, 0f, 0f));
+                            //newRoad.transform.Translate(0f, 0f, 5f);
+                            CmdSpawnRoad(pieceHit.transform.position, pieceHit.transform.rotation.eulerAngles.y, false, (int)myColor, red, green, blue);
 
+                        }
+                        else
+                        {
+                            //GameObject newRoad = Instantiate<GameObject>(GetComponent<PrefabHolder>().boat, pieceHit.transform.position, pieceHit.transform.rotation);
+                            //newRoad.transform.localScale = newRoad.transform.localScale*1.5f;
+                            //iAmTheSpawner = true;
+                            //newRoad.transform.Rotate(new Vector3(-90f, 0f, 0f));
+                            //newRoad.transform.Translate(0f, 0f, 5f);
+                            CmdSpawnRoad(pieceHit.transform.position, pieceHit.transform.rotation.eulerAngles.y, true, (int)myColor, red, green, blue);
+                        }
+                    }
                     //Turn over
-                    if(placedFirstEdge && placedFirstSettlement)
+                    if(placedFirstEdge && placedFirstSettlement && placedSecondEdge && placedFirstCity)
                     {
                         firstTurn = false;
                         secondTurn = true; //Remove this eventuallys
@@ -569,6 +658,7 @@ public class HighLighter : NetworkBehaviour {
             //If this hex has the right hex number
             if(hex.hexNumber == sum)
             {
+                Debug.Log("right hex number");
                 //Go through all its vertices
                 foreach(Vertex vertex in hex.vertices)
                 {
@@ -576,9 +666,11 @@ public class HighLighter : NetworkBehaviour {
                     //If this vertex has a piece on it
                     if(gp != null)
                     {
+                        Debug.Log("right piece");
                         //And this piece is my colour
                         if((int)gp.getColor() == (int)myColor)
                         {
+                            Debug.Log("yahtzee");
                             p.addResource(hex.resourceType, 1);
                         }
                     }
