@@ -32,8 +32,14 @@ public class HighLighter : NetworkBehaviour {
 
     public turnOrder currentTurn;
 
+
+    public int red;
+    public int green;
+    public int blue;
+    public bool iAmTheSpawner;
     void Start()
     {
+        iAmTheSpawner = false;
         gameManager = GameObject.FindGameObjectWithTag("GameManager");
         firstTurn = true;
         placedFirstSettlement = false;
@@ -47,10 +53,14 @@ public class HighLighter : NetworkBehaviour {
         myDieNumbers = new List<int>();
         boardState = GetComponent<BoardState>();
         p = GetComponent<Player>();
-        StartCoroutine(pickColor());
+        //StartCoroutine(pickColor());
         numPlayers = 2;
         numPlayersReady = 0;
         currentTurn = GetComponent<turnOrder>();
+
+        red = UnityEngine.Random.Range(0, 255);
+        green = UnityEngine.Random.Range(0, 255);
+        blue = UnityEngine.Random.Range(0, 255);
        
     }
     
@@ -114,9 +124,12 @@ public class HighLighter : NetworkBehaviour {
                         //Keep track of valid positions to spawn the next edge
                         validEdges = pieceHit.GetComponent<Vertex>().neighbouringEdges;
                         //GameObject newSettlement = Instantiate<GameObject>(GetComponent<PrefabHolder>().settlement, pieceHit.transform.position, Quaternion.identity);
-
+                        //newSettlement.transform.localScale = newSettlement.transform.localScale * 1.5f;
+                        //newSettlement.transform.Rotate(new Vector3(-90f, 0f, 0f));
+                        //newSettlement.transform.Translate(0f, 0f, 10f);
+                        //iAmTheSpawner = true;
                         p.incrementVictoryPoints(1);
-                        CmdSpawnSettlement(pieceHit.transform.position, pieceHit.transform.rotation, (int) myColor);
+                        CmdSpawnSettlement(pieceHit.transform.position, pieceHit.transform.rotation, (int) myColor, red, green, blue);
 
                     }
                     else if (!placedFirstEdge) //always have to do settlement then edge
@@ -152,15 +165,21 @@ public class HighLighter : NetworkBehaviour {
                         if((int)e.terrainType == (int)Enums.TerrainType.LAND)
                         {
                             //GameObject newRoad = Instantiate<GameObject>(GetComponent<PrefabHolder>().road, pieceHit.transform.position, pieceHit.transform.rotation);
-
-                            CmdSpawnRoad(pieceHit.transform.position, pieceHit.transform.rotation.eulerAngles.y, false, (int) myColor);
+                            //newRoad.transform.localScale = newRoad.transform.localScale * 1.5f;
+                            //iAmTheSpawner = true;
+                            //newRoad.transform.Rotate(new Vector3(-90f, 0f, 0f));
+                            //newRoad.transform.Translate(0f, 0f, 5f);
+                            CmdSpawnRoad(pieceHit.transform.position, pieceHit.transform.rotation.eulerAngles.y, false, (int) myColor, red, green, blue);
 
                         }
                         else
                         {
                             //GameObject newRoad = Instantiate<GameObject>(GetComponent<PrefabHolder>().boat, pieceHit.transform.position, pieceHit.transform.rotation);
-
-                            CmdSpawnRoad(pieceHit.transform.position, pieceHit.transform.rotation.eulerAngles.y, true, (int) myColor);
+                            //newRoad.transform.localScale = newRoad.transform.localScale*1.5f;
+                            //iAmTheSpawner = true;
+                            //newRoad.transform.Rotate(new Vector3(-90f, 0f, 0f));
+                            //newRoad.transform.Translate(0f, 0f, 5f);
+                            CmdSpawnRoad(pieceHit.transform.position, pieceHit.transform.rotation.eulerAngles.y, true, (int) myColor, red, green, blue);
                         }
                     }
 
@@ -192,6 +211,7 @@ public class HighLighter : NetworkBehaviour {
                             {
                                 validEdges.Add(e);
                             }
+                            iAmTheSpawner = true;
                             makeSettlmentHere(v);
                             return;
                         }
@@ -212,6 +232,7 @@ public class HighLighter : NetworkBehaviour {
                             {
                                 validEdges.Add(ed);
                             }
+                            iAmTheSpawner = true;
                             makeCityHere(v);
                         }
                     }
@@ -229,6 +250,7 @@ public class HighLighter : NetworkBehaviour {
                         {
                             validVertexes.Add(e.getRightVertex());
                             validVertexes.Add(e.getLeftVertex());
+                            iAmTheSpawner = true;
                             makeRoadHere(e);
                         }
                     }
@@ -292,11 +314,19 @@ public class HighLighter : NetworkBehaviour {
             p.discardResource(Enums.ResourceType.LUMBER, 1);
             if((int)e.terrainType == (int)Enums.TerrainType.LAND)
             {
-                CmdSpawnRoad(e.gameObject.transform.position, e.gameObject.transform.rotation.eulerAngles.y, false, (int)myColor);
+                //GameObject go = Instantiate<GameObject>(GetComponent<PrefabHolder>().road, e.gameObject.transform.position, e.gameObject.transform.rotation);
+                //go.transform.localScale = 1.5f * go.transform.localScale;
+                //go.transform.Rotate(new Vector3(-90f, 0f, 0f));
+                //go.transform.Translate(0f, 0f, 5f);
+                CmdSpawnRoad(e.gameObject.transform.position, e.gameObject.transform.rotation.eulerAngles.y, false, (int)myColor, red, green, blue);
             }
             else
             {
-                CmdSpawnRoad(e.gameObject.transform.position, e.gameObject.transform.rotation.eulerAngles.y, true, (int)myColor);
+                //GameObject go = Instantiate<GameObject>(GetComponent<PrefabHolder>().boat, e.gameObject.transform.position, e.gameObject.transform.rotation);
+                //go.transform.localScale = go.transform.localScale * 1.5f;
+                ////go.transform.Rotate(new Vector3(-90f, 0f, 0f));
+                //go.transform.Translate(0f, 0f, 5f);
+                CmdSpawnRoad(e.gameObject.transform.position, e.gameObject.transform.rotation.eulerAngles.y, true, (int)myColor, red, green, blue);
             }
         }
     }
@@ -311,7 +341,12 @@ public class HighLighter : NetworkBehaviour {
             p.discardResource(Enums.ResourceType.LUMBER, 1);
             p.discardResource(Enums.ResourceType.ORE, 1);
             p.incrementVictoryPoints(1);
-            CmdSpawnSettlement(v.gameObject.transform.position, v.gameObject.transform.rotation, (int)myColor);
+
+            //GameObject go = Instantiate<GameObject>(GetComponent<PrefabHolder>().settlement, v.gameObject.transform.position, v.gameObject.transform.rotation);
+            //go.transform.localScale = go.transform.localScale * 1.5f;
+            //go.transform.Rotate(new Vector3(-90.0f, 0f, 0f));
+            //go.transform.Translate(0f, 0f, 10f);
+            CmdSpawnSettlement(v.gameObject.transform.position, v.gameObject.transform.rotation, (int)myColor, red, green, blue);
         }
     }
 
@@ -322,7 +357,11 @@ public class HighLighter : NetworkBehaviour {
             p.discardResource(Enums.ResourceType.GRAIN, 2);
             p.discardResource(Enums.ResourceType.ORE, 3);
             p.incrementVictoryPoints(1);//because you lose one point for removing the settlement and gain two for the new city
-            CmdSpawnCity(v.gameObject.transform.position, v.gameObject.transform.rotation, (int)myColor);
+            //GameObject go = Instantiate<GameObject>(GetComponent<PrefabHolder>().city, v.gameObject.transform.position, v.gameObject.transform.rotation);
+            //go.transform.localScale = go.transform.localScale * 1.5f;
+            //go.transform.Rotate(new Vector3(-90.0f, 0f, 0f));
+            //go.transform.Translate(0f, 0f, 10f);
+            CmdSpawnCity(v.gameObject.transform.position, v.gameObject.transform.rotation, (int)myColor, red, green, blue);
         }
     }
 
@@ -339,20 +378,27 @@ public class HighLighter : NetworkBehaviour {
     }
 
     [Command]
-    void CmdSpawnCity(Vector3 v, Quaternion q, int mymat)
+    void CmdSpawnCity(Vector3 v, Quaternion q, int mymat, int r, int g, int b)
     {
-        RpcSpawnCity(v, q, mymat);
+        RpcSpawnCity(v, q, mymat, r, g, b);
     }
 
     [ClientRpc]
-    void RpcSpawnCity(Vector3 v, Quaternion q, int mymat)
+    void RpcSpawnCity(Vector3 v, Quaternion q, int mymat, int r, int g, int b)
     {
+        //if(iAmTheSpawner)
+        //{
+        //    iAmTheSpawner = false;
+
+        //    return;
+        //}
         //Spawn city
         GameObject go = Instantiate<GameObject>(GetComponent<PrefabHolder>().city, v, q);
         go.transform.Rotate(new Vector3(-90.0f, 0f, 0f));
         go.transform.Translate(0f, 0f, 10f);
-        go.GetComponent<MeshRenderer>().material = prefabHolder.materials[mymat];
-
+        Color col = new Color(r, g, b);
+        Debug.Log(col);
+        go.GetComponent<MeshRenderer>().material.SetColor("_Color", Color.red);
         //Destory whats already there
         GameObject oldGo = boardState.spawnedObjects[v];
         boardState.spawnedObjects.Remove(v);
@@ -367,20 +413,23 @@ public class HighLighter : NetworkBehaviour {
 
         boardState.spawnedObjects.Add(v, go);
     }
+    
 
     [Command]
-    void CmdSpawnSettlement(Vector3 v, Quaternion q, int mymat)
+    void CmdSpawnSettlement(Vector3 v, Quaternion q, int mymat, int r, int g, int b)
     {
-        RpcSpawnSettlement(v, q, mymat);
+        RpcSpawnSettlement(v, q, mymat, r, g, b);
     }
 
     [ClientRpc]
-    void RpcSpawnSettlement(Vector3 v, Quaternion q, int mymat)
+    void RpcSpawnSettlement(Vector3 v, Quaternion q, int mymat, int r, int g, int b)
     {
         GameObject go = Instantiate<GameObject>(GetComponent<PrefabHolder>().settlement, v, q);
         go.transform.Rotate(new Vector3(-90.0f, 0f, 0f));
         go.transform.Translate(0f, 0f, 10f);
-        go.GetComponent<MeshRenderer>().material = prefabHolder.materials[mymat];
+        Color col = new Color(r, g, b);
+        Debug.Log(col);
+        go.GetComponent<MeshRenderer>().material.SetColor("_Color", Color.red);
 
         Vertex source = boardState.vertexPosition[v];
         // Put a settlement on the board
@@ -394,13 +443,13 @@ public class HighLighter : NetworkBehaviour {
     }
 
     [Command]
-    void CmdSpawnRoad(Vector3 v, float q, bool isBoat, int mymat)
+    void CmdSpawnRoad(Vector3 v, float q, bool isBoat, int mymat, int r, int g, int b)
     {
-        RpcSpawnRoad(v, q, isBoat, mymat);
+        RpcSpawnRoad(v, q, isBoat, mymat, r, g, b);
     }
 
     [ClientRpc]
-    void RpcSpawnRoad(Vector3 v, float q, bool isBoat, int mymat)
+    void RpcSpawnRoad(Vector3 v, float q, bool isBoat, int mymat, int r, int g, int b)
     {
         GameObject go;
         if(isBoat)
@@ -414,8 +463,9 @@ public class HighLighter : NetworkBehaviour {
 
         go.transform.Rotate(new Vector3(-90f, 0f, 0f));
         go.transform.Translate(0f, 0f, 5f);
-        go.GetComponent<MeshRenderer>().material = prefabHolder.materials[mymat];
-
+        Color col = new Color(r, g, b);
+        Debug.Log(col);
+        go.GetComponent<MeshRenderer>().material.SetColor("_Color", Color.red);
         Edge source = boardState.edgePosition[v];
         // Put a road on the board
         Road road = new Road(myColor, isBoat);
