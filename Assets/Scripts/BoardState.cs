@@ -44,7 +44,7 @@ public class BoardState : NetworkBehaviour
                 edgePosition.Add(edge.transform.position, edge.GetComponent<Edge>());
             }
         }
-        if(hexPoisition.Count < 27)
+        if(hexPoisition.Count < 19)
         {
             hexPoisition.Clear();
             foreach (GameObject hex in GameObject.FindGameObjectsWithTag("MainHex"))

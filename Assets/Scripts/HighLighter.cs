@@ -13,11 +13,11 @@ public class HighLighter : NetworkBehaviour {
     public bool placedFirstEdge;
     private List<Edge> validEdges;
     private List<Vertex> validVertexes;
-
     private bool doOnce;
     public bool secondTurn;
     public Enums.Color myColor;
     public List<Enums.Color> myColors;
+    public List<int> myDieNumbers;
 
     private PrefabHolder prefabHolder;
     private BoardState boardState;
@@ -44,6 +44,7 @@ public class HighLighter : NetworkBehaviour {
         validVertexes = new List<Vertex>();
         prefabHolder = GetComponent<PrefabHolder>();
         myColors = new List<Enums.Color>();
+        myDieNumbers = new List<int>();
         boardState = GetComponent<BoardState>();
         p = GetComponent<Player>();
         StartCoroutine(pickColor());
@@ -60,8 +61,12 @@ public class HighLighter : NetworkBehaviour {
             return;
         }
 
-        
-
+        if(myDieNumbers.Count >= 3)
+        {
+            firstDieNum = myDieNumbers[0];
+            secondDieNum = myDieNumbers[1];
+            resourceDieNum = myDieNumbers[2];
+        }
         if (Input.GetButtonDown("Fire1"))
         {
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
@@ -109,8 +114,8 @@ public class HighLighter : NetworkBehaviour {
                         //Keep track of valid positions to spawn the next edge
                         validEdges = pieceHit.GetComponent<Vertex>().neighbouringEdges;
                         //GameObject newSettlement = Instantiate<GameObject>(GetComponent<PrefabHolder>().settlement, pieceHit.transform.position, Quaternion.identity);
-                        
 
+                        p.incrementVictoryPoints(1);
                         CmdSpawnSettlement(pieceHit.transform.position, pieceHit.transform.rotation, (int) myColor);
 
                     }
@@ -305,6 +310,7 @@ public class HighLighter : NetworkBehaviour {
             p.discardResource(Enums.ResourceType.GRAIN, 1);
             p.discardResource(Enums.ResourceType.LUMBER, 1);
             p.discardResource(Enums.ResourceType.ORE, 1);
+            p.incrementVictoryPoints(1);
             CmdSpawnSettlement(v.gameObject.transform.position, v.gameObject.transform.rotation, (int)myColor);
         }
     }
@@ -315,6 +321,7 @@ public class HighLighter : NetworkBehaviour {
         {
             p.discardResource(Enums.ResourceType.GRAIN, 2);
             p.discardResource(Enums.ResourceType.ORE, 3);
+            p.incrementVictoryPoints(1);//because you lose one point for removing the settlement and gain two for the new city
             CmdSpawnCity(v.gameObject.transform.position, v.gameObject.transform.rotation, (int)myColor);
         }
     }
@@ -442,7 +449,7 @@ public class HighLighter : NetworkBehaviour {
 
     IEnumerator pickColor()
     {
-        yield return new WaitForSeconds(UnityEngine.Random.Range(3.0f, 5.0f)+UnityEngine.Random.Range(0.1f, 0.3f));
+        yield return new WaitForSeconds(UnityEngine.Random.Range(0.0f, 3.0f)+UnityEngine.Random.Range(1f, 3f) + UnityEngine.Random.Range(0f, 2f));
         if (!myColors.Contains(Enums.Color.WHITE))
         {
             Debug.Log("I'm white");
@@ -488,9 +495,46 @@ public class HighLighter : NetworkBehaviour {
     [ClientRpc]
     void RpcRollDie(int first, int second, int resource)
     {
-        firstDieNum = first;
-        secondDieNum = second;
-        resourceDieNum = resource;
+        
+        myDieNumbers.Clear();
+        myDieNumbers.Add(first);
+        myDieNumbers.Add(second);
+        myDieNumbers.Add(resource);
+
+        int sum = first + second;
+        Debug.Log(sum);
+        if(sum == 7)
+        {
+            return;
+        }
+
+        Debug.Log("doing it");
+        //Go through all hexes
+        foreach (Hex hex in boardState.hexPoisition.Values)
+        {
+            if(((int)hex.hexType == (int)Enums.HexType.WATER) || ((int)hex.hexType == (int)Enums.HexType.DESERT))
+            {
+                return;
+            }
+            //If this hex has the right hex number
+            if(hex.hexNumber == sum)
+            {
+                //Go through all its vertices
+                foreach(Vertex vertex in hex.vertices)
+                {
+                    GamePiece gp = boardState.vertexPosition[vertex.gameObject.transform.position].getOccupyingPiece();
+                    //If this vertex has a piece on it
+                    if(gp != null)
+                    {
+                        //And this piece is my colour
+                        if((int)gp.getColor() == (int)myColor)
+                        {
+                            p.addResource(hex.resourceType, 1);
+                        }
+                    }
+                }
+            }
+        }
     }
 
     [Command]
