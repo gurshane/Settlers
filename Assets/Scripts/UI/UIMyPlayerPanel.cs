@@ -51,7 +51,7 @@ public class UIMyPlayerPanel : UIElement {
 		_VictoryPoints.text = "  Victory Points: " + p_Player.victoryPoints;
 
 		// Update UI Image to display appropriate colour
-		updateIconColor(p_Player);
+		//updateIconColor(p_Player);
 	}
 		
 	/// <summary>
