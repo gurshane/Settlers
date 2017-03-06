@@ -5,4 +5,12 @@ using UnityEngine.Networking;
 
 public class AssignColor : NetworkBehaviour {
 
+    void Update()
+    {
+        if(isServer && isLocalPlayer)
+        {
+            //GetComponent<GameManager>().UpdateColor();
+        }
+    }
+
 }

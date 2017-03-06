@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Enums;
 
-public abstract class GamePiece : MonoBehaviour {
+public abstract class GamePiece {
 
 	private Enums.Color myColor;
 	private string ownerName;

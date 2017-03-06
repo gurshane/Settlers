@@ -14,7 +14,7 @@ public class UIManager : NetworkBehaviour {
 	/// The game manager object
 	/// </summary>
 	[SerializeField]
-	private GameObject _GameManager;
+	private GameManager _GameManager;
 
 	#region Player instance and Attributes
 
@@ -24,8 +24,26 @@ public class UIManager : NetworkBehaviour {
 	[SerializeField]
 	private Player _CurrentPlayer;
 
+	/// <summary>
+	/// The player's highlighter component
+	/// </summary>
+	HighLighter _PlayerHighlighter;
+
 	#endregion
 
+	#region Trade Attributes
+	/// <summary>
+	/// Resource that Player proposes in a trade
+	/// </summary>
+	[SerializeField]
+	private Enums.ResourceType _FromResource;
+
+	/// <summary>
+	/// Resource that Player hopes to receive from a trade
+	/// </summary>
+	[SerializeField]
+	private Enums.ResourceType _ToResource;
+	#endregion
 
 	#region UI Panels
 
@@ -53,6 +71,9 @@ public class UIManager : NetworkBehaviour {
 	[SerializeField]
 	private UIElement _MyPlayerPanel;
 
+	[SerializeField]
+	private UIElement _TurnsPanel;
+
 	/// <summary>
 	/// Panel containing Barbarian slider
 	/// </summary>
@@ -76,6 +97,19 @@ public class UIManager : NetworkBehaviour {
 	[SerializeField]
 	private Transform _EdgeButtonsPanel;
 
+	/// <summary>
+	/// The dice roll panel displayed on the UI after a dice roll has occurred
+	/// </summary>
+	[SerializeField]
+	private Transform _DiceRollPanel;
+
+	/// <summary>
+	/// The maritime trade panel displayed once it is SecondTurn
+	/// </summary>
+	[SerializeField]
+	private Transform _MaritimeTradePanel;
+
+
     #endregion
 
 
@@ -83,6 +117,7 @@ public class UIManager : NetworkBehaviour {
 	void Start () {
         
         _CurrentPlayer = GameObject.Find(Network.player.ipAddress).GetComponent<Player>();
+		_PlayerHighlighter = _CurrentPlayer.GetComponent<HighLighter> ();
 
         if (_CurrentPlayer.gameObject.GetComponent<NetworkIdentity>().isLocalPlayer)
         {
@@ -93,9 +128,17 @@ public class UIManager : NetworkBehaviour {
             _EdgeButtonsPanel.gameObject.SetActive(false);
 
 
-            //_GameManager = GameObject.FindGameObjectWithTag("GameManager");
-            //setPlayerInfoPanels();
+			// Get the GameManager Component off of the CurrentPlayer object
+			_GameManager = _CurrentPlayer.GetComponent<GameManager>();
 
+			// Set the Trade Attributes to NONE. And the Maritime panel active to false
+			_FromResource = Enums.ResourceType.NONE;
+			_ToResource = Enums.ResourceType.NONE;
+			_MaritimeTradePanel.gameObject.SetActive (false);
+
+
+			// Set the Dice Roll panel to false at start. Only shows during second turn
+			_DiceRollPanel.gameObject.SetActive(false);
         }
     }
 
@@ -130,9 +173,34 @@ public class UIManager : NetworkBehaviour {
 	/// </summary>
 	public void updateMyPlayerPanel()
 	{
-		// Update the CurrentPlayer panel using information from this instance's CurrentPlayer attribute
+		// Update the CurrentPlayer panel using information from this instance's CurrentPlayer attributes
 		_MyPlayerPanel.uiUpdate (_CurrentPlayer);
 	}
+
+
+	/// <summary>
+	/// Updates the dice roll panel using _GameManager's dice information
+	/// </summary>
+	public void updateDiceRollPanel()
+	{
+		_DiceRollPanel.GetComponent<UIElement> ().uiUpdate(_CurrentPlayer);
+
+
+		// If it is second turn, set DiceRoll Panel active to true
+		if (_PlayerHighlighter.secondTurn == true) _DiceRollPanel.gameObject.SetActive (true);
+	}
+
+	/// <summary>
+	/// Updates the panel stating whether it is the First Turn, and if so, what pieces to place
+	/// </summary>
+	public void updateTurnsPanel()
+	{
+		_TurnsPanel.uiUpdate (_CurrentPlayer);
+
+		// If it is second turn, set MaritimeTradePanel active to true
+		if (_PlayerHighlighter.secondTurn == true) _MaritimeTradePanel.gameObject.SetActive (true);
+	}
+		
 
 	/// <summary>
 	/// Updates the player info panels to be displayed on the UI
@@ -193,10 +261,13 @@ public class UIManager : NetworkBehaviour {
 		}
 	}*/
 
+	#endregion
+
+	#region OnClick method
 	/// <summary>
 	/// Handles response for when a Vertex or Edge on the board is clicked
 	/// </summary>
-	public void boardClicked(string p_TargetTag)
+	public void showContextPanel(string p_TargetTag)
 	{
 		// Set Context Panel to Active
 		_ContextPanel.gameObject.SetActive (true);
@@ -220,8 +291,37 @@ public class UIManager : NetworkBehaviour {
 			break;
 		}
 	}
+		
+
+	/// <summary>
+	/// Calls the Highlighter method to roll the dice and change first, second, (third) dice values for a turn
+	/// </summary>
+	public void rollDice()
+	{
+		_PlayerHighlighter.rollDice ();
+	}
 
 	#endregion
+		
+
+	#region Trade Methods
+
+	public void maritimeTrade(string p_ToResource)
+	{
+		// Set ToResource from parameter info
+		setToResource (p_ToResource);
+
+		// Make the Maritime Trade using the FromResource and ToResource Attributes
+		_CurrentPlayer.GetComponent<HighLighter> ().makeMaritimeTrade (_FromResource, _ToResource);
+
+		// Revert the trade attributes to NONE so no residual trades carry over to subsequent ones
+		//_ToResource = Enums.ResourceType.NONE;
+		//_FromResource = Enums.ResourceType.NONE;
+	}
+		
+
+	#endregion
+
 
 	// DEBUGGING
 	/// <summary>
@@ -263,6 +363,62 @@ public class UIManager : NetworkBehaviour {
 	}
 
 	/// <summary>
+	/// Sets the FromResource attribute of this instance of UI manager that the Player wants to give in a trade
+	/// </summary>
+	public void setFromResource(string p_ResourceType)
+	{
+		
+		switch (p_ResourceType) 
+		{
+		case "Brick":
+			_FromResource = Enums.ResourceType.BRICK;
+			break;
+		case "Wool":
+			_FromResource = Enums.ResourceType.WOOL;
+			break;
+		case "Grain":
+			_FromResource = Enums.ResourceType.GRAIN;
+			break;
+		case "Lumber":
+			_FromResource = Enums.ResourceType.LUMBER;
+			break;
+		case "Ore":
+			_FromResource = Enums.ResourceType.ORE;
+			break;
+		}
+
+	}
+
+	/// <summary>
+	/// Sets the ToResource attribute of this instance of UI manager that the Player wants to get from a trade
+	/// This is Private, because it is only called when the actual trade with bank is called as well
+	/// </summary>
+	/// <param name="p_ResourceType">P resource type.</param>
+	private void setToResource(string p_ResourceType)
+	{
+		switch (p_ResourceType) 
+		{
+		case "Brick":
+			_ToResource = Enums.ResourceType.BRICK;
+			break;
+		case "Wool":
+			_ToResource = Enums.ResourceType.WOOL;
+			break;
+		case "Grain":
+			_ToResource = Enums.ResourceType.GRAIN;
+			break;
+		case "Lumber":
+			_ToResource = Enums.ResourceType.LUMBER;
+			break;
+		case "Ore":
+			_ToResource = Enums.ResourceType.ORE;
+			break;
+		}
+
+	}
+
+
+	/// <summary>
 	/// Sets the context panel contents for selecting options of either a vertex or edge
 	/// </summary>
 	private void setContextPanelChildren()
@@ -270,6 +426,7 @@ public class UIManager : NetworkBehaviour {
 		_VertexButtonsPanel = _ContextContentPanel.GetChild (0);
 		_EdgeButtonsPanel = _ContextContentPanel.GetChild (1);
 	}
+
 
 	#endregion
 
@@ -279,12 +436,16 @@ public class UIManager : NetworkBehaviour {
         // DEBUGGING -----
         if (_CurrentPlayer.gameObject.GetComponent<NetworkIdentity>().isLocalPlayer)
         {
-            // Check whether _CurrentPlayer has been initialised
+            // Check whether _CurrentPlayer has been initialised before running these checks
+			// These are all here for DEBUGGING only
+			// Each of these methods must be placed in the appropriate class in final version
             if (!isCurrentPlayerNull())
             {
                 updateResources();
                 updateCommodities();
                 updateMyPlayerPanel();
+				updateDiceRollPanel ();
+				updateTurnsPanel();
             }
         }
 	

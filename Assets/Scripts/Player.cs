@@ -22,13 +22,14 @@ public class Player : NetworkBehaviour {
     private string userName;
     private string password;
 	private Enums.Status status;
-    private Enums.Color myColor;
+    public Enums.Color myColor;
     
     public int victoryPoints;
 
     private int safeCardCount;
 	private int cityWallsLeft;
     private bool movedRoad;
+    private bool myTurn;
 
     private Dictionary<Vector3, GamePiece> spawnedPieces;
 
@@ -48,6 +49,12 @@ public class Player : NetworkBehaviour {
         progressCards = new List<ProgressCardName>();
         
         resources = new int[7];
+        resources[(int)Enums.ResourceType.BRICK] = 5;
+        resources[(int)Enums.ResourceType.WOOL] = 5;
+        resources[(int)Enums.ResourceType.GRAIN] = 5;
+        resources[(int)Enums.ResourceType.ORE] = 5;
+        resources[(int)Enums.ResourceType.LUMBER] = 5;
+
         commodities = new int[5];
         goldCount = 0;
         
@@ -70,6 +77,16 @@ public class Player : NetworkBehaviour {
             gameObject.name = Network.player.ipAddress;
             userName = gameObject.name;
             Instantiate(myHud);
+            myTurn = false;
+        }
+    }
+
+    public void Update()
+    {
+        if(isLocalPlayer)
+        {
+            //myTurn = GetComponent<GameManager>().getCurrentPlayer().Equals(gameObject.name);
+            
         }
     }
 
