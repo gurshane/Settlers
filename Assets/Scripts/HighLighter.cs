@@ -319,11 +319,11 @@ public class HighLighter : NetworkBehaviour {
                             return;
                         }
 
-                        //Same colour as me
-                        if ((int)g.getColor() != (int)myColor)
-                        {
-                            return;
-                        }
+                        ////Same colour as me
+                        //if ((int)g.getColor() != (int)myColor)
+                        //{
+                        //    return;
+                        //}
 
                         try
                         {
@@ -674,7 +674,7 @@ public class HighLighter : NetworkBehaviour {
         {
             if(((int)hex.hexType == (int)Enums.HexType.WATER) || ((int)hex.hexType == (int)Enums.HexType.DESERT))
             {
-                return;
+                continue;
             }
             //If this hex has the right hex number
             if(hex.hexNumber == sum)
