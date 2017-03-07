@@ -151,7 +151,7 @@ public class BoardGenerator : NetworkBehaviour {
             switch (number)
             {
                 case "one":
-                    hex.hexNumber = 1;
+                    hex.hexNumber = Random.Range(2, 6);
                     break;
                 case "two":
                     hex.hexNumber = 2;
@@ -169,7 +169,7 @@ public class BoardGenerator : NetworkBehaviour {
                     hex.hexNumber = 6;
                     break;
                 case "seven":
-                    hex.hexNumber = Random.Range(1, 6);
+                    hex.hexNumber = Random.Range(2, 6);
                     break;
                 case "eight":
                     hex.hexNumber = 8;

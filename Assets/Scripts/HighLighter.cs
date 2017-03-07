@@ -77,8 +77,7 @@ public class HighLighter : NetworkBehaviour {
         {
             return;
         }
-
-        Debug.Log(boardState.hexPoisition.Count);
+        
 
         if(myDieNumbers.Count >= 3)
         {
@@ -504,9 +503,17 @@ public class HighLighter : NetworkBehaviour {
         Debug.Log(col);
         go.GetComponent<MeshRenderer>().material = prefabHolder.materials[mymat];
         //Destory whats already there
-        GameObject oldGo = boardState.spawnedObjects[v];
-        boardState.spawnedObjects.Remove(v);
-        Destroy(oldGo);
+        GameObject oldGo;
+        try
+        {
+            oldGo = boardState.spawnedObjects[v];
+            boardState.spawnedObjects.Remove(v);
+            Destroy(oldGo);
+        }
+        catch(Exception e)
+        {
+
+        }
 
         Vertex source = boardState.vertexPosition[v];
         City c = new City(myColor, false);
@@ -683,11 +690,19 @@ public class HighLighter : NetworkBehaviour {
                     {
                         Debug.Log("right piece");
                         //And this piece is my colour
-                        if((int)gp.getColor() == (int)myColor)
-                        {
+                        //if((int)gp.getColor() == (int)myColor)
+                        //{
                             Debug.Log("yahtzee");
+                        try
+                        {
+                            City city = (City)gp;
+                            p.addResource(hex.resourceType, 2);
+                        }
+                        catch(Exception e)
+                        {
                             p.addResource(hex.resourceType, 1);
                         }
+                        //}
                     }
                 }
             }
