@@ -58,7 +58,6 @@ public class HighLighter : NetworkBehaviour {
         myDieNumbers = new List<int>();
         boardState = GetComponent<BoardState>();
         p = GetComponent<Player>();
-        //StartCoroutine(pickColor());
         numPlayers = 2;
         numPlayersReady = 0;
         currentTurn = GetComponent<turnOrder>();
@@ -66,15 +65,20 @@ public class HighLighter : NetworkBehaviour {
         red = UnityEngine.Random.Range(0, 255);
         green = UnityEngine.Random.Range(0, 255);
         blue = UnityEngine.Random.Range(0, 255);
-       
+
+
+        StartCoroutine(pickColor());
     }
-    
+
     // Update is called once per frame
     void Update() {
+        
         if(!isLocalPlayer)
         {
             return;
         }
+
+        Debug.Log(boardState.hexPoisition.Count);
 
         if(myDieNumbers.Count >= 3)
         {
@@ -498,7 +502,7 @@ public class HighLighter : NetworkBehaviour {
         go.transform.Translate(0f, 0f, 10f);
         Color col = new Color(r, g, b);
         Debug.Log(col);
-        go.GetComponent<MeshRenderer>().material.SetColor("_Color", Color.red);
+        go.GetComponent<MeshRenderer>().material = prefabHolder.materials[mymat];
         //Destory whats already there
         GameObject oldGo = boardState.spawnedObjects[v];
         boardState.spawnedObjects.Remove(v);
@@ -529,7 +533,7 @@ public class HighLighter : NetworkBehaviour {
         go.transform.Translate(0f, 0f, 10f);
         Color col = new Color(r, g, b);
         Debug.Log(col);
-        go.GetComponent<MeshRenderer>().material.SetColor("_Color", Color.red);
+        go.GetComponent<MeshRenderer>().material = prefabHolder.materials[mymat];
 
         Vertex source = boardState.vertexPosition[v];
         // Put a settlement on the board
@@ -565,7 +569,7 @@ public class HighLighter : NetworkBehaviour {
         go.transform.Translate(0f, 0f, 5f);
         Color col = new Color(r, g, b);
         Debug.Log(col);
-        go.GetComponent<MeshRenderer>().material.SetColor("_Color", Color.red);
+        go.GetComponent<MeshRenderer>().material = prefabHolder.materials[mymat];
         Edge source = boardState.edgePosition[v];
         // Put a road on the board
         Road road = new Road(myColor, isBoat);
@@ -599,7 +603,7 @@ public class HighLighter : NetworkBehaviour {
 
     IEnumerator pickColor()
     {
-        yield return new WaitForSeconds(UnityEngine.Random.Range(0.0f, 3.0f)+UnityEngine.Random.Range(1f, 3f) + UnityEngine.Random.Range(0f, 2f));
+        yield return new WaitForSeconds(UnityEngine.Random.Range(0.0f, 3.0f)+UnityEngine.Random.Range(1f, 3f) + UnityEngine.Random.Range(1f, 4f));
         if (!myColors.Contains(Enums.Color.WHITE))
         {
             Debug.Log("I'm white");
