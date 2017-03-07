@@ -254,15 +254,6 @@ public class MoveManager : NetworkBehaviour {
 
 		// Get the resources around the settlement
 		Player current = GameManager.getCurrentPlayer ();
-		foreach (Hex h in validHexes) {
-			if (h.adjacentToVertex (v)) {
-				Enums.ResourceType res = GameManager.getResourceFromHex (h.getHexType());
-				if (res != Enums.ResourceType.NONE) {
-					current.addResource (res, 1);
-					Bank.withdrawResource (res, 1);
-				}
-			}
-		}
 
 		// Update the victory points and add a port
 		current.incrementVictoryPoints (1);

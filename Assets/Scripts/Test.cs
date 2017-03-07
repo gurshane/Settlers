@@ -315,7 +315,7 @@ public class Test : MonoBehaviour {
 		// Check all the knights that can be upgrade
 		Debug.Log ("canUpgradeKnight:\n");
 		for (int i = 0; i < vertexCount; i++) {
-			if (MoveAuthorizer.canUpgradeKnight(fullRes, fullDev, vertices[i])) {
+			if (MoveAuthorizer.canUpgradeKnight(fullRes, fullDev, vertices[i], pieces)) {
 				Debug.Log("Knight at vertex " + i + " can be upgraded\n");
 			}
 		}
