@@ -668,8 +668,7 @@ public class HighLighter : NetworkBehaviour {
         {
             return;
         }
-
-        Debug.Log("doing it");
+        
         //Go through all hexes
         foreach (Hex hex in boardState.hexPoisition.Values)
         {
