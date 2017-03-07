@@ -31,6 +31,20 @@ public class UIPortSymbol : MonoBehaviour {
 	}
 
 	/// <summary>
+	/// Updates the position of the port symbol
+	/// </summary>
+	public void updatePosition()
+	{
+		Vector3 newPos = new Vector3 ();
+
+		newPos.x = _Vertex.transform.position.x;
+		newPos.y = _Vertex.transform.position.y + 40f;
+		newPos.z = _Vertex.transform.position.z;
+
+		transform.position = newPos;
+	}
+
+	/// <summary>
 	/// Billboards the UI element to always face the camera no matter where it is
 	/// </summary>
 	private void faceCamera()
@@ -84,8 +98,10 @@ public class UIPortSymbol : MonoBehaviour {
 
 	// Update is called once per frame
 	void Update () {
+
 		faceCamera ();
 		updateSpriteColor ();
+		updatePosition ();
 		
 	}
 }
