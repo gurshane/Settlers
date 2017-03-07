@@ -97,7 +97,7 @@ public class UITurnsPanel : UIElement {
 		}
 
 		// If second road/boat not placed, print a prompt saying so
-		if (p_Highlighter.placedFirstCity == false) 
+		if (p_Highlighter.placedSecondEdge == false) 
 		{
 			_PlacementText.text = "  - Place Second Road/Boat";
 			return;
