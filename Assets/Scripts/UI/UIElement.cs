@@ -58,7 +58,7 @@ public abstract class UIElement : MonoBehaviour, IDescribable<string>, IPointerE
 	/// <param name="p_EventData">P event data.</param>
 	public virtual void OnPointerEnter(PointerEventData p_EventData)
 	{
-		showDescription("");
+		showDescription(name);
 	}
 
 	/// <summary>
