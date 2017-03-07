@@ -38,7 +38,7 @@ public class UIPortSymbol : MonoBehaviour {
 		Vector3 newPos = new Vector3 ();
 
 		newPos.x = _Vertex.transform.position.x;
-		newPos.y = _Vertex.transform.position.y + 40f;
+		newPos.y = _Vertex.transform.position.y + 20f;
 		newPos.z = _Vertex.transform.position.z;
 
 		transform.position = newPos;
