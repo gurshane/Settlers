@@ -6,10 +6,11 @@ using Enums;
 public class Vertex : BoardPiece {
 
 	public List<Edge> neighbouringEdges;
+    public bool isOnMainland;
 	private bool hasWall;
 	private int chits;
 	private bool adjacentToRobber;
-	private Enums.PortType portType;
+	public Enums.PortType portType;
 	private int visited;
 
 	public Vertex(Enums.TerrainType terrain) : base (terrain) {

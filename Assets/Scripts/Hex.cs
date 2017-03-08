@@ -12,9 +12,29 @@ public class Hex : BoardPiece {
 	public Enums.HexType hexType;
 
     [SyncVar]
+    public Enums.ResourceType resourceType;
+
+    [SyncVar]
 	public int hexNumber;
 
-	public Hex(Enums.TerrainType terrain, Enums.HexType hexType) : base(terrain) {
+    public Hex(Enums.TerrainType terrain, Enums.HexType hexType) : base(terrain)
+    {
+        this.vertices = new List<Vertex>();
+        if (terrain == Enums.TerrainType.WATER)
+        {
+            this.hexType = Enums.HexType.WATER;
+        }
+        else if (hexType == Enums.HexType.WATER)
+        {
+            this.hexType = Enums.HexType.DESERT;
+        }
+        else
+        {
+            this.hexType = hexType;
+        }
+    }
+
+    public Hex(Enums.TerrainType terrain, Enums.HexType hexType, Enums.ResourceType resType) : base(terrain) {
 		this.vertices = new List<Vertex> ();
 		if (terrain == Enums.TerrainType.WATER) {
 			this.hexType = Enums.HexType.WATER;
@@ -23,6 +43,7 @@ public class Hex : BoardPiece {
 		} else {
 			this.hexType = hexType;
 		}
+        this.resourceType = resType;
 	}
 
 	public List<Vertex> getVertices() {

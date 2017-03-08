@@ -42,7 +42,7 @@ public class BoardGenerator : NetworkBehaviour {
     // Use this for initialization
     void LateUpdate ()
     {
-        if(doOnce)
+        if(doOnce && isServer)
         {
             doOnce = false;
 
@@ -107,7 +107,7 @@ public class BoardGenerator : NetworkBehaviour {
             GameObject spawnedHex = Instantiate(hexToSpawn, targetTransform.position, Quaternion.identity, targetTransform);
 
             GameObject targetNumber = numberPieces[Random.Range(0, numberPieces.Count)];
-            GameObject spawnedNumber = Instantiate(targetNumber, targetTransform.position, Quaternion.identity, targetTransform);
+            //GameObject spawnedNumber = Instantiate(targetNumber, targetTransform.position, Quaternion.identity, targetTransform);
 
             Hex hex = targetSpawn.gameObject.GetComponent<Hex>();
             string name = hexToSpawn.name;
@@ -115,27 +115,35 @@ public class BoardGenerator : NetworkBehaviour {
             {
                 case "waterTile":
                     hex.hexType = Enums.HexType.WATER;
+                    hex.resourceType = Enums.ResourceType.NONE;
                     break;
                 case "brickTile":
                     hex.hexType = Enums.HexType.HILL;
+                    hex.resourceType = Enums.ResourceType.BRICK;
                     break;
                 case "desertTile":
                     hex.hexType = Enums.HexType.DESERT;
+                    hex.resourceType = Enums.ResourceType.NONE;
                     break;
                 case "goldTile":
                     hex.hexType = Enums.HexType.GOLD;
+                    hex.resourceType = Enums.ResourceType.NONE;
                     break;
                 case "oreTile":
                     hex.hexType = Enums.HexType.MOUNTAIN;
+                    hex.resourceType = Enums.ResourceType.ORE;
                     break;
                 case "sheepTile":
                     hex.hexType = Enums.HexType.PASTURE;
+                    hex.resourceType = Enums.ResourceType.WOOL;
                     break;
                 case "wheatTile":
                     hex.hexType = Enums.HexType.FIELD;
+                    hex.resourceType = Enums.ResourceType.GRAIN;
                     break;
                 case "woodTile":
                     hex.hexType = Enums.HexType.FOREST;
+                    hex.resourceType = Enums.ResourceType.LUMBER;
                     break;
             }
 
@@ -143,7 +151,7 @@ public class BoardGenerator : NetworkBehaviour {
             switch (number)
             {
                 case "one":
-                    hex.hexNumber = 1;
+                    hex.hexNumber = Random.Range(8, 12);
                     break;
                 case "two":
                     hex.hexNumber = 2;
@@ -161,7 +169,7 @@ public class BoardGenerator : NetworkBehaviour {
                     hex.hexNumber = 6;
                     break;
                 case "seven":
-                    hex.hexNumber = 7;
+                    hex.hexNumber = Random.Range(2, 6);
                     break;
                 case "eight":
                     hex.hexNumber = 8;
@@ -190,7 +198,7 @@ public class BoardGenerator : NetworkBehaviour {
             }
 
             NetworkServer.Spawn(spawnedHex);
-            NetworkServer.Spawn(targetNumber);
+            //NetworkServer.Spawn(targetNumber);
             spawnPositions.Remove(targetSpawn);
         }
     }

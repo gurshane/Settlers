@@ -6,6 +6,8 @@ using UnityEngine.Networking;
 
 public class Player : NetworkBehaviour {
 
+    public GameObject myHud;
+
     private List<GamePiece> pieces;
     private List<ProgressCardName> progressCards;
 
@@ -20,13 +22,14 @@ public class Player : NetworkBehaviour {
     private string userName;
     private string password;
 	private Enums.Status status;
-    private Enums.Color myColor;
+    public Enums.Color myColor;
     
     public int victoryPoints;
 
     private int safeCardCount;
 	private int cityWallsLeft;
     private bool movedRoad;
+    private bool myTurn;
 
     private Dictionary<Vector3, GamePiece> spawnedPieces;
 
@@ -46,22 +49,45 @@ public class Player : NetworkBehaviour {
         progressCards = new List<ProgressCardName>();
         
         resources = new int[7];
+        resources[(int)Enums.ResourceType.BRICK] = 0;
+        resources[(int)Enums.ResourceType.WOOL] = 0;
+        resources[(int)Enums.ResourceType.GRAIN] = 0;
+        resources[(int)Enums.ResourceType.ORE] = 0;
+        resources[(int)Enums.ResourceType.LUMBER] = 0;
+
         commodities = new int[5];
         goldCount = 0;
         
         devFlipChart = new int[4];
         resourceRatios = new int[7];
         commodityRatios = new int[5];
-
-        userName = "";
+        
+        
         password = "";
-
+        
         status = Enums.Status.ACTIVE;
 
         safeCardCount = 7;
         cityWallsLeft = 3;
 
         movedRoad = false;
+
+        if(isLocalPlayer)
+        {
+            gameObject.name = Network.player.ipAddress;
+            userName = gameObject.name;
+            Instantiate(myHud);
+            myTurn = false;
+        }
+    }
+
+    public void Update()
+    {
+        if(isLocalPlayer)
+        {
+            //myTurn = GetComponent<GameManager>().getCurrentPlayer().Equals(gameObject.name);
+            
+        }
     }
 
     public void SetColor(Enums.Color color)

@@ -9,7 +9,7 @@ public class GameManager : NetworkBehaviour {
 	// Overall Game State
 	private List<Player> players;
 	private List<Enums.TurnOrder> playOrder;
-	private Player currentPlayer;
+	private string currentPlayer;
 
     [SyncVar]
 	public Enums.GamePhase gamePhase;
@@ -60,61 +60,81 @@ public class GameManager : NetworkBehaviour {
     Bank bank;
     BoardState boardState;
     MoveManager moveManager;
-
+    
     [SyncVar]
-    public bool giveWhite;
-
-    [SyncVar]
-    public bool giveOrange;
-
-    [SyncVar]
-    public bool giveBlue;
-
-    [SyncVar]
-    public bool giveRed;
+    public int color = 0;
 
     private bool doOnce;
-    
+
+    [SyncVar]
+    public bool updating;
+
+    public List<string> playerNames;
 
     void Start()
     {
-
+        doOnce = true;
         tradeManager = GetComponent<TradeManager>();
         bank = GetComponent<Bank>();
         boardState = GetComponent<BoardState>();
         moveManager = GetComponent<MoveManager>();
-
-        giveWhite = true;
-        giveOrange = true;
-        giveBlue = true;
-        giveRed = true;
+        playerNames = new List<string>();
+        updating = false;
     }
     
-    void OnPlayerConnected(NetworkPlayer np)
+    void LateUpdate()
     {
-        Debug.Log(np.externalIP);
+        if(isLocalPlayer && doOnce)
+        {
+            UpdateColor();
+            doOnce = false;
+        }
+    }
 
-        /*
-         * if (giveWhite)
-            {
-                giveWhite = false;
-                GetComponent<Player>().SetColor(Enums.Color.WHITE);
-            }
-            else if (giveOrange)
-            {
-                giveOrange = false;
-                GetComponent<Player>().SetColor(Enums.Color.ORANGE);
-            }
-            else if (giveBlue)
-            {
-                giveBlue = false;
-                GetComponent<Player>().SetColor(Enums.Color.BLUE);
-            }
-            else if (giveRed)
-            {
-                giveRed = false;
-                GetComponent<Player>().SetColor(Enums.Color.RED);
-            } */
+    public void UpdateColor()
+    {
+        CmdUpdateColor();
+    }
+
+    [Command]
+    void CmdUpdateColor()
+    {
+        RpcUpdateColor();
+    }
+
+    [ClientRpc]
+    void RpcUpdateColor()
+    {
+        color++;
+    }
+
+    [Command]
+    void CmdUpdatePlayerNameList(string name)
+    {
+        RpcUpdatePlayerNameList(name);
+    }
+
+    [ClientRpc]
+    void RpcUpdatePlayerNameList(string name)
+    {
+        playerNames.Add(name);
+    }
+
+    void UpdateCurrentPlayer(string nextPlayer)
+    {
+        CmdUpdateCurrentPlayer(nextPlayer);
+    }
+
+    [Command]
+    void CmdUpdateCurrentPlayer(string nextPlayer)
+    {
+        RpcUpdateCurrentPlayer(nextPlayer);
+    }
+
+    [ClientRpc]
+    void RpcUpdateCurrentPlayer(string nextPlayer)
+    {
+        currentPlayer = nextPlayer;
     }
 
     public int getNumberResources() {
@@ -137,175 +157,175 @@ public class GameManager : NetworkBehaviour {
 		return pointsToWin;
 	}
 
-	// Complete an initial first turn
-	public void initialFirstTurn() {
-		currentPlayer = getNextPlayer (false);
-		gamePhase = Enums.GamePhase.SETUP_ONE;
+	//// Complete an initial first turn
+	//public void initialFirstTurn() {
+	//	currentPlayer = getNextPlayer (false);
+	//	gamePhase = Enums.GamePhase.SETUP_ONE;
 
-		// Current player places pieces
+	//	// Current player places pieces
 
-		if (getCurrentTurn () == getLastTurn ()) {
-			initialSecondTurn (true);
-		} else {
-			initialFirstTurn ();
-		}
-	}
+	//	if (getCurrentTurn () == getLastTurn ()) {
+	//		initialSecondTurn (true);
+	//	} else {
+	//		initialFirstTurn ();
+	//	}
+	//}
 		
-	// Complete an initial second turn
-	public void initialSecondTurn(bool first) {
-		if (first && getCurrentTurn () == getLastTurn ()) {
-			currentPlayer = currentPlayer;
-		} else {
-			currentPlayer = getNextPlayer (true);
-		}
-		gamePhase = Enums.GamePhase.SETUP_TWO;
+	//// Complete an initial second turn
+	//public void initialSecondTurn(bool first) {
+	//	if (first && getCurrentTurn () == getLastTurn ()) {
+	//		currentPlayer = currentPlayer;
+	//	} else {
+	//		currentPlayer = getNextPlayer (true);
+	//	}
+	//	gamePhase = Enums.GamePhase.SETUP_TWO;
 
-		// Current player places pieces
+	//	// Current player places pieces
 
-		if (getCurrentTurn () == Enums.TurnOrder.FIRST) {
-			beginTurn (true);
-		} else {
-			initialSecondTurn (false);
-		}
-	}
+	//	if (getCurrentTurn () == Enums.TurnOrder.FIRST) {
+	//		beginTurn (true);
+	//	} else {
+	//		initialSecondTurn (false);
+	//	}
+	//}
 
-	// Begin Game
+	//// Begin Game
 
-	// End Game
+	//// End Game
 
-	public void endGame() {
-	}
+	//public void endGame() {
+	//}
 
-	// Begin a Turn
-	public void beginTurn(bool first) {
-		if (first) {
-			currentPlayer = currentPlayer;
-		} else {
-			currentPlayer = getNextPlayer (false);
-		}
-		gamePhase = Enums.GamePhase.PHASE_ONE;
+	//// Begin a Turn
+	//public void beginTurn(bool first) {
+	//	if (first) {
+	//		currentPlayer = currentPlayer;
+	//	} else {
+	//		currentPlayer = getNextPlayer (false);
+	//	}
+	//	gamePhase = Enums.GamePhase.PHASE_ONE;
 
-		// current player rolls dice
-	}
+	//	// current player rolls dice
+	//}
 
-	// End a turn
-	public void endTurn() {
+	//// End a turn
+	//public void endTurn() {
 
-		// If a player has won, end the game
-		foreach (Player p in players) {
-			if (p.getVictoryCounts () >= pointsToWin) {
-				endGame ();
-				return;
-			}
-		}
+	//	// If a player has won, end the game
+	//	foreach (Player p in players) {
+	//		if (p.getVictoryCounts () >= pointsToWin) {
+	//			endGame ();
+	//			return;
+	//		}
+	//	}
 
-		// Do some cleanup steps
-		foreach (Player p in players) {
-			p.roadNotMoved ();
+	//	// Do some cleanup steps
+	//	foreach (Player p in players) {
+	//		p.roadNotMoved ();
 
-			// If any player has more than 4 progress cards, they must discard
-			if (p.getProgressCards ().Count > progressCardLimit) {
+	//		// If any player has more than 4 progress cards, they must discard
+	//		if (p.getProgressCards ().Count > progressCardLimit) {
 
-				// Those players discard down to 4 progress cards
+	//			// Those players discard down to 4 progress cards
 
-			}
+	//		}
 
-			// Set some turn specific booleans to false
-			List<GamePiece> pieceList = p.getGamePieces ();
-			foreach (GamePiece piece in pieceList) {
-				if (piece.getPieceType () == Enums.PieceType.KNIGHT) {
-					Knight k = (Knight)piece;
-					k.notActivatedThisTurn ();
-					k.notUpgradedThisTurn ();
-				} else if (piece.getPieceType () == Enums.PieceType.ROAD) {
-					Road r = (Road)piece;
-					r.notBuiltThisTurn ();
-				}
-			}
-		}
+	//		// Set some turn specific booleans to false
+	//		List<GamePiece> pieceList = p.getGamePieces ();
+	//		foreach (GamePiece piece in pieceList) {
+	//			if (piece.getPieceType () == Enums.PieceType.KNIGHT) {
+	//				Knight k = (Knight)piece;
+	//				k.notActivatedThisTurn ();
+	//				k.notUpgradedThisTurn ();
+	//			} else if (piece.getPieceType () == Enums.PieceType.ROAD) {
+	//				Road r = (Road)piece;
+	//				r.notBuiltThisTurn ();
+	//			}
+	//		}
+	//	}
 
-		// Begin the next turn
-		beginTurn (false);
-	}
+	//	// Begin the next turn
+	//	beginTurn (false);
+	//}
 
-	// Find the next player
-	private Player getNextPlayer(bool reverse) {
+	//// Find the next player
+	//private Player getNextPlayer(bool reverse) {
 
-		// If current player is null, get the first player in the turn order
-		if (Object.ReferenceEquals(currentPlayer, null)) {
-			for (int i = 0; i < playOrder.Count; i++) {
-				if (playOrder[i] == Enums.TurnOrder.FIRST) {
-					return players[i];
-				}
-			}
-		}
+	//	// If current player is null, get the first player in the turn order
+	//	if (Object.ReferenceEquals(currentPlayer, null)) {
+	//		for (int i = 0; i < playOrder.Count; i++) {
+	//			if (playOrder[i] == Enums.TurnOrder.FIRST) {
+	//				return players[i];
+	//			}
+	//		}
+	//	}
 
-		Enums.TurnOrder currentTurn = getCurrentTurn();
-		Enums.TurnOrder nextTurn;
-		Enums.TurnOrder lastTurn = getLastTurn ();
+	//	Enums.TurnOrder currentTurn = getCurrentTurn();
+	//	Enums.TurnOrder nextTurn;
+	//	Enums.TurnOrder lastTurn = getLastTurn ();
 
-		// Check if turns are moving in reverse order
-		if (!reverse) {
-			if (currentTurn == lastTurn) {
-				nextTurn = Enums.TurnOrder.FIRST;
-			} else {
-				int next = ((int)currentTurn) + 1;
-				nextTurn = (Enums.TurnOrder)next;
-			}
-		} else {
-			if (currentTurn == Enums.TurnOrder.FIRST) {
-				nextTurn = lastTurn;
-			} else {
-				int next = ((int)currentTurn) - 1;
-				nextTurn = (Enums.TurnOrder)next;
-			}
-		}
+	//	// Check if turns are moving in reverse order
+	//	if (!reverse) {
+	//		if (currentTurn == lastTurn) {
+	//			nextTurn = Enums.TurnOrder.FIRST;
+	//		} else {
+	//			int next = ((int)currentTurn) + 1;
+	//			nextTurn = (Enums.TurnOrder)next;
+	//		}
+	//	} else {
+	//		if (currentTurn == Enums.TurnOrder.FIRST) {
+	//			nextTurn = lastTurn;
+	//		} else {
+	//			int next = ((int)currentTurn) - 1;
+	//			nextTurn = (Enums.TurnOrder)next;
+	//		}
+	//	}
 
-		// Find the next player based on the next turn
-		int index = 0;
-		for (int i = 0; i < playOrder.Count; i++) {
-			if (playOrder [i] == nextTurn) {
-				index = i;
-			}
-		}
+	//	// Find the next player based on the next turn
+	//	int index = 0;
+	//	for (int i = 0; i < playOrder.Count; i++) {
+	//		if (playOrder [i] == nextTurn) {
+	//			index = i;
+	//		}
+	//	}
 
-		// Return the next player
-		return players [index];
-	}
+	//	// Return the next player
+	//	return players [index];
+	//}
 
-	// Get the current turn based on the current player
-	private Enums.TurnOrder getCurrentTurn() {
-		int index = 0;
-		for (int i = 0; i < players.Count; i++) {
-			if (Object.ReferenceEquals (currentPlayer, players [i])) {
-				index = i;
-			}
-		}
-		return playOrder [index];
-	}
+	//// Get the current turn based on the current player
+	//private Enums.TurnOrder getCurrentTurn() {
+	//	int index = 0;
+	//	for (int i = 0; i < players.Count; i++) {
+	//		if (Object.ReferenceEquals (currentPlayer, players [i])) {
+	//			index = i;
+	//		}
+	//	}
+	//	return playOrder [index];
+	//}
 
-	// Get the last turn based on the number of people playing
-	private Enums.TurnOrder getLastTurn() {
-		if (playOrder.Count == 1) {
-			return Enums.TurnOrder.FIRST;
-		} else if (playOrder.Count == 2) {
-			return Enums.TurnOrder.SECOND;
-		} else if (playOrder.Count == 3) {
-			return Enums.TurnOrder.THIRD;
-		} else {
-			return Enums.TurnOrder.FOURTH;
-		}
-	}
+	//// Get the last turn based on the number of people playing
+	//private Enums.TurnOrder getLastTurn() {
+	//	if (playOrder.Count == 1) {
+	//		return Enums.TurnOrder.FIRST;
+	//	} else if (playOrder.Count == 2) {
+	//		return Enums.TurnOrder.SECOND;
+	//	} else if (playOrder.Count == 3) {
+	//		return Enums.TurnOrder.THIRD;
+	//	} else {
+	//		return Enums.TurnOrder.FOURTH;
+	//	}
+	//}
 
-	public List<string> getPlayerNames() {
-		List<string> ret = new List<string> ();
-		foreach(Player p in players) {
-			ret.Add (p.getUserName());
-		}
-		return ret;
-	}
+	//public List<string> getPlayerNames() {
+	//	List<string> ret = new List<string> ();
+	//	foreach(Player p in players) {
+	//		ret.Add (p.getUserName());
+	//	}
+	//	return ret;
+	//}
 
-	public Player getCurrentPlayer() {
+	public string getCurrentPlayer() {
 		return currentPlayer;
 	}
 
@@ -479,7 +499,16 @@ public class GameManager : NetworkBehaviour {
 
 		// Check if a seven was rolled
 		if (firstDie + secondDie == 7) {
-			resolveSeven ();
+            //resolveSeven ();
+            if(firstDie<secondDie)
+            {
+                firstDie++;
+            }
+            else
+            {
+                secondDie++;
+            }
+            distribute();
 		} else {
 			distribute ();
 		}

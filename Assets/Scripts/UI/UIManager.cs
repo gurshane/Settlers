@@ -2,28 +2,48 @@
 using System.Collections.Generic;
 using UnityEngine;
 using Enums;
+using UnityEngine.Networking;
 
 /// <summary>
 /// Handles update and display of all Player attributes to HUD
 /// </summary>
-public class UIManager : MonoBehaviour {
+public class UIManager : NetworkBehaviour {
 
 
 	/// <summary>
 	/// The game manager object
 	/// </summary>
 	[SerializeField]
-	private GameObject _GameManager;
+	private GameManager _GameManager;
 
 	#region Player instance and Attributes
 
 	/// <summary>
 	/// The player which this UI displays the info of
 	/// </summary>
+	[SerializeField]
 	private Player _CurrentPlayer;
+
+	/// <summary>
+	/// The player's highlighter component
+	/// </summary>
+	HighLighter _PlayerHighlighter;
 
 	#endregion
 
+	#region Trade Attributes
+	/// <summary>
+	/// Resource that Player proposes in a trade
+	/// </summary>
+	[SerializeField]
+	private Enums.ResourceType _FromResource;
+
+	/// <summary>
+	/// Resource that Player hopes to receive from a trade
+	/// </summary>
+	[SerializeField]
+	private Enums.ResourceType _ToResource;
+	#endregion
 
 	#region UI Panels
 
@@ -49,7 +69,10 @@ public class UIManager : MonoBehaviour {
 	/// Panel containing info of which player's turn it is and the name of the current player
 	/// </summary>
 	[SerializeField]
-	private Transform _CurrentPlayerPanel;
+	private UIElement _MyPlayerPanel;
+
+	[SerializeField]
+	private UIElement _TurnsPanel;
 
 	/// <summary>
 	/// Panel containing Barbarian slider
@@ -57,27 +80,76 @@ public class UIManager : MonoBehaviour {
 	[SerializeField]
 	private Transform _BarbarianPanel;
 
-	#endregion
+	/// <summary>
+	/// The context panel which displays when a board vertex or edge is clicked
+	/// </summary>
+	[SerializeField]
+	private Transform _ContextPanel;
 
+	/// <summary>
+	/// Contents within the ContextPanel. Parent of the VertexButtons and the EdgeButtons panels
+	/// </summary>
+	[SerializeField]
+	private Transform _ContextContentPanel;
+
+	[SerializeField]
+	private Transform _VertexButtonsPanel;
+	[SerializeField]
+	private Transform _EdgeButtonsPanel;
+
+	/// <summary>
+	/// The dice roll panel displayed on the UI after a dice roll has occurred
+	/// </summary>
+	[SerializeField]
+	private Transform _DiceRollPanel;
+
+	/// <summary>
+	/// The maritime trade panel displayed once it is SecondTurn
+	/// </summary>
+	[SerializeField]
+	private Transform _MaritimeTradePanel;
+
+
+    #endregion
 
 
 	// Use this for initialization
 	void Start () {
+        
+        _CurrentPlayer = GameObject.Find(Network.player.ipAddress).GetComponent<Player>();
+		_PlayerHighlighter = _CurrentPlayer.GetComponent<HighLighter> ();
 
-		//_GameManager = GameObject.FindGameObjectWithTag("GameManager");
+        if (_CurrentPlayer.gameObject.GetComponent<NetworkIdentity>().isLocalPlayer)
+        {
+            // Hide ContextPanel and its contents on startup
+            setContextPanelChildren();
+            _ContextPanel.gameObject.SetActive(false);
+            _VertexButtonsPanel.gameObject.SetActive(false);
+            _EdgeButtonsPanel.gameObject.SetActive(false);
 
-		//setPlayerInfoPanels();
 
-	}
+			// Get the GameManager Component off of the CurrentPlayer object
+			_GameManager = _CurrentPlayer.GetComponent<GameManager>();
+
+			// Set the Trade Attributes to NONE. And the Maritime panel active to false
+			_FromResource = Enums.ResourceType.NONE;
+			_ToResource = Enums.ResourceType.NONE;
+			_MaritimeTradePanel.gameObject.SetActive (false);
+
+
+			// Set the Dice Roll panel to false at start. Only shows during second turn
+			_DiceRollPanel.gameObject.SetActive(false);
+        }
+    }
 
 
 
 
-	#region Private Methods
-	/// <summary>
-	/// Updates the resources of the currentPlayer to be displayed on the UI
-	/// </summary>
-	private void updateResources()
+    #region Update Methods
+    /// <summary>
+    /// Updates the resources of the currentPlayer to be displayed on the UI
+    /// </summary>
+    public void updateResources()
 	{
 		foreach (Transform resource in _ResourcesPanel)
 		{
@@ -88,7 +160,7 @@ public class UIManager : MonoBehaviour {
 	/// <summary>
 	/// Updates the commodities of the currentPlayer to be displayed on the UI
 	/// </summary>
-	private void updateCommodities()
+	public void updateCommodities()
 	{
 		foreach (Transform commodity in _CommoditiesPanel)
 		{
@@ -97,10 +169,44 @@ public class UIManager : MonoBehaviour {
 	}
 
 	/// <summary>
+	/// Updates the current player panel to be displayed on the UI
+	/// </summary>
+	public void updateMyPlayerPanel()
+	{
+		// Update the CurrentPlayer panel using information from this instance's CurrentPlayer attributes
+		_MyPlayerPanel.uiUpdate (_CurrentPlayer);
+	}
+
+
+	/// <summary>
+	/// Updates the dice roll panel using _GameManager's dice information
+	/// </summary>
+	public void updateDiceRollPanel()
+	{
+		_DiceRollPanel.GetComponent<UIElement> ().uiUpdate(_CurrentPlayer);
+
+
+		// If it is second turn, set DiceRoll Panel active to true
+		if (_PlayerHighlighter.secondTurn == true) _DiceRollPanel.gameObject.SetActive (true);
+	}
+
+	/// <summary>
+	/// Updates the panel stating whether it is the First Turn, and if so, what pieces to place
+	/// </summary>
+	public void updateTurnsPanel()
+	{
+		_TurnsPanel.uiUpdate (_CurrentPlayer);
+
+		// If it is second turn, set MaritimeTradePanel active to true
+		if (_PlayerHighlighter.secondTurn == true) _MaritimeTradePanel.gameObject.SetActive (true);
+	}
+		
+
+	/// <summary>
 	/// Updates the player info panels to be displayed on the UI
 	/// </summary>
 	/*
-	private void updatePlayerInfoPanels ()
+	public void updatePlayerInfoPanels ()
 	{
 		// Keep track of index to assign a player to a PlayerInfoPanel
 		int pIndex = 0;
@@ -129,7 +235,7 @@ public class UIManager : MonoBehaviour {
 	/// <summary>
 	/// Assigns each available Player to each available PlayerInfoPanel
 	/// </summary>
-	private void setPlayerInfoPanels()
+	public void setPlayerInfoPanels()
 	{
 		// Keep track of index to assign a player to a PlayerInfoPanel
 		int pIndex = 0;
@@ -155,25 +261,194 @@ public class UIManager : MonoBehaviour {
 		}
 	}*/
 
+	#endregion
 
-	private void highlightGameObject()
+	#region OnClick method
+	/// <summary>
+	/// Handles response for when a Vertex or Edge on the board is clicked
+	/// </summary>
+	public void showContextPanel(string p_TargetTag)
 	{
-		if (Input.GetButtonDown("Fire1"))
+		// Set Context Panel to Active
+		_ContextPanel.gameObject.SetActive (true);
+
+		// Displace Panel based on Mouse position when the click occurred
+		_ContextPanel.position = Input.mousePosition;
+		_ContextPanel.position += offsetContextPanel ();
+
+		// Depending on Target's tag, display either the list of options for a Vertex or an Edge
+		switch (p_TargetTag) 
 		{
-			Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-			RaycastHit impact;
-			if (Physics.Raycast(ray, out impact))
-			{
-				//_GameManager.GetComponent<GlobalNetworkManager>().CmdHighlightThis( impact.collider.gameObject);
-			}
+		case "Vertex":
+			_VertexButtonsPanel.gameObject.SetActive (true);
+			_EdgeButtonsPanel.gameObject.SetActive (false);
+			break;
+		case "Edge":
+			_VertexButtonsPanel.gameObject.SetActive (false);
+			_EdgeButtonsPanel.gameObject.SetActive (true);
+			break;
+		default:
+			break;
 		}
 	}
+		
+
+	/// <summary>
+	/// Calls the Highlighter method to roll the dice and change first, second, (third) dice values for a turn
+	/// </summary>
+	public void rollDice()
+	{
+		_PlayerHighlighter.rollDice ();
+	}
+
 	#endregion
 		
+
+	#region Trade Methods
+
+	public void maritimeTrade(string p_ToResource)
+	{
+		// Set ToResource from parameter info
+		setToResource (p_ToResource);
+
+		// Make the Maritime Trade using the FromResource and ToResource Attributes
+		_CurrentPlayer.GetComponent<HighLighter> ().makeMaritimeTrade (_FromResource, _ToResource);
+
+		// Revert the trade attributes to NONE so no residual trades carry over to subsequent ones
+		//_ToResource = Enums.ResourceType.NONE;
+		//_FromResource = Enums.ResourceType.NONE;
+	}
+		
+
+	#endregion
+
+
+	// DEBUGGING
+	/// <summary>
+	/// Checks if the _CurrentPlayer has been instantiated or not
+	/// </summary>
+	/// <returns><c>true</c>, if player check was nulled, <c>false</c> otherwise.</returns>
+	private bool isCurrentPlayerNull()
+	{
+		return (_CurrentPlayer == null);
+	}
+		
+	private Vector3 offsetContextPanel()
+	{
+		Vector3 rVec = new Vector3 (0, 0, 0);
+
+		if (Input.mousePosition.y > 4 * (Screen.height/5) ) 
+		{
+			rVec.y = -80f;
+		}
+
+		else
+		{
+			rVec.y = 80f;
+		}
+
+		return rVec;
+	}
+
+
+	#region Setters
+
+	/// <summary>
+	/// Sets the current player attribute of this UIManager instance to the parameter
+	/// </summary>
+	/// <param name="p_CurrentPlayer">P current player.</param>
+	public void setCurrentPlayer(Player p_CurrentPlayer)
+	{
+		_CurrentPlayer = p_CurrentPlayer;
+	}
+
+	/// <summary>
+	/// Sets the FromResource attribute of this instance of UI manager that the Player wants to give in a trade
+	/// </summary>
+	public void setFromResource(string p_ResourceType)
+	{
+		
+		switch (p_ResourceType) 
+		{
+		case "Brick":
+			_FromResource = Enums.ResourceType.BRICK;
+			break;
+		case "Wool":
+			_FromResource = Enums.ResourceType.WOOL;
+			break;
+		case "Grain":
+			_FromResource = Enums.ResourceType.GRAIN;
+			break;
+		case "Lumber":
+			_FromResource = Enums.ResourceType.LUMBER;
+			break;
+		case "Ore":
+			_FromResource = Enums.ResourceType.ORE;
+			break;
+		}
+
+	}
+
+	/// <summary>
+	/// Sets the ToResource attribute of this instance of UI manager that the Player wants to get from a trade
+	/// This is Private, because it is only called when the actual trade with bank is called as well
+	/// </summary>
+	/// <param name="p_ResourceType">P resource type.</param>
+	private void setToResource(string p_ResourceType)
+	{
+		switch (p_ResourceType) 
+		{
+		case "Brick":
+			_ToResource = Enums.ResourceType.BRICK;
+			break;
+		case "Wool":
+			_ToResource = Enums.ResourceType.WOOL;
+			break;
+		case "Grain":
+			_ToResource = Enums.ResourceType.GRAIN;
+			break;
+		case "Lumber":
+			_ToResource = Enums.ResourceType.LUMBER;
+			break;
+		case "Ore":
+			_ToResource = Enums.ResourceType.ORE;
+			break;
+		}
+
+	}
+
+
+	/// <summary>
+	/// Sets the context panel contents for selecting options of either a vertex or edge
+	/// </summary>
+	private void setContextPanelChildren()
+	{
+		_VertexButtonsPanel = _ContextContentPanel.GetChild (0);
+		_EdgeButtonsPanel = _ContextContentPanel.GetChild (1);
+	}
+
+
+	#endregion
 
 	// Update is called once per frame
 	void Update () {
 
-		highlightGameObject ();
+        // DEBUGGING -----
+        if (_CurrentPlayer.gameObject.GetComponent<NetworkIdentity>().isLocalPlayer)
+        {
+            // Check whether _CurrentPlayer has been initialised before running these checks
+			// These are all here for DEBUGGING only
+			// Each of these methods must be placed in the appropriate class in final version
+            if (!isCurrentPlayerNull())
+            {
+                updateResources();
+                updateCommodities();
+                updateMyPlayerPanel();
+				updateDiceRollPanel ();
+				updateTurnsPanel();
+            }
+        }
+	
 	}
+    
 }
