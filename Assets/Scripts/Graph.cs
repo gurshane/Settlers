@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using UnityEngine;
 using Enums;
 
-public static class Graph {
+public  class Graph {
 
 	// Set all vertice to the reset state
-	private static void vertexClear(Vertex v) {
+	private  void vertexClear(Vertex v) {
 		v.clearVisited ();
 		foreach (Edge e in v.getNeighbouringEdges()) {
 			Vertex left = e.getLeftVertex ();
@@ -23,7 +23,7 @@ public static class Graph {
 	}
 
 	// Set all vertices to the unvisited state
-	private static void vertexUnvisit(Vertex v) {
+	private  void vertexUnvisit(Vertex v) {
 		v.resetVisited ();
 		foreach (Edge e in v.getNeighbouringEdges()) {
 			Vertex left = e.getLeftVertex ();
@@ -40,7 +40,7 @@ public static class Graph {
 	}
 
 	// Set all edges to the reset state
-	private static void edgeClear(Edge edge) {
+	private  void edgeClear(Edge edge) {
 		edge.clearVisited ();
 		Vertex current = edge.getLeftVertex ();
 		foreach (Edge e in current.getNeighbouringEdges()) {
@@ -58,7 +58,7 @@ public static class Graph {
 	}
 
 	// Set all vertices to the unvisited state
-	private static void edgeUnvisit(Edge edge) {
+	private  void edgeUnvisit(Edge edge) {
 		edge.resetVisited ();
 		Vertex current = edge.getLeftVertex ();
 		foreach (Edge e in current.getNeighbouringEdges()) {
@@ -76,7 +76,7 @@ public static class Graph {
 	}
 
 	// Check to make sure there isn't an illegal ship-road bridge at an intersection
-	private static bool shipToRoad(GamePiece a, GamePiece b, GamePiece intersection) {
+	private  bool shipToRoad(GamePiece a, GamePiece b, GamePiece intersection) {
 
 		// Make sure the given edge pieces are actually edge pieces
 		if (a.getPieceType () != Enums.PieceType.ROAD) {
@@ -107,7 +107,7 @@ public static class Graph {
 	}
 
 	// A recursive method to find the longest route from a given start edge
-	private static int recLongRoute (Edge start, Vertex vertex, List<Edge> edges, int current){
+	private  int recLongRoute (Edge start, Vertex vertex, List<Edge> edges, int current){
 
 		List<Edge> toPass = new List<Edge> ();
 
@@ -155,7 +155,7 @@ public static class Graph {
 	}
 
 	// Check if a list of edges contains a given edge
-	private static bool containsEdge (Edge edge, List<Edge> edges) {
+	private  bool containsEdge (Edge edge, List<Edge> edges) {
 		foreach (Edge e in edges) {
 			if (Object.ReferenceEquals(e, edge)) {
 				return true;
@@ -165,7 +165,7 @@ public static class Graph {
 	}
 
 	// Reset all the vertices
-	public static void vertexReset(Vertex v) {
+	public  void vertexReset(Vertex v) {
 		vertexClear (v);
 		vertexUnvisit (v);
 	}
@@ -175,7 +175,7 @@ public static class Graph {
 	// (Helpful for displacing knights)
 	// Note: returns false if there are any other pieces on v2
 	// Make sure to reset vertices before using this method
-	public static bool areConnectedVertices(Vertex v1, Vertex v2, Enums.Color color) {
+	public  bool areConnectedVertices(Vertex v1, Vertex v2, Enums.Color color) {
 
 		// If the vertices are the same, they are connected
 		if (Object.ReferenceEquals(v1, v2)) {
@@ -236,7 +236,7 @@ public static class Graph {
 	}
 
 	// Check if a vertex is free (a town-piece can be placed on it)
-	public static bool freeVertex(Vertex v) {
+	public  bool freeVertex(Vertex v) {
 
 		// If there is a piece already on it, it is not free
 		if (!Object.ReferenceEquals(v.getOccupyingPiece(), null)) {
@@ -263,7 +263,7 @@ public static class Graph {
 		return true;
 	}
 	// Check if a vertex is next to an edge of a color
-	public static bool nextToMyEdge(Vertex v, Enums.Color color) {
+	public  bool nextToMyEdge(Vertex v, Enums.Color color) {
 		foreach (Edge e in v.getNeighbouringEdges()) {
 			GamePiece p = e.getOccupyingPiece ();
 			if (Object.ReferenceEquals(p, null)) {
@@ -278,7 +278,7 @@ public static class Graph {
 	}
 
 	// Check if a vertex is next to a road of a color
-	public static bool nextToMyRoad(Vertex v, Enums.Color color) {
+	public  bool nextToMyRoad(Vertex v, Enums.Color color) {
 		foreach (Edge e in v.getNeighbouringEdges()) {
 			GamePiece p = e.getOccupyingPiece ();
 			if (Object.ReferenceEquals(p, null)) {
@@ -302,7 +302,7 @@ public static class Graph {
 	}
 
 	// Check if a vertex is next to a ship of a color
-	public static bool nextToMyShip(Vertex v, Enums.Color color) {
+	public  bool nextToMyShip(Vertex v, Enums.Color color) {
 		foreach (Edge e in v.getNeighbouringEdges()) {
 			GamePiece p = e.getOccupyingPiece ();
 			if (Object.ReferenceEquals(p, null)) {
@@ -326,7 +326,7 @@ public static class Graph {
 	}
 
 	// Check if an edge is next to a town-piece of a color
-	public static bool nextToMyCityOrSettlement(Edge e, Enums.Color color) {
+	public  bool nextToMyCityOrSettlement(Edge e, Enums.Color color) {
 		GamePiece leftPiece = e.getLeftVertex ().getOccupyingPiece ();
 		GamePiece rightPiece = e.getRightVertex ().getOccupyingPiece ();
 
@@ -353,7 +353,7 @@ public static class Graph {
 	}
 
 	// Check if an edge is next to a piece of a color
-	public static bool nextToMyPiece(Edge e, Enums.Color color) {
+	public  bool nextToMyPiece(Edge e, Enums.Color color) {
 		GamePiece leftPiece = e.getLeftVertex ().getOccupyingPiece ();
 		GamePiece rightPiece = e.getRightVertex ().getOccupyingPiece ();
 
@@ -374,7 +374,7 @@ public static class Graph {
 	}
 
 	// Check if a ship is closed
-	public static bool isClosedShip(Edge edge, Enums.Color color) {
+	public  bool isClosedShip(Edge edge, Enums.Color color) {
 		Vertex left = edge.getLeftVertex ();
 		Vertex right = edge.getRightVertex ();
 
@@ -429,14 +429,14 @@ public static class Graph {
 	}
 
 	// Reset all the vertices
-	public static void edgeReset(Edge e) {
+	public  void edgeReset(Edge e) {
 		edgeClear (e);
 		edgeUnvisit (e);
 	}
 
 	// Collect all edges connected to an edge
 	// Make sure to reset all edges before using this method
-	public static List<Edge> collectRouteEdges(Edge edge, Enums.Color color) {
+	public  List<Edge> collectRouteEdges(Edge edge, Enums.Color color) {
 		List<Edge> ret = new List<Edge> ();
 
 		// Make sure the current edge has a valid edge piece
@@ -522,7 +522,7 @@ public static class Graph {
 	}
 
 	// An algorithm that determines the longest route of a collection of edges in a given color
-	public static int longestRoute(List<Edge> edges, Enums.Color color) {
+	public  int longestRoute(List<Edge> edges, Enums.Color color) {
 
 		// Check the base cases
 		if (edges.Count == 0) {

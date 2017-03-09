@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using UnityEngine;
 using Enums;
 
-public static class MoveAuthorizer {
+public  class MoveAuthorizer {
 
 	// Check if a knight can be moved from one vertex to another
-	public static bool canKnightMove(Vertex source, Vertex target, Enums.Color color) {
+	public  bool canKnightMove(Vertex source, Vertex target, Enums.Color color) {
 
 		// Make sure there is a knight that can be moved
 		GamePiece sourcePiece = source.getOccupyingPiece ();
@@ -40,7 +40,7 @@ public static class MoveAuthorizer {
 	}
 
 	// Check if a knight can displace another knight
-	public static bool canKnightDisplace(Vertex source, Vertex target, Enums.Color color) {
+	public  bool canKnightDisplace(Vertex source, Vertex target, Enums.Color color) {
 
 		// Make sure there is a knight that can be moved
 		GamePiece sourcePiece = source.getOccupyingPiece ();
@@ -86,7 +86,7 @@ public static class MoveAuthorizer {
 	}
 
 	// Check if a knight can be upgraded
-	public static bool canUpgradeKnight(int[] resources, int[] devChart,
+	public  bool canUpgradeKnight(int[] resources, int[] devChart,
 		Vertex v, List<GamePiece> pieces) {
 
 		// Make sure there are enough resources
@@ -147,7 +147,7 @@ public static class MoveAuthorizer {
 	}
 
 	// Check if a knight can be activated
-	public static bool canActivateKnight(int[] resources, Vertex v) {
+	public  bool canActivateKnight(int[] resources, Vertex v) {
 
 		// Make sure there is a grain available
 		if (resources [(int)Enums.ResourceType.GRAIN] < 1) {
@@ -171,7 +171,7 @@ public static class MoveAuthorizer {
 	}
 
 	// Check if the development chart can be upgraded for a specific development type
-	public static bool canUpgradeDevChart(Enums.DevChartType dev, int[] commodities, 
+	public  bool canUpgradeDevChart(Enums.DevChartType dev, int[] commodities, 
 		List<GamePiece> pieces, int[] devChart) {
 
 		// Make sure there is a city on the board
@@ -222,7 +222,7 @@ public static class MoveAuthorizer {
 	}
 
 	// Check if a settlement can be built at given vertex
-	public static bool canBuildSettlement(Vertex location, int[] resources,
+	public  bool canBuildSettlement(Vertex location, int[] resources,
 		List<GamePiece> pieces, Enums.Color color) {
 
 		// Make sure the location is valid
@@ -268,7 +268,7 @@ public static class MoveAuthorizer {
 
 
 	// Check if a city can be built at a vertex
-	public static bool canBuildCity(Vertex location, int[] resources,
+	public  bool canBuildCity(Vertex location, int[] resources,
 		List<GamePiece> pieces, Enums.Color color) {
 
 		GamePiece settlement = location.getOccupyingPiece ();
@@ -309,7 +309,7 @@ public static class MoveAuthorizer {
 	}
 
 	// Check if a city wall can be built at a vertex
-	public static bool canBuildCityWall(Vertex location, int[] resources,
+	public  bool canBuildCityWall(Vertex location, int[] resources,
 		int cityWalls, Enums.Color color) {
 
 		GamePiece city = location.getOccupyingPiece ();
@@ -339,7 +339,7 @@ public static class MoveAuthorizer {
 	}
 
 	// Check if knight can be built at vertex
-	public static bool canBuildKnight(Vertex location, int[] resources,
+	public  bool canBuildKnight(Vertex location, int[] resources,
 		List<GamePiece> pieces, Enums.Color color) {
 
 		// Make sure location is valid
@@ -393,7 +393,7 @@ public static class MoveAuthorizer {
 	}
 
 	// Check if a road can be built on an edge
-	public static bool canBuildRoad(Edge location, int[] resources,
+	public  bool canBuildRoad(Edge location, int[] resources,
 		List<GamePiece> pieces, Enums.Color color) {
 
 		// Make sure the location is valid
@@ -445,7 +445,7 @@ public static class MoveAuthorizer {
 	}
 
 	// Check if a ship can be built on an edge
-	public static bool canBuildShip(Edge location, int[] resources,
+	public  bool canBuildShip(Edge location, int[] resources,
 		List<GamePiece> pieces, Enums.Color color) {
 
 		// Make sure the location is valid
@@ -523,7 +523,7 @@ public static class MoveAuthorizer {
 	}
 
 	// Check if a ship can be moved to an edge
-	public static bool canShipMove(Edge source, Edge target, Enums.Color color) {
+	public  bool canShipMove(Edge source, Edge target, Enums.Color color) {
 		GamePiece sourcePiece = source.getOccupyingPiece ();
 
 		// Make sure there is a ship on the source edge
@@ -671,7 +671,7 @@ public static class MoveAuthorizer {
 	}
 
 	// Check if a knight can chase the robber
-	public static bool canChaseRobber(Vertex source) {
+	public  bool canChaseRobber(Vertex source) {
 		GamePiece sourcePiece = source.getOccupyingPiece ();
 
 		// Make sure the vertex has an available knight
@@ -698,7 +698,7 @@ public static class MoveAuthorizer {
 	}
 
 	// Check if the robber can be move to a nex hex
-	public static bool canMoveRobber(Hex target) {
+	public  bool canMoveRobber(Hex target) {
 		GamePiece piece = target.getOccupyingPiece ();
 
 		// Make sure the new hex is on land and different
@@ -714,7 +714,7 @@ public static class MoveAuthorizer {
 	}
 
 	// Check if the pirate can be moved to a new hex
-	public static bool canMovePirate(Hex target) {
+	public  bool canMovePirate(Hex target) {
 		GamePiece piece = target.getOccupyingPiece ();
 
 		// Make sure the new hex is on water and different
@@ -730,7 +730,7 @@ public static class MoveAuthorizer {
 	}
 
 	// Check if the merchant can be placed on a hex
-	public static bool canPlaceMerchant(Hex target) {
+	public  bool canPlaceMerchant(Hex target) {
 
 		// Make sure the new hex is a valid land hex
 		if (target.getTerrainType () != Enums.TerrainType.LAND) {
@@ -746,7 +746,7 @@ public static class MoveAuthorizer {
 	}
 
 	// Check if initial town-pieces can be placed on a vertex
-	public static bool canPlaceInitialTownPiece(Vertex v, List<Hex> validHexes) {
+	public  bool canPlaceInitialTownPiece(Vertex v, List<Hex> validHexes) {
 
 		bool valid = false;
 		foreach (Hex h in validHexes) {
@@ -770,7 +770,7 @@ public static class MoveAuthorizer {
 	}
 
 	// Check if initial road can be placed on an edge
-	public static bool canPlaceInitialRoad(Edge e, Enums.Color color) {
+	public  bool canPlaceInitialRoad(Edge e, Enums.Color color) {
 
 		// Make sure the location is valid
 		if (e.getTerrainType () == Enums.TerrainType.WATER) {
@@ -802,7 +802,7 @@ public static class MoveAuthorizer {
 	}
 
 	// Check if initial ship can be placed on an edge
-	public static bool canPlaceInitialShip(Edge e, Enums.Color color) {
+	public  bool canPlaceInitialShip(Edge e, Enums.Color color) {
 
 		// Make sure the location is valid
 		bool nextToWater = false;

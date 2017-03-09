@@ -7,7 +7,7 @@ using UnityEngine.Networking;
 public class MoveManager : NetworkBehaviour {
 
 	// Move a knight from source to target
-	public static bool moveKnight(Vertex source, Vertex target, Enums.Color color, int currentLongest) {
+	public  bool moveKnight(Vertex source, Vertex target, Enums.Color color, int currentLongest) {
 
 		// Check if the knight can be moved
 		if (!MoveAuthorizer.canKnightMove (source, target, color)) {
@@ -29,7 +29,7 @@ public class MoveManager : NetworkBehaviour {
 	}
 
 	// Displace a knight at target with knight at source
-	public static bool displaceKnight(Vertex source, Vertex target, Enums.Color color) {
+	public  bool displaceKnight(Vertex source, Vertex target, Enums.Color color) {
 		
 		// Check if the knight can displace
 		if (!MoveAuthorizer.canKnightDisplace (source, target, color)) {
@@ -55,25 +55,25 @@ public class MoveManager : NetworkBehaviour {
 	}
 
 	// Upgrade a knight at vertex v
-	public static bool upgradeKnight(int[] resources, int[] devChart, Vertex v) {
+	public  bool upgradeKnight(int[] resources, int[] devChart, Vertex v) {
 
 		return true;
 	}
 
 	// Activate a knight at vertex v
-	public static bool activateKnight(int[] resources, Vertex v) {
+	public  bool activateKnight(int[] resources, Vertex v) {
 		return true;
 	}
 
 	// Upgrade a development chart in the specified field
-	public static bool upgradeDevChart(Enums.DevChartType dev, int[] commodities, 
+	public  bool upgradeDevChart(Enums.DevChartType dev, int[] commodities, 
 		List<GamePiece> pieces, int[] devChart) {
 
 		return true;
 	}
 
 	// Build a settlement at location
-	public static bool buidSettlement(Vertex location, int[] resources,
+	public  bool buidSettlement(Vertex location, int[] resources,
 		List<GamePiece> pieces, Enums.Color color) {
 
 		if (!MoveAuthorizer.canBuildSettlement (location, resources, pieces, color)) {
@@ -113,7 +113,7 @@ public class MoveManager : NetworkBehaviour {
 
 
 	// Build a city at location
-	public static bool buildCity(Vertex location, int[] resources,
+	public  bool buildCity(Vertex location, int[] resources,
 		List<GamePiece> pieces, Enums.Color color) {
 
 		if (!MoveAuthorizer.canBuildCity (location, resources, pieces, color)) {
@@ -144,21 +144,21 @@ public class MoveManager : NetworkBehaviour {
 	}
 
 	// Check if a city wall can be built at a vertex
-	public static bool buildCityWall(Vertex location, int[] resources,
+	public  bool buildCityWall(Vertex location, int[] resources,
 		int cityWalls, Enums.Color color) {
 
 		return true;
 	}
 
 	// Build a knight at location
-	public static bool buildKnight(Vertex location, int[] resources,
+	public  bool buildKnight(Vertex location, int[] resources,
 		List<GamePiece> pieces, Enums.Color color) {
 
 		return true;
 	}
 
 	// Build a road at location
-	public static bool buildRoad(Edge location, int[] resources,
+	public  bool buildRoad(Edge location, int[] resources,
 		List<GamePiece> pieces, Enums.Color color) {
 
 		if (!MoveAuthorizer.canBuildRoad (location, resources, pieces, color)) {
@@ -186,7 +186,7 @@ public class MoveManager : NetworkBehaviour {
 	}
 
 	// Build a ship at location
-	public static bool buildShip(Edge location, int[] resources,
+	public  bool buildShip(Edge location, int[] resources,
 		List<GamePiece> pieces, Enums.Color color) {
 
 		if (!MoveAuthorizer.canBuildShip (location, resources, pieces, color)) {
@@ -214,27 +214,27 @@ public class MoveManager : NetworkBehaviour {
 	}
 
 	// Move a ship from source to target
-	public static bool moveShip(Edge source, Edge target, Enums.Color color) {
+	public  bool moveShip(Edge source, Edge target, Enums.Color color) {
 		return true;
 	}
 
 	// Chase robber from source
-	public static bool chaseRobber(Vertex source) {
+	public  bool chaseRobber(Vertex source) {
 		return true;
 	}
 
 	// Move robber to target
-	public static bool moveRobber(Hex target) {
+	public  bool moveRobber(Hex target) {
 		return true;
 	}
 
 	// Move Pirate to target
-	public static bool movePirate(Hex target) {
+	public  bool movePirate(Hex target) {
 		return true;
 	}
 
 	// Place Merchant at target
-	public static bool placeMerchant(Hex target) {
+	public  bool placeMerchant(Hex target) {
 
 
 
@@ -242,7 +242,7 @@ public class MoveManager : NetworkBehaviour {
 	}
 
 	// Place an initial settlement
-	public static bool placeInitialSettlement (Vertex v, List<GamePiece> pieces, List<Hex> validHexes) {
+	public  bool placeInitialSettlement (Vertex v, List<GamePiece> pieces, List<Hex> validHexes) {
 		if (!MoveAuthorizer.canPlaceInitialTownPiece (v, validHexes)) {
 			return false;
 		}
@@ -263,7 +263,7 @@ public class MoveManager : NetworkBehaviour {
 	}
 
 	// Place an initial city
-	public static bool placeInitialCity (Vertex v, List<GamePiece> pieces, List<Hex> validHexes) {
+	public  bool placeInitialCity (Vertex v, List<GamePiece> pieces, List<Hex> validHexes) {
 		if (!MoveAuthorizer.canPlaceInitialTownPiece (v, validHexes)) {
 			return false;
 		}
@@ -293,7 +293,7 @@ public class MoveManager : NetworkBehaviour {
 	}
 
 	// Place an initial road
-	public static bool placeInitialRoad (Edge e, Enums.Color color, List<GamePiece> pieces) {
+	public  bool placeInitialRoad (Edge e, Enums.Color color, List<GamePiece> pieces) {
 		if (!MoveAuthorizer.canPlaceInitialRoad (e, color)) {
 			return false;
 		}
@@ -307,7 +307,7 @@ public class MoveManager : NetworkBehaviour {
 	}
 	 
 	// Place an initial ship
-	public static bool placeInitialShip (Edge e, Enums.Color color, List<GamePiece> pieces) {
+	public  bool placeInitialShip (Edge e, Enums.Color color, List<GamePiece> pieces) {
 		if (!MoveAuthorizer.canPlaceInitialShip (e, color)) {
 			return false;
 		}
@@ -321,7 +321,7 @@ public class MoveManager : NetworkBehaviour {
 	}
 
 	// Get a resource type from a port type
-	private static Enums.ResourceType getResourceFromPort(Enums.PortType port) {
+	private  Enums.ResourceType getResourceFromPort(Enums.PortType port) {
 
 		switch (port) {
 		case Enums.PortType.BRICK:
@@ -340,7 +340,7 @@ public class MoveManager : NetworkBehaviour {
 	}
 
 	// Update the current players resource ratios according to the given vertex
-	private static void updatePort(Vertex v) {
+	private  void updatePort(Vertex v) {
 		Player current = GameManager.getCurrentPlayer ();
 		int[] ratios = current.getResourceRatios ();
 		Enums.PortType port = v.getPortType ();

@@ -3,13 +3,16 @@ using System.Collections.Generic;
 using UnityEngine;
 using Enums;
 using UnityEngine.Networking;
+using System;
 
 public class Player : NetworkBehaviour {
+
+    private int iD;
 
     private List<GamePiece> pieces;
     private List<ProgressCardName> progressCards;
 
-    private int[] resources;
+    private int[] resources;//dont need syncVar can update on method call;
     private int[] commodities;
     private int goldCount;
 
@@ -26,7 +29,26 @@ public class Player : NetworkBehaviour {
     private int safeCardCount;
 	private int cityWallsLeft;
     private bool movedRoad;
-    
+
+    public void init(int iD, string name, string pass)
+    {
+        this.iD = iD;
+        this.userName = name;
+        this.password = pass;
+        this.resources = new int[4] { 0, 0, 0, 0 };
+        this.commodities = new int[3] { 0, 0, 0 };
+        this.goldCount = 0;
+        this.devFlipChart = new int[3] { 0, 0, 0 };
+        this.resourceRatios = new int[4] { 4, 4, 4, 4 };
+        this.commodityRatios = new int[4] { 4, 4, 4, 4 };
+        this.myColor = (Enums.Color) Enum.Parse(typeof(Enums.Color), this.iD.ToString());
+        this.victoryPoints = 0;
+        this.safeCardCount = 7;
+        this.cityWallsLeft = 0;
+        this.movedRoad = false; 
+    }
+
+
     public List<GamePiece> getNotOnBoardPiece()//iterate through list of player's gamePieces
     {//for each piece that isOnBoard equals false, add it to a new List
         List<GamePiece> notOnBoard = new List<GamePiece>();
@@ -80,34 +102,67 @@ public class Player : NetworkBehaviour {
         return this.victoryPoints;
     }
 
-	public bool decrementVictoryPoints(int num) {//decrease victory points
-		if (this.victoryPoints < num) {
+	public bool changeVictoryPoints(int num) {//decrease victory points
+        if (!isLocalPlayer)
+            return false;
+        if (this.victoryPoints + num < 0) {
 			return false;
 		}
-		this.victoryPoints -= num;
+		this.victoryPoints += num;
+        CmdChangeVP(num);
 		return true;
 	}
 
-	public void incrementVictoryPoints(int num) {//increase vicctory points
-		this.victoryPoints += num;
-	}
+	/*public void incrementVictoryPoints(int num) {//increase vicctory points
+        if (!isLocalPlayer)
+            return;
+        this.victoryPoints += num;
+        CmdIncrementVP(num);
+	}*/
+
+    [Command]
+    public void CmdChangeVP(int num)
+    {
+        this.victoryPoints += num;
+        RpcChangeVP(num);
+    }
+
+    [ClientRpc]
+    public void RpcChangeVP(int num)
+    {
+        this.victoryPoints += num;
+    }
+
 
     public int getGoldCount()//return gold count
     {
         return this.goldCount;
     }
 
-	public bool decrementGoldCount(int num) {//decrease gold count
-		if (this.goldCount < num) {
+	public bool changeGoldCount(int num) {//decrease gold count
+		if (this.goldCount + num < 0) {
 			return false;
 		}
-		this.goldCount -= num;
+		this.goldCount += num;
+        CmdChangeGold(num);
 		return true;
 	}
 
-	public void incrementGoldCount(int num) {//increase gold count
+    [Command]
+    public void CmdChangeGold(int num)
+    {
+        this.goldCount += num;
+        RpcChangeGold(num);
+    }
+
+    [ClientRpc]
+    public void RpcChangeGold(int num)
+    {
+        this.goldCount += num;
+    }
+	/*public void incrementGoldCount(int num) {//increase gold count
 		this.goldCount += num;
-	}
+	}*/
 
     public int getSafeCardCount()//get safe card count (number of cards possible to carry in a hand)
     {
@@ -132,50 +187,125 @@ public class Player : NetworkBehaviour {
     public void setStatus(Status newStatus)
     {
         this.status = newStatus;
+        CmdSetStatus(newStatus);
     }
 
-    void upgradeDevChart(Enums.DevChartType devChartType)
+    [Command]
+    public void CmdSetStatus(Status newStatus)
+    {
+        this.status = newStatus;
+        RpcSetStatus(newStatus);
+    }
+
+    [ClientRpc]
+    public void RpcSetStatus(Status newStatus)
+    {
+        this.status = newStatus;
+    }
+
+    public void upgradeDevChart(Enums.DevChartType devChartType)
     {
         int devPosition = (int)devChartType;//casting a enum into an int returns the 0 based position of that enum specific
         this.devFlipChart[devPosition]++;//access the devFlipChart at the position found above and increment it
+        CmdUpgradeDevChart(devChartType);
+    }
+
+    [Command]
+    public void CmdUpgradeDevChart(Enums.DevChartType devChartType)
+    {
+        int devPosition = (int)devChartType;
+        this.devFlipChart[devPosition]++;
+        RpcUpgradeDevChart(devChartType);
+
+    }
+
+    [ClientRpc]
+    public void RpcUpgradeDevChart(Enums.DevChartType devChartType)
+    {
+        int devPosition = (int)devChartType;
+        this.devFlipChart[devPosition]++;
     }
 
     public void addProgressCard(ProgressCardName cardName)
     {
-        progressCards.Add(cardName);
+        this.progressCards.Add(cardName);
+        CmdAddProgressCard(cardName);
     }
 
-    public void increaseSafeCardCount(int count)
+    [Command]
+    public void CmdAddProgressCard(ProgressCardName cardName)
+    {
+        this.progressCards.Add(cardName);
+        RpcAddProgressCard(cardName);
+    }
+
+    [ClientRpc]
+    public void RpcAddProgressCard(ProgressCardName cardName)
+    {
+        this.progressCards.Add(cardName);
+    }
+
+    public void changeSafeCardCount(int count)
     {
         this.safeCardCount += count;
     }
 
-    public void decreaseSafeCardCount(int count)
+    /*public void decreaseSafeCardCount(int count)
     {
         this.safeCardCount -= count;
-    }
+    }*/
 
 	public int getCityWallCount() {
 		return this.cityWallsLeft;
 	}
 
-	public void incrementCityWallCount() {
+/*	public void incrementCityWallCount() {
 		this.cityWallsLeft++;
-	}
+	}*/
 
-	public bool decrementCityWallCount() {
+	public bool changeCityWallCount(int num) {
 		if (this.cityWallsLeft <= 0) {
 			return false;
 		}
-		this.cityWallsLeft++;
+		this.cityWallsLeft+=num;
+        CmdChangeCityWalls(num);
 		return true;
 	}
+
+    [Command]
+    public void CmdChangeCityWalls(int num)
+    {
+        this.cityWallsLeft += num;
+        RpcChangeCityWalls(num);
+    }
+
+    [ClientRpc]
+    public void RpcChangeCityWalls(int num)
+    {
+        this.cityWallsLeft += num;
+    }
 
     public void updateResourceRatio(ResourceType resourceType, int newRatio)
     {
         int resPosition = (int)resourceType;//find index of resource Enum and set an int to this index
-        resourceRatios[resPosition] = newRatio;//access the array at this index and set the new ratio
+        this.resourceRatios[resPosition] = newRatio;//access the array at this index and set the new ratio
+        CmdUpdateResourceRatio(resourceType, newRatio);
         return;
+    }
+
+    [Command]
+    public void CmdUpdateResourceRatio(ResourceType resourceType, int newRatio)
+    {
+        int resP = (int)resourceType;
+        this.resourceRatios[resP] = newRatio;
+        RpcUpdateResourceRatio(resourceType, newRatio);
+    }
+
+    [ClientRpc]
+    public void RpcUpdateResourceRatio(ResourceType resourceType, int newRatio)
+    {
+        int resP = (int)resourceType;
+        this.resourceRatios[resP] = newRatio;
     }
 
     public void updateResoureRatios(int [] newRatios)
@@ -187,7 +317,23 @@ public class Player : NetworkBehaviour {
     {
         int comPosition = (int)commodity;
         commodityRatios[comPosition] = newRatio;//same as method above
+        CmdUpdateCommodityRatio(commodity, newRatio);
         return;
+    }
+
+    [Command]
+    public void CmdUpdateCommodityRatio(CommodityType commodityType, int newRatio)
+    {
+        int comP = (int)commodityType;
+        this.commodityRatios[comP] = newRatio;
+        RpcUpdateCommodityRatio(commodityType, newRatio);
+    }
+
+    [ClientRpc]
+    public void RpcUpdateCommodityRatio(CommodityType commodityType, int newRatio)
+    {
+        int comP = (int)commodityType;
+        this.commodityRatios[comP] = newRatio;
     }
 
     public void updateCommodityRatios(int [] newRatios)
@@ -195,28 +341,44 @@ public class Player : NetworkBehaviour {
         commodityRatios = newRatios;
     }
 
-    public bool discardCommodity(CommodityType commodityType, int numToRemove)
+    public bool changeCommodity(CommodityType commodityType, int num)
     {
 		int comPosition = (int)commodityType;
-		if (commodities[comPosition] < numToRemove)//check if there are enough commodities
+		if (commodities[comPosition] + num < 0)//check if there are enough commodities
 		{
 			return false;//if there arent return false to denote an error
 		}
-		commodities[comPosition] -= numToRemove;//if there are decrease the number of commodities
+		commodities[comPosition] += num;//if there are decrease the number of commodities
+        CmdChangeCommodity(commodityType, num);
 		return true;
     }
 
-    public void addCommodity(CommodityType commodityType, int numToAdd)
+    [Command]
+    public void CmdChangeCommodity(CommodityType commodityType, int num)
+    {
+        int comP = (int)commodityType;
+        this.commodities[comP] += num;
+        RpcChangeCommodity(commodityType, num);
+    }
+
+    [ClientRpc]
+    public void RpcChangeCommodity(CommodityType commodityType, int num)
+    {
+        int comP = (int)commodityType;
+        this.commodities[comP] += num;
+    }
+
+    /*public void addCommodity(CommodityType commodityType, int numToAdd)
     {
         int comPosition = (int)commodityType;//casting to find index in enum 
         commodities[comPosition] += numToAdd;//access index of enum and add numToAdd number of commodities
-    }
+    }*/
 
-    public void addResource(Enums.ResourceType resourceType, int numToAdd)
+    /*public void addResource(Enums.ResourceType resourceType, int numToAdd)
     {
         int resPosition = (int)resourceType;//same as above function
         resources[resPosition] += numToAdd;
-    }
+    }*/
 
     public bool discardProgressCard(ProgressCardName cardName)
     {
@@ -231,15 +393,31 @@ public class Player : NetworkBehaviour {
         return false;// if did not find progress card of the parameter type, return false denoting error
     }
 
-    public bool discardResource(ResourceType resource, int numToRemove)
+    public bool changeResource(ResourceType resource, int num)
     {
         int resPosition = (int)resource;
-        if (resources[resPosition] < numToRemove)
+        if (resources[resPosition] + num < 0)
         {
             return false;
         }
-        resources[resPosition] -= numToRemove;//ykno
+        resources[resPosition] += num;//ykno
+        CmdChangeResource(resource, num);
         return true;
+    }
+
+    [Command]
+    public void CmdChangeResource(ResourceType resourceType, int num)
+    {
+        int resP = (int)resourceType;
+        this.resources[resP] += num;
+        RpcChangeResource(resourceType, num);
+    }
+
+    [ClientRpc]
+    public void RpcChangeResource(ResourceType resourceType, int num)
+    {
+        int resP = (int)resourceType;
+        this.resources[resP] += num;
     }
 
     public bool hasMovedRoad()
@@ -251,6 +429,8 @@ public class Player : NetworkBehaviour {
     {
         this.movedRoad = true;
     }
+
+
 
 	public void roadNotMoved()
 	{
