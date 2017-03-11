@@ -28,8 +28,8 @@ public class GameManager : NetworkBehaviour {
 
 	// Some important state info
 	private  int longestRouteLength;
-	private  string merchantController;
-	private  string longestRouteController;
+	private  int merchantController;
+	private  int longestRouteController;
 
 	private  Hex pirateLocation;
 	private  Hex robberLocation;
@@ -41,7 +41,7 @@ public class GameManager : NetworkBehaviour {
 	private const int numDevChartType = 3;
 	private const int progressCardLimit = 4;
 
-	private Graph graph = new Graph();
+	private Graph graph;
 
 	static public GameManager instance = null;
 
@@ -195,24 +195,25 @@ public class GameManager : NetworkBehaviour {
 		return players [0];
 	}
 
-	public  List<string> getPlayerNames() {
-		List<string> ret = new List<string> ();
-		foreach(Player p in players) {
-			ret.Add (p.getUserName());
-		}
-		return ret;
-	}
-
 	public  Player getCurrentPlayer() {
 		return currentPlayer;
 	}
 
-	public  Player getPlayer(string name) {
+	public  Player getPlayer(int id) {
+		if (id < 0 || id >= players.Count) {
+			return null;
+		}
+
+		return players [id];
+	}
+
+	public  Player getPlayer(Enums.Color color) {
 		foreach (Player p in players) {
-			if (p.getUserName().Equals(name)) {
+			if (p.getColor () == color) {
 				return p;
 			}
 		}
+
 		return null;
 	}
 
@@ -232,11 +233,11 @@ public class GameManager : NetworkBehaviour {
 		return eventDie;
 	}
 
-	public  string getMerchantController() {
+	public int getMerchantController() {
 		return merchantController;
 	}
 
-	public  string getLongestRouteContoller() {
+	public int getLongestRouteContoller() {
 		return longestRouteController;
 	}
 
@@ -259,7 +260,7 @@ public class GameManager : NetworkBehaviour {
 	// return true upon success, false upon failure
 	// give the given player a metropolis on the chosen city
 	// remove it from another player if another player controlled it
-	public  bool giveMetropolis(string player, Enums.DevChartType met, Vertex city) {
+	public  bool giveMetropolis(int player, Enums.DevChartType met, Vertex city) {
 		GamePiece p = city.getOccupyingPiece ();
 		if (Object.ReferenceEquals (p, null)) {
 			return false;
@@ -277,8 +278,8 @@ public class GameManager : NetworkBehaviour {
 				return false;
 			} else {
 				((City)opponent).removeMetropolis ();
-				string opName = opponent.getOwnerName ();
-				Player op = getPlayer (opName);
+				Enums.Color opColor = opponent.getColor ();
+				Player op = getPlayer (opColor);
 				op.changeVictoryPoints (-2);
 			}
 		}
@@ -301,8 +302,8 @@ public class GameManager : NetworkBehaviour {
 	}
 
 	// Remove the old merchant controller, and set the new one, assigning victory points
-	public  void setMerchantController(Merchant m, string player) {
-		if (merchantController != "") {
+	public  void setMerchantController(Merchant m, int player) {
+		if (merchantController != -1) {
 			Player p = getPlayer (merchantController);
 			if (!Object.ReferenceEquals (p, null)) {
 				p.changeVictoryPoints (-1);
@@ -464,8 +465,8 @@ public class GameManager : NetworkBehaviour {
 
 				// Distribue resources for settlements
 				if (current.getPieceType() == Enums.PieceType.SETTLEMENT) {
-					string owner = current.getOwnerName ();
-					Player p = getPlayer (owner);
+					Enums.Color ownerColor = current.getColor ();
+					Player p = getPlayer (ownerColor);
 					if (res != Enums.ResourceType.NONE && enoughRes[res]) {
 						Bank.withdrawResource (res, 1);
 						p.changeResource (res, 1);
@@ -476,8 +477,8 @@ public class GameManager : NetworkBehaviour {
 
 				// Distribute resources and commodities for cities
 				if (current.getPieceType() == Enums.PieceType.CITY) {
-					string owner = current.getOwnerName ();
-					Player p = getPlayer (owner);
+					Enums.Color ownerColor = current.getColor ();
+					Player p = getPlayer (ownerColor);
 					if (com != Enums.CommodityType.NONE) {
 						if (enoughRes [res]) {
 							Bank.withdrawResource (res, 1);
@@ -636,5 +637,26 @@ public class GameManager : NetworkBehaviour {
 		} else {
 			return false;
 		}
+	}
+
+	void Start() {
+		players = new List<Player> ();
+		gamePhase = Enums.GamePhase.SETUP_ONE;
+		playerTurn = 0;
+		pointsToWin = 16;
+		firstDie = 0;
+		secondDie = 0;
+		longestRouteLength = 0;
+		merchantController = -1;
+		longestRouteController = -1;
+
+		metropolises = new Dictionary<DevChartType, Vertex> ();
+		metropolises.Add (Enums.DevChartType.POLITICS, null);
+		metropolises.Add (Enums.DevChartType.TRADE, null);
+		metropolises.Add (Enums.DevChartType.SCIENCE, null);
+
+		barbarianHasAttacked = false;
+
+		graph = new Graph ();
 	}
 }

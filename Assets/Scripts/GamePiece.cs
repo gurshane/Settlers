@@ -3,12 +3,17 @@ using System.Collections.Generic;
 using UnityEngine;
 using Enums;
 
-public abstract class GamePiece : MonoBehaviour {
+public abstract class GamePiece {
 
 	private Enums.Color myColor;
-	private string ownerName;
 	private Enums.PieceType pieceType;
 	private bool onBoard;
+
+	public GamePiece(Enums.PieceType pieceType) {
+		this.myColor = Enums.Color.NONE;
+		this.pieceType = pieceType;
+		this.onBoard = false;
+	}
 
 	public GamePiece(Enums.Color color, Enums.PieceType pieceType) {
 		this.myColor = color;
@@ -20,8 +25,8 @@ public abstract class GamePiece : MonoBehaviour {
 		return this.myColor;
 	}
 
-	public string getOwnerName() {
-		return this.ownerName;
+	public void setColor(Enums.Color color) {
+		myColor = color;
 	}
 
 	public Enums.PieceType getPieceType() {

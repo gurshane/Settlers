@@ -74,7 +74,7 @@ public class Test : MonoBehaviour {
 			pieces.Add (new Settlement (Enums.Color.WHITE));
 		}
 		for (int i = 0; i < 20; i++) {
-			pieces.Add (new City (Enums.Color.WHITE, false));
+			pieces.Add (new City (Enums.Color.WHITE));
 		}
 		for (int i = 0; i < 20; i++) {
 			pieces.Add (new Knight (Enums.Color.WHITE));
@@ -241,13 +241,13 @@ public class Test : MonoBehaviour {
 		vertices [27].setOccupyingPiece (new Settlement (Enums.Color.RED));
 		vertices [8].setOccupyingPiece (new Settlement (Enums.Color.RED));
 
-		vertices [6].setOccupyingPiece (new City(Enums.Color.RED, false));
+		vertices [6].setOccupyingPiece (new City(Enums.Color.RED));
 
 		vertices[39].setOccupyingPiece(new Knight(Enums.Color.RED));
 
 		// Add the robber and pirate
-		hexes [0].setOccupyingPiece (new Robber (Enums.Color.NONE));
-		hexes [6].setOccupyingPiece (new Pirate (Enums.Color.NONE));
+		hexes [0].setOccupyingPiece (new Robber ());
+		hexes [6].setOccupyingPiece (new Pirate ());
 
 		// Print the available actions
 		printMoveAuthorizer ();

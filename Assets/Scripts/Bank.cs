@@ -152,4 +152,86 @@ public class Bank : NetworkBehaviour {
 
 		return true;
 	}
+
+	void Start() {
+		resources = new int[GameManager.instance.getNumberResources()];
+		for (int i = 0; i < resources.Length; i++) {
+			resources [i] = 19;
+		}
+
+		commodities = new int[GameManager.instance.getNumberCommodities()];
+		for (int i = 0; i < resources.Length; i++) {
+			commodities [i] = 12;
+		}
+
+		scienceCards = new List<Enums.ProgressCardName> ();
+		scienceCards.Add (Enums.ProgressCardName.ALCHEMIST);
+		scienceCards.Add (Enums.ProgressCardName.ALCHEMIST);
+		scienceCards.Add (Enums.ProgressCardName.CRANE);
+		scienceCards.Add (Enums.ProgressCardName.CRANE);
+		scienceCards.Add (Enums.ProgressCardName.ENGINEER);
+		scienceCards.Add (Enums.ProgressCardName.INVENTOR);
+		scienceCards.Add (Enums.ProgressCardName.INVENTOR);
+		scienceCards.Add (Enums.ProgressCardName.IRRIGATION);
+		scienceCards.Add (Enums.ProgressCardName.IRRIGATION);
+		scienceCards.Add (Enums.ProgressCardName.MEDICINE);
+		scienceCards.Add (Enums.ProgressCardName.MEDICINE);
+		scienceCards.Add (Enums.ProgressCardName.MINING);
+		scienceCards.Add (Enums.ProgressCardName.MINING);
+		scienceCards.Add (Enums.ProgressCardName.SMITH);
+		scienceCards.Add (Enums.ProgressCardName.SMITH);
+		scienceCards.Add (Enums.ProgressCardName.PRINTER);
+		scienceCards.Add (Enums.ProgressCardName.ROADBUILDING);
+		scienceCards.Add (Enums.ProgressCardName.ROADBUILDING);
+
+		politicsCards = new List<Enums.ProgressCardName> ();
+		politicsCards.Add (Enums.ProgressCardName.BISHOP);
+		politicsCards.Add (Enums.ProgressCardName.BISHOP);
+		politicsCards.Add (Enums.ProgressCardName.CONSTITUTION);
+		politicsCards.Add (Enums.ProgressCardName.DESERTER);
+		politicsCards.Add (Enums.ProgressCardName.DESERTER);
+		politicsCards.Add (Enums.ProgressCardName.DIPLOMAT);
+		politicsCards.Add (Enums.ProgressCardName.DIPLOMAT);
+		politicsCards.Add (Enums.ProgressCardName.INTRIGUE);
+		politicsCards.Add (Enums.ProgressCardName.INTRIGUE);
+		politicsCards.Add (Enums.ProgressCardName.SABOTEUR);
+		politicsCards.Add (Enums.ProgressCardName.SABOTEUR);
+		politicsCards.Add (Enums.ProgressCardName.SPY);
+		politicsCards.Add (Enums.ProgressCardName.SPY);
+		politicsCards.Add (Enums.ProgressCardName.SPY);
+		politicsCards.Add (Enums.ProgressCardName.WARLORD);
+		politicsCards.Add (Enums.ProgressCardName.WARLORD);
+		politicsCards.Add (Enums.ProgressCardName.WEDDING);
+		politicsCards.Add (Enums.ProgressCardName.WEDDING);
+
+		tradeCards = new List<Enums.ProgressCardName> ();
+		tradeCards.Add (Enums.ProgressCardName.COMMERCIALHARBOR);
+		tradeCards.Add (Enums.ProgressCardName.COMMERCIALHARBOR);
+		tradeCards.Add (Enums.ProgressCardName.MASTERMERCHANT);
+		tradeCards.Add (Enums.ProgressCardName.MASTERMERCHANT);
+		tradeCards.Add (Enums.ProgressCardName.MERCHANT);
+		tradeCards.Add (Enums.ProgressCardName.MERCHANT);
+		tradeCards.Add (Enums.ProgressCardName.MERCHANT);
+		tradeCards.Add (Enums.ProgressCardName.MERCHANT);
+		tradeCards.Add (Enums.ProgressCardName.MERCHANT);
+		tradeCards.Add (Enums.ProgressCardName.MERCHANT);
+		tradeCards.Add (Enums.ProgressCardName.MERCHANTFLEET);
+		tradeCards.Add (Enums.ProgressCardName.MERCHANTFLEET);
+		tradeCards.Add (Enums.ProgressCardName.RESOURCEMONOPOLY);
+		tradeCards.Add (Enums.ProgressCardName.RESOURCEMONOPOLY);
+		tradeCards.Add (Enums.ProgressCardName.RESOURCEMONOPOLY);
+		tradeCards.Add (Enums.ProgressCardName.RESOURCEMONOPOLY);
+		tradeCards.Add (Enums.ProgressCardName.TRADEMONOPOLY);
+		tradeCards.Add (Enums.ProgressCardName.TRADEMONOPOLY);
+
+		scienceCards.Sort (delegate(Enums.ProgressCardName a, Enums.ProgressCardName b) {
+			return (Random.Range (-10.0f, 10.0f).CompareTo(Random.Range (-10.0f, 10.0f)));
+		});
+		politicsCards.Sort (delegate(Enums.ProgressCardName a, Enums.ProgressCardName b) {
+			return (Random.Range (-10.0f, 10.0f).CompareTo(Random.Range (-10.0f, 10.0f)));
+		});
+		tradeCards.Sort (delegate(Enums.ProgressCardName a, Enums.ProgressCardName b) {
+			return (Random.Range (-10.0f, 10.0f).CompareTo(Random.Range (-10.0f, 10.0f)));
+		});
+	}
 }

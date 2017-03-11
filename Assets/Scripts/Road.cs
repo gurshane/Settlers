@@ -7,6 +7,13 @@ public class Road : GamePiece {
 	private bool isShip;
 	private bool builtThisTurn;
 
+	public Road(bool isShip) :
+		base(Enums.PieceType.ROAD) {
+
+		this.isShip = isShip;
+		this.builtThisTurn = true;
+	}
+
 	public Road(Enums.Color color, bool isShip) :
 		base(color, Enums.PieceType.ROAD) {
 

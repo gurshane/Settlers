@@ -20,8 +20,6 @@ public class Player : NetworkBehaviour {
     private int[] resourceRatios;
     private int[] commodityRatios;
 
-    private string userName;
-    private string password;
 	private Enums.Status status;
     private Enums.Color myColor;
 
@@ -29,12 +27,11 @@ public class Player : NetworkBehaviour {
     private int safeCardCount;
 	private int cityWallsLeft;
     private bool movedRoad;
+	private bool aqueduct;
 
     public void init(int iD, string name, string pass)
     {
         this.iD = iD;
-        this.userName = name;
-        this.password = pass;
         this.resources = new int[4] { 0, 0, 0, 0 };
         this.commodities = new int[3] { 0, 0, 0 };
         this.goldCount = 0;
@@ -45,7 +42,7 @@ public class Player : NetworkBehaviour {
         this.victoryPoints = 0;
         this.safeCardCount = 7;
         this.cityWallsLeft = 0;
-        this.movedRoad = false; 
+        this.movedRoad = false;
     }
 
 
@@ -167,11 +164,6 @@ public class Player : NetworkBehaviour {
     public int getSafeCardCount()//get safe card count (number of cards possible to carry in a hand)
     {
         return this.safeCardCount;
-    }
-
-    public string getUserName()//return username
-    {
-        return this.userName;
     }
 
     public Enums.Color getColor()
@@ -435,9 +427,53 @@ public class Player : NetworkBehaviour {
 		this.movedRoad = false;
 	}
 
+	public bool getAqueduct() {
+		return this.aqueduct;
+	}
+
+	public void makeAqueduct() {
+		this.aqueduct = true;
+	}
+
 	// Use this for initialization
 	void Start () {
-		
+		iD = -1;
+
+		pieces = new List<GamePiece> ();
+		for (int i = 0; i < 5; i++) {
+			Settlement s = new Settlement ();
+			pieces.Add (s);
+		}
+		for (int i = 0; i < 4; i++) {
+			City c = new City ();
+			pieces.Add (c);
+		}
+		for (int i = 0; i < 15; i++) {
+			Road r = new Road (false);
+			Road s = new Road (true);
+			pieces.Add (r);
+			pieces.Add (s);
+		}
+		for (int i = 0; i < 6; i++) {
+			Knight k = new Knight ();
+			pieces.Add (k);
+		}
+
+		progressCards = new List<ProgressCardName> ();
+		status = Enums.Status.ACTIVE;
+
+		this.resources = new int[5] { 0, 0, 0, 0, 0 };
+		this.commodities = new int[3] { 0, 0, 0 };
+		this.goldCount = 0;
+		this.devFlipChart = new int[3] { 1, 1, 1 };
+		this.resourceRatios = new int[5] { 4, 4, 4, 4, 4 };
+		this.commodityRatios = new int[3] { 4, 4, 4 };
+		this.myColor = Enums.Color.NONE;
+		this.victoryPoints = 0;
+		this.safeCardCount = 7;
+		this.cityWallsLeft = 3;
+		this.movedRoad = false; 
+		this.aqueduct = false;
 	}
 	
 	// Update is called once per frame

@@ -6,7 +6,7 @@ using UnityEngine.Networking;
 
 public class MoveManager : NetworkBehaviour {
 
-	private MoveAuthorizer ma = new MoveAuthorizer ();
+	private MoveAuthorizer ma;
 
 	// Move a knight from source to target
 	public  bool moveKnight(Vertex source, Vertex target, Enums.Color color, int currentLongest) {
@@ -360,5 +360,9 @@ public class MoveManager : NetworkBehaviour {
 		} else if (port != Enums.PortType.NONE) {
 			current.updateResourceRatio (getResourceFromPort (port), 2);
 		}
+	}
+
+	void Start() {
+		ma = new MoveAuthorizer ();
 	}
 }
