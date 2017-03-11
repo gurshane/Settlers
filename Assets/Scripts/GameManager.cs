@@ -5,9 +5,6 @@ using Enums;
 using UnityEngine.Networking;
 
 public class GameManager : NetworkBehaviour {
-    
-    [SyncVar]
-    private Player currentPlayer;
 
     [SyncVar]
 	public Enums.GamePhase gamePhase;
@@ -46,6 +43,7 @@ public class GameManager : NetworkBehaviour {
     public bool barbarianHasAttacked;
 
 
+    private Player currentPlayer;
     private Hex pirateLocation;
 	private Hex robberLocation;
 	private Dictionary<Enums.DevChartType, Vertex> metropolises;
