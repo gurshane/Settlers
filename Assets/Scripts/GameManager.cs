@@ -61,7 +61,6 @@ public class GameManager : NetworkBehaviour {
 
     TradeManager tradeManager;
     Bank bank;
-    BoardState boardState;
     MoveManager moveManager;
     Graph graph;
     
@@ -111,7 +110,6 @@ public class GameManager : NetworkBehaviour {
     {
         tradeManager = GetComponent<TradeManager>();
         bank = GetComponent<Bank>();
-        boardState = GetComponent<BoardState>();
         moveManager = GetComponent<MoveManager>();
         
         players = new List<Player>();
@@ -637,7 +635,7 @@ public class GameManager : NetworkBehaviour {
         int knightNum = 0;
         int citiesCount = 0;
         List<City> cities = new List<City>();
-        foreach(Vertex v in boardState.vertexPosition.Values)
+        foreach(Vertex v in BoardState.instance.vertexPosition.Values)
         {
             GamePiece gp = v.getOccupyingPiece();
             if(gp != null)
