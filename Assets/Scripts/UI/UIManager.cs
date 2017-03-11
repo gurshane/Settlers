@@ -187,7 +187,7 @@ public class UIManager : NetworkBehaviour {
 
 
 		// If it is second turn, set DiceRoll Panel active to true
-		if (_PlayerHighlighter.secondTurn == true) _DiceRollPanel.gameObject.SetActive (true);
+		//if (_PlayerHighlighter.secondTurn == true) _DiceRollPanel.gameObject.SetActive (true);
 	}
 
 	/// <summary>
@@ -198,7 +198,7 @@ public class UIManager : NetworkBehaviour {
 		_TurnsPanel.uiUpdate (_CurrentPlayer);
 
 		// If it is second turn, set MaritimeTradePanel active to true
-		if (_PlayerHighlighter.secondTurn == true) _MaritimeTradePanel.gameObject.SetActive (true);
+		//if (_PlayerHighlighter.secondTurn == true) _MaritimeTradePanel.gameObject.SetActive (true);
 	}
 		
 
@@ -298,7 +298,7 @@ public class UIManager : NetworkBehaviour {
 	/// </summary>
 	public void rollDice()
 	{
-		_PlayerHighlighter.rollDice ();
+		//_PlayerHighlighter.rollDice ();
 	}
 
 	#endregion
@@ -312,7 +312,7 @@ public class UIManager : NetworkBehaviour {
 		setToResource (p_ToResource);
 
 		// Make the Maritime Trade using the FromResource and ToResource Attributes
-		_CurrentPlayer.GetComponent<HighLighter> ().makeMaritimeTrade (_FromResource, _ToResource);
+		//_CurrentPlayer.GetComponent<HighLighter> ().makeMaritimeTrade (_FromResource, _ToResource);
 
 		// Revert the trade attributes to NONE so no residual trades carry over to subsequent ones
 		//_ToResource = Enums.ResourceType.NONE;

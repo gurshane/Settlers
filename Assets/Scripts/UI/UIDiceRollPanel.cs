@@ -46,10 +46,10 @@ public class UIDiceRollPanel : UIElement {
 	public override void uiUpdate(Player p_Player)
 	{
 
-		HighLighter _PlayerHighlighter = p_Player.GetComponent<HighLighter> ();
+		//HighLighter _PlayerHighlighter = p_Player.GetComponent<HighLighter> ();
 
-		_FirstDieText.text = "" + _PlayerHighlighter.firstDieNum;
-		_SecondDieText.text = "" + _PlayerHighlighter.secondDieNum;
+		//_FirstDieText.text = "" + _PlayerHighlighter.firstDieNum;
+		//_SecondDieText.text = "" + _PlayerHighlighter.secondDieNum;
 		//_EventDieText.text = convert (_PlayerHighlighter.resourceDieNum );
 
 		// After updating values, deactivate Roll button (Uncomment Later)

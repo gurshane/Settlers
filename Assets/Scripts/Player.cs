@@ -8,6 +8,8 @@ public class Player : NetworkBehaviour {
 
     public GameObject myHud;
 
+    public GameManager gm;
+
     [SyncVar]
     private int iD;
 
@@ -40,6 +42,20 @@ public class Player : NetworkBehaviour {
     private bool aqueduct;
 
     private Dictionary<Vector3, GamePiece> spawnedPieces;
+
+    public void Init(int iD)
+    {
+        this.iD = iD;
+        Debug.Log("Initiated Player: " + iD);
+        gm = GameObject.FindObjectOfType<GameManager>();
+        Debug.Log(NetworkClient.active);
+        if (NetworkClient.active)
+        {
+            gm.EventDiceRolled += DiceRolled;
+            gm.EventBarbarianAttack += BarbarianAttacked;
+            gm.EventNextPlayer += NextPlayerTurn;
+        }
+    }
 
     void Start()
     {
@@ -101,6 +117,11 @@ public class Player : NetworkBehaviour {
         {
             
         }
+    }
+    
+    public int getID()
+    {
+        return this.iD;
     }
 
     public void SetColor(Enums.Color color)
@@ -438,4 +459,63 @@ public class Player : NetworkBehaviour {
         this.commodities[comP] += num;
     }
 
+    public void startTurn()
+    {
+        Status status = Status.ACTIVE;
+        gm.CmdStartTurn();
+        //enable HUD actions 
+    }
+    [Command]
+    public void CmdEndTurn()
+    {
+        gm.CmdSetPlayerTurn();
+    }
+
+    [ClientRpc]
+    public void RpcDiceRoll(int iD)
+    {
+        if (!isLocalPlayer)
+        {
+            return;
+        }
+        if (iD == this.iD)
+        {
+            //call UI element forcing dice roll
+            //upon dice roll click return call the following method to release event catched in DiceRolled
+            Debug.Log("Your Turn");
+            gm.CmdDiceRolled();
+        }
+        else
+        {
+            Debug.Log("Player " + iD + "'s turn");
+            //UI element notifying other players that the game is waiting for the dice to be rolled
+        }
+    }
+
+    public void DiceRolled(int first, int second, int third)
+    {
+        if (!isLocalPlayer)
+        {
+            return;
+        }
+        //call UI element displaying results of die roll  
+        Debug.Log(" " + first + " " + second + " " + third);
+        this.CmdEndTurn();
+    }
+
+    public void NextPlayerTurn()
+    {
+        if (!isLocalPlayer)
+            return;
+        Debug.Log(gm.getPlayerTurn());
+        if (gm.getPlayerTurn() == iD)
+        {
+            startTurn();
+        }
+    }
+
+    public void BarbarianAttacked(bool win, int[] winners)
+    {
+        Debug.Log("Winners");
+    }
 }

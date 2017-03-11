@@ -5,6 +5,7 @@ using UnityEngine.Networking;
 
 public class BoardState : NetworkBehaviour
 {
+    static public BoardState instance;
 
     public Dictionary<Vector3, Vertex> vertexPosition;
     public Dictionary<Vector3, Edge> edgePosition;
@@ -14,6 +15,10 @@ public class BoardState : NetworkBehaviour
 
     bool doOnce;
 
+    void Awake()
+    {
+        instance = this;
+    }
 	// Use this for initialization
 	void Start ()
     {
