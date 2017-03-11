@@ -42,6 +42,8 @@ public class GameManager : NetworkBehaviour {
     [SyncVar]
     public bool barbarianHasAttacked;
 
+    [SyncVar]
+    private int barbarianPos;
 
     private Player currentPlayer;
     private Hex pirateLocation;
@@ -65,6 +67,40 @@ public class GameManager : NetworkBehaviour {
     
     static public GameManager instance = null;
 
+    public void init() //initializer
+    {
+        Debug.Log("Started Init");
+        players = new List<Player>();
+        Debug.Log("network connection: " + Network.connections.Length);
+        ServerInitPlayers();
+        ClientInitPlayers();
+        this.CmdSetPlayerTurn();
+    }
+
+    [Server]
+    private void ServerInitPlayers()
+    {
+        GameObject[] objects = GameObject.FindGameObjectsWithTag("Player");
+        Debug.Log(objects.Length);
+        for (int i = 0; i < objects.Length; i++)
+        {
+            Player player = objects[i].GetComponent<Player>();
+            player.Init(i);
+            players[i] = player;
+        }
+    }
+
+    [Client]
+    private void ClientInitPlayers()
+    {
+        GameObject[] objects = GameObject.FindGameObjectsWithTag("Player");
+        Debug.Log(objects.Length);
+        for (int i = 0; i < objects.Length; i++)
+        {
+            Player player = objects[i].GetComponent<Player>();
+            players[player.getID()] = player;
+        }
+    }
 
     void Awake()
     {
@@ -80,7 +116,7 @@ public class GameManager : NetworkBehaviour {
         
         players = new List<Player>();
         gamePhase = Enums.GamePhase.SETUP_ONE;
-        playerTurn = 0;
+        playerTurn = 5;
         pointsToWin = 16;
         firstDie = 0;
         secondDie = 0;
@@ -99,7 +135,51 @@ public class GameManager : NetworkBehaviour {
 
         bank = GetComponent<Bank>();
 
+        init();
+
     }
+
+    public int getPlayerTurn()
+    {
+        return this.playerTurn;
+    }
+
+    [Command]
+    public void CmdSetPlayerTurn()
+    {
+        playerTurn++;
+        if (this.playerTurn >= players.Count)
+        {
+            playerTurn = 0;
+        }
+        EventNextPlayer();
+    }
+
+    public delegate void DiceRolledDelegate(int firstDie, int secondDie, int thirdDie);
+
+    [SyncEvent]
+    public event DiceRolledDelegate EventDiceRolled; //event that syncs to all clients
+
+    [Command]
+    public void CmdStartTurn()//control flow function
+    {
+        for (int i = 0; i < players.Count; i++)
+        {
+            players[i].RpcDiceRoll(playerTurn);
+        }
+        resolveDice();
+    }
+
+    [Command]
+    public void CmdDiceRolled()
+    {
+        firstDie = UnityEngine.Random.Range(1, 7);
+        secondDie = UnityEngine.Random.Range(1, 7);
+        int thirdDie = UnityEngine.Random.Range(0, 4);//eventDie 
+        eventDie = (Enums.EventDie)System.Enum.Parse(typeof(Enums.EventDie), thirdDie.ToString());
+        EventDiceRolled(firstDie, secondDie, thirdDie);//call the event on all client objects
+    }
+
 
     public int getNumberResources() {
 		return numResources;
@@ -494,6 +574,7 @@ public class GameManager : NetworkBehaviour {
     }
 
     // Resolve a dice roll
+    [Server]
     private void resolveDice()
     {
 
@@ -515,6 +596,7 @@ public class GameManager : NetworkBehaviour {
     }
 
     // Resolve a seven if it is rolled
+    [Server]
     private void resolveSeven()
     {
 
@@ -537,6 +619,80 @@ public class GameManager : NetworkBehaviour {
 
         //vertices adjacent to robber
     }
+
+
+    [Server]
+    private void resolveBarbarian()
+    {
+        barbarianPos++;
+        if (barbarianPos > 6)
+        {
+            barbarianPos = 0;
+            barbarianAttack();
+        }
+    }
+
+    private void barbarianAttack()
+    {
+        int knightNum = 0;
+        int citiesCount = 0;
+        List<City> cities = new List<City>();
+        foreach(Vertex v in boardState.vertexPosition.Values)
+        {
+            GamePiece gp = v.getOccupyingPiece();
+            if(gp != null)
+            {
+                try
+                {
+                    City c = (City)gp;
+                    citiesCount++;
+                }
+                catch
+                {
+
+                }
+            }
+        }
+
+        int[] pKnights = new int[4];
+        for (int i = 0; i < players.Count; i++)
+        {
+            pKnights[i] = 0;
+            List<GamePiece> pieces = players[i].getGamePieces();
+            for (int j = 0; j < pieces.Count; j++)
+            {
+                Knight knight = (Knight)pieces[i];
+                if (knight != null)
+                {
+                    if (knight.isActive())
+                    {
+                        pKnights[i] += knight.getLevel();
+                        knight.deactivateKnight();
+                    }
+                }
+            }
+            knightNum += pKnights[i];
+        }
+        if (knightNum >= citiesCount)
+        {
+            EventBarbarianAttack(true, pKnights);
+        }
+        else
+        {
+            EventBarbarianAttack(false, pKnights);
+        }
+    }
+
+    public delegate void BarbarianAttackDelegate(bool win, int[] winners);
+
+    [SyncEvent]
+    public event BarbarianAttackDelegate EventBarbarianAttack; //event that syncs to all clients
+
+    public delegate void NextPlayerDelegate();
+
+    [SyncEvent]
+    public event NextPlayerDelegate EventNextPlayer;
+
 
     // Distribute the appropriate resources to all players
     private void distribute()
