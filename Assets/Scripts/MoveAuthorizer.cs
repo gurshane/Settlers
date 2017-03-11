@@ -5,6 +5,8 @@ using Enums;
 
 public  class MoveAuthorizer {
 
+	private Graph graph = new Graph();
+
 	// Check if a knight can be moved from one vertex to another
 	public  bool canKnightMove(Vertex source, Vertex target, Enums.Color color) {
 
@@ -35,8 +37,8 @@ public  class MoveAuthorizer {
 		}
 
 		// Check if the vertices are connected
-		Graph.vertexReset (source);
-		return Graph.areConnectedVertices (source, target, color);
+		graph.vertexReset (source);
+		return graph.areConnectedVertices (source, target, color);
 	}
 
 	// Check if a knight can displace another knight
@@ -81,8 +83,8 @@ public  class MoveAuthorizer {
 		}
 
 		// Check to see if the vertices are connected
-		Graph.vertexReset (source);
-		return Graph.areConnectedVertices (source, target, color);
+		graph.vertexReset (source);
+		return graph.areConnectedVertices (source, target, color);
 	}
 
 	// Check if a knight can be upgraded
@@ -229,10 +231,10 @@ public  class MoveAuthorizer {
 		if (location.getTerrainType () == Enums.TerrainType.WATER) {
 			return false;
 		}
-		if (!Graph.freeVertex (location)) {
+		if (!graph.freeVertex (location)) {
 			return false;
 		}
-		if (!Graph.nextToMyEdge (location, color)) {
+		if (!graph.nextToMyEdge (location, color)) {
 			return false;
 		}
 
@@ -346,7 +348,7 @@ public  class MoveAuthorizer {
 		if (!Object.ReferenceEquals(location.getOccupyingPiece(), null)) {
 			return false;
 		}
-		if (!Graph.nextToMyEdge (location, color)) {
+		if (!graph.nextToMyEdge (location, color)) {
 			return false;
 		}
 
@@ -404,11 +406,11 @@ public  class MoveAuthorizer {
 			return false;
 		}
 
-		bool nextToTown = Graph.nextToMyCityOrSettlement (location, color);
+		bool nextToTown = graph.nextToMyCityOrSettlement (location, color);
 		bool nextToRoad = false;
-		if (Graph.nextToMyRoad (location.getLeftVertex (), color)) {
+		if (graph.nextToMyRoad (location.getLeftVertex (), color)) {
 			nextToRoad = true;
-		} else if (Graph.nextToMyRoad (location.getRightVertex (), color)) {
+		} else if (graph.nextToMyRoad (location.getRightVertex (), color)) {
 			nextToRoad = true;
 		}
 		if (!nextToTown && !nextToRoad) {
@@ -482,11 +484,11 @@ public  class MoveAuthorizer {
 			return false;
 		}
 
-		bool nextToTown = Graph.nextToMyCityOrSettlement (location, color);
+		bool nextToTown = graph.nextToMyCityOrSettlement (location, color);
 		bool nextToShip = false;
-		if (Graph.nextToMyShip (location.getLeftVertex (), color)) {
+		if (graph.nextToMyShip (location.getLeftVertex (), color)) {
 			nextToShip = true;
-		} else if (Graph.nextToMyShip (location.getRightVertex (), color)) {
+		} else if (graph.nextToMyShip (location.getRightVertex (), color)) {
 			nextToShip = true;
 		}
 		if (!nextToTown && !nextToShip) {
@@ -548,10 +550,10 @@ public  class MoveAuthorizer {
 		}
 
 		// Make sure the source ship is valid for moving
-		if (Graph.nextToMyPiece (source, color)) {
+		if (graph.nextToMyPiece (source, color)) {
 			return false;
 		}
-		if (Graph.isClosedShip (source, color)) {
+		if (graph.isClosedShip (source, color)) {
 			return false;
 		}
 		if (ship.getBuiltThisTurn ()) {
@@ -610,7 +612,7 @@ public  class MoveAuthorizer {
 		}
 
 		// Make sure the target edge is next to a town-piece or ship (not the one being moved)
-		bool nextToTown = Graph.nextToMyCityOrSettlement (target, color);
+		bool nextToTown = graph.nextToMyCityOrSettlement (target, color);
 		bool nextToShip = false;
 		Vertex current = target.getLeftVertex ();
 		foreach (Edge e in current.getNeighbouringEdges()) {
@@ -761,7 +763,7 @@ public  class MoveAuthorizer {
 			return false;
 		}
 
-		if (Graph.freeVertex (v)) {
+		if (graph.freeVertex (v)) {
 			if (v.getTerrainType () == Enums.TerrainType.LAND) {
 				return true;
 			}
@@ -778,7 +780,7 @@ public  class MoveAuthorizer {
 		}
 
 		// Make sure the road is going on the correct town-piece
-		if (Graph.nextToMyCityOrSettlement (e, color)) {
+		if (graph.nextToMyCityOrSettlement (e, color)) {
 			Vertex current = e.getLeftVertex ();
 			GamePiece piece = current.getOccupyingPiece ();
 			if (Object.ReferenceEquals (piece, null)) {
@@ -821,7 +823,7 @@ public  class MoveAuthorizer {
 		}
 
 		// Make sure the road is going on the correct town-piece
-		if (Graph.nextToMyCityOrSettlement (e, color)) {
+		if (graph.nextToMyCityOrSettlement (e, color)) {
 			Vertex current = e.getLeftVertex ();
 			GamePiece piece = current.getOccupyingPiece ();
 			if (Object.ReferenceEquals (piece, null)) {

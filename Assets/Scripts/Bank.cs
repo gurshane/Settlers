@@ -133,22 +133,22 @@ public class Bank : NetworkBehaviour {
 
 		// Update all relevent fields
 		for (int i = 0; i < resOffered.Length; i++) {
-			trader.discardResource ((Enums.ResourceType)i, resOffered [i]);
+			trader.changeResource ((Enums.ResourceType)i, resOffered [i]);
 			depositResource ((Enums.ResourceType)i, resOffered [i]);
 		}
 		for (int i = 0; i < comOffered.Length; i++) {
-			trader.discardCommodity ((Enums.CommodityType)i, comOffered [i]);
+			trader.changeCommodity ((Enums.CommodityType)i, comOffered [i]);
 			depositCommodity ((Enums.CommodityType)i, comOffered [i]);
 		}
 		for (int i = 0; i < resWanted.Length; i++) {
-			trader.addResource ((Enums.ResourceType)i, resWanted [i]);
+			trader.changeResource ((Enums.ResourceType)i, resWanted [i]);
 			withdrawResource ((Enums.ResourceType)i, resWanted [i]);
 		}
 		for (int i = 0; i < comWanted.Length; i++) {
-			trader.addCommodity ((Enums.CommodityType)i, comWanted [i]);
+			trader.changeCommodity ((Enums.CommodityType)i, comWanted [i]);
 			withdrawCommodity ((Enums.CommodityType)i, comWanted [i]);
 		}
-		trader.decrementGoldCount (trade.getGoldOffered());
+		trader.changeGoldCount (trade.getGoldOffered());
 
 		return true;
 	}

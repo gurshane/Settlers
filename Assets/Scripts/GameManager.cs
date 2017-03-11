@@ -41,6 +41,14 @@ public class GameManager : NetworkBehaviour {
 	private const int numDevChartType = 3;
 	private const int progressCardLimit = 4;
 
+	private Graph graph = new Graph();
+
+	static public GameManager instance = null;
+
+	void Awake() {
+		instance = this;
+	}
+
 	public  int getNumberResources() {
 		return numResources;
 	}
@@ -68,7 +76,7 @@ public class GameManager : NetworkBehaviour {
 
 		// Current player places pieces
 
-		if (getCurrentTurn () == getLastTurn ()) {
+		if (Object.ReferenceEquals(currentPlayer, players[players.Count-1])) {
 			initialSecondTurn (true);
 		} else {
 			initialFirstTurn ();
@@ -77,7 +85,7 @@ public class GameManager : NetworkBehaviour {
 		
 	// Complete an initial second turn
 	public  void initialSecondTurn(bool first) {
-		if (first && getCurrentTurn () == getLastTurn ()) {
+		if (first && Object.ReferenceEquals(currentPlayer, players[players.Count-1])) {
 			currentPlayer = currentPlayer;
 		} else {
 			currentPlayer = getNextPlayer (true);
@@ -86,7 +94,7 @@ public class GameManager : NetworkBehaviour {
 
 		// Current player places pieces
 
-		if (getCurrentTurn () == Enums.TurnOrder.FIRST) {
+		if (Object.ReferenceEquals(currentPlayer, players[0])) {
 			beginTurn (true);
 		} else {
 			initialSecondTurn (false);
@@ -157,68 +165,34 @@ public class GameManager : NetworkBehaviour {
 
 		// If current player is null, get the first player in the turn order
 		if (Object.ReferenceEquals(currentPlayer, null)) {
-			for (int i = 0; i < playOrder.Count; i++) {
-				if (playOrder[i] == Enums.TurnOrder.FIRST) {
-					return players[i];
-				}
-			}
+			return players [0];
 		}
-
-		Enums.TurnOrder currentTurn = getCurrentTurn();
-		Enums.TurnOrder nextTurn;
-		Enums.TurnOrder lastTurn = getLastTurn ();
 
 		// Check if turns are moving in reverse order
 		if (!reverse) {
-			if (currentTurn == lastTurn) {
-				nextTurn = Enums.TurnOrder.FIRST;
+			if (Object.ReferenceEquals(currentPlayer, players[players.Count - 1])) {
+				return players [0];
 			} else {
-				int next = ((int)currentTurn) + 1;
-				nextTurn = (Enums.TurnOrder)next;
+				for (int i = 0; i < players.Count - 1; i++) {
+					if (Object.ReferenceEquals (players [i], currentPlayer)) {
+						return players [i + 1];
+					}
+				}
 			}
 		} else {
-			if (currentTurn == Enums.TurnOrder.FIRST) {
-				nextTurn = lastTurn;
+			if (Object.ReferenceEquals(currentPlayer, players[0])) {
+				return players [players.Count - 1];
 			} else {
-				int next = ((int)currentTurn) - 1;
-				nextTurn = (Enums.TurnOrder)next;
+				for (int i = 1; i < players.Count; i++) {
+					if (Object.ReferenceEquals (players [i], currentPlayer)) {
+						return players [i - 1];
+					}
+				}
 			}
 		}
-
-		// Find the next player based on the next turn
-		int index = 0;
-		for (int i = 0; i < playOrder.Count; i++) {
-			if (playOrder [i] == nextTurn) {
-				index = i;
-			}
-		}
-
-		// Return the next player
-		return players [index];
-	}
-
-	// Get the current turn based on the current player
-	private  Enums.TurnOrder getCurrentTurn() {
-		int index = 0;
-		for (int i = 0; i < players.Count; i++) {
-			if (Object.ReferenceEquals (currentPlayer, players [i])) {
-				index = i;
-			}
-		}
-		return playOrder [index];
-	}
-
-	// Get the last turn based on the number of people playing
-	private  Enums.TurnOrder getLastTurn() {
-		if (playOrder.Count == 1) {
-			return Enums.TurnOrder.FIRST;
-		} else if (playOrder.Count == 2) {
-			return Enums.TurnOrder.SECOND;
-		} else if (playOrder.Count == 3) {
-			return Enums.TurnOrder.THIRD;
-		} else {
-			return Enums.TurnOrder.FOURTH;
-		}
+			
+		// Return the first player by default
+		return players [0];
 	}
 
 	public  List<string> getPlayerNames() {
@@ -305,12 +279,12 @@ public class GameManager : NetworkBehaviour {
 				((City)opponent).removeMetropolis ();
 				string opName = opponent.getOwnerName ();
 				Player op = getPlayer (opName);
-				op.decrementVictoryPoints (2);
+				op.changeVictoryPoints (-2);
 			}
 		}
 
 		((City)p).makeMetropolis ();
-		getPlayer (player).incrementVictoryPoints (2);
+		getPlayer (player).changeVictoryPoints (2);
 
 		return true;
 	}
@@ -331,14 +305,14 @@ public class GameManager : NetworkBehaviour {
 		if (merchantController != "") {
 			Player p = getPlayer (merchantController);
 			if (!Object.ReferenceEquals (p, null)) {
-				p.decrementVictoryPoints (1);
+				p.changeVictoryPoints (-1);
 			}
 		}
 
 		Player given = getPlayer(player);
 		if (!Object.ReferenceEquals (given, null)) {
 			merchantController = player;
-			given.incrementVictoryPoints (1);
+			given.changeVictoryPoints (1);
 			m.putOnBoard ();
 		}
 	}
@@ -438,7 +412,7 @@ public class GameManager : NetworkBehaviour {
 
 	// Distribute the appropriate resources to all players
 	private  void distribute() {
-		Graph.vertexReset (vertex1);
+		graph.vertexReset (vertex1);
 		int num = firstDie + secondDie;
 
 		// Make sure there are enough resources and commodities in the bank
@@ -494,9 +468,9 @@ public class GameManager : NetworkBehaviour {
 					Player p = getPlayer (owner);
 					if (res != Enums.ResourceType.NONE && enoughRes[res]) {
 						Bank.withdrawResource (res, 1);
-						p.addResource (res, 1);
+						p.changeResource (res, 1);
 					} else if (gold) {
-						p.incrementGoldCount (2);
+						p.changeGoldCount (2);
 					}
 				}
 
@@ -507,20 +481,20 @@ public class GameManager : NetworkBehaviour {
 					if (com != Enums.CommodityType.NONE) {
 						if (enoughRes [res]) {
 							Bank.withdrawResource (res, 1);
-							p.addResource (res, 1);
+							p.changeResource (res, 1);
 						}
 						if (enoughComs [com]) {
 							Bank.withdrawCommodity (com, 1);
-							p.addCommodity (com, 1);
+							p.changeCommodity (com, 1);
 						}
 					} else if (res == Enums.ResourceType.BRICK && enoughRes[res]) {
 						Bank.withdrawResource (res, 2);
-						p.addResource (res, 2);
+						p.changeResource (res, 2);
 					} else if (res == Enums.ResourceType.GRAIN && enoughRes[res]) {
 						Bank.withdrawResource (res, 2);
-						p.addResource (res, 2);
+						p.changeResource (res, 2);
 					} else if (gold) {
-						p.incrementGoldCount (2);
+						p.changeGoldCount (2);
 					}
 				}
 			}
@@ -565,7 +539,7 @@ public class GameManager : NetworkBehaviour {
 				
 	// Make sure there are enough resources in the bank for a given dice roll
 	private  bool checkResources(Enums.ResourceType res, int n) {
-		Graph.vertexReset (vertex1);
+		graph.vertexReset (vertex1);
 		int total = 0;
 
 		foreach (Hex h in hexes) {
@@ -617,7 +591,7 @@ public class GameManager : NetworkBehaviour {
 
 	// Make sure there are enough commodities in the bank for a given dice roll
 	private  bool checkCommodities(Enums.CommodityType com, int n) {
-		Graph.vertexReset (vertex1);
+		graph.vertexReset (vertex1);
 		int total = 0;
 
 		foreach (Hex h in hexes) {

@@ -30,6 +30,9 @@ public class Test : MonoBehaviour {
 	int[] medDev;
 	int[] emptyDev;
 
+	MoveAuthorizer ma = new MoveAuthorizer();
+	Graph graph = new Graph();
+
 	// The test function
 	private void testExample() {
 
@@ -256,9 +259,9 @@ public class Test : MonoBehaviour {
 
 		Debug.Log ("Longest Route:\n");
 		for (int i = 0; i < edgeCount; i++) {
-			Graph.edgeReset (edges [0]);
-			edgeList = Graph.collectRouteEdges (edges [i], Enums.Color.WHITE);
-			int route = Graph.longestRoute (edgeList, Enums.Color.WHITE);
+			graph.edgeReset (edges [0]);
+			edgeList = graph.collectRouteEdges (edges [i], Enums.Color.WHITE);
+			int route = graph.longestRoute (edgeList, Enums.Color.WHITE);
 			Debug.Log ("Edge " + i + " has longest route " + route +"\n");
 		}
 		Debug.Log("\n");
@@ -273,8 +276,8 @@ public class Test : MonoBehaviour {
 		Debug.Log ("Connected Edges:\n");
 		for (int i = 0; i < edgeCount; i++) {
 			Debug.Log ("Edges connected to edge " + i + ":\n");
-			Graph.edgeReset (edges [0]);
-			edgeList = Graph.collectRouteEdges (edges [i], Enums.Color.WHITE);
+			graph.edgeReset (edges [0]);
+			edgeList = graph.collectRouteEdges (edges [i], Enums.Color.WHITE);
 			for (int j = 0; j < edgeCount; j++) {
 				foreach (Edge e in edgeList) {
 					if (Object.ReferenceEquals (e, edges [j])) {
@@ -294,7 +297,7 @@ public class Test : MonoBehaviour {
 		Debug.Log ("canKnightMove:\n");
 		for (int i = 0; i < vertexCount; i++) {
 			for (int j = 0; j < vertexCount; j++) {
-				if (MoveAuthorizer.canKnightMove(vertices[i], vertices[j], Enums.Color.WHITE)) {
+				if (ma.canKnightMove(vertices[i], vertices[j], Enums.Color.WHITE)) {
 					Debug.Log("Knight can move from vertex " + i + " to vertex " + j + "\n");
 				}
 			}
@@ -305,7 +308,7 @@ public class Test : MonoBehaviour {
 		Debug.Log ("canKnightDisplace:\n");
 		for (int i = 0; i < vertexCount; i++) {
 			for (int j = 0; j < vertexCount; j++) {
-				if (MoveAuthorizer.canKnightDisplace(vertices[i], vertices[j], Enums.Color.WHITE)) {
+				if (ma.canKnightDisplace(vertices[i], vertices[j], Enums.Color.WHITE)) {
 					Debug.Log("Knight can displace knight at vertex " + j + " from vertex " + i + "\n");
 				}
 			}
@@ -315,7 +318,7 @@ public class Test : MonoBehaviour {
 		// Check all the knights that can be upgrade
 		Debug.Log ("canUpgradeKnight:\n");
 		for (int i = 0; i < vertexCount; i++) {
-			if (MoveAuthorizer.canUpgradeKnight(fullRes, fullDev, vertices[i], pieces)) {
+			if (ma.canUpgradeKnight(fullRes, fullDev, vertices[i], pieces)) {
 				Debug.Log("Knight at vertex " + i + " can be upgraded\n");
 			}
 		}
@@ -324,7 +327,7 @@ public class Test : MonoBehaviour {
 		// Check all the knights can be activated
 		Debug.Log ("canActivateKnight:\n");
 		for (int i = 0; i < vertexCount; i++) {
-			if (MoveAuthorizer.canActivateKnight(fullRes, vertices[i])) {
+			if (ma.canActivateKnight(fullRes, vertices[i])) {
 				Debug.Log("Knight at vertex " + i + " can be activated\n");
 			}
 		}
@@ -332,13 +335,13 @@ public class Test : MonoBehaviour {
 
 		// Check if the development chart can be upgraded
 		Debug.Log ("canUpgradeDevChart:\n");
-		if (MoveAuthorizer.canUpgradeDevChart(Enums.DevChartType.POLITICS, fullCom, pieces, medDev)) {
+		if (ma.canUpgradeDevChart(Enums.DevChartType.POLITICS, fullCom, pieces, medDev)) {
 			Debug.Log("Development chart can be upgraded in politics\n");
 		}
-		if (MoveAuthorizer.canUpgradeDevChart(Enums.DevChartType.TRADE, fullCom, pieces, medDev)) {
+		if (ma.canUpgradeDevChart(Enums.DevChartType.TRADE, fullCom, pieces, medDev)) {
 			Debug.Log("Development chart can be upgraded in trade\n");
 		}
-		if (MoveAuthorizer.canUpgradeDevChart(Enums.DevChartType.SCIENCE, fullCom, pieces, medDev)) {
+		if (ma.canUpgradeDevChart(Enums.DevChartType.SCIENCE, fullCom, pieces, medDev)) {
 			Debug.Log("Development chart can be upgraded in science\n");
 		}
 		Debug.Log("\n");
@@ -346,7 +349,7 @@ public class Test : MonoBehaviour {
 		// Check where settlements can be built
 		Debug.Log ("canBuildSettlement:\n");
 		for (int i = 0; i < vertexCount; i++) {
-			if (MoveAuthorizer.canBuildSettlement(vertices[i], fullRes, pieces, Enums.Color.WHITE)) {
+			if (ma.canBuildSettlement(vertices[i], fullRes, pieces, Enums.Color.WHITE)) {
 				Debug.Log("Can build a settlement at vertex " + i + "\n");
 			}
 		}
@@ -355,7 +358,7 @@ public class Test : MonoBehaviour {
 		// Check where cities can be built
 		Debug.Log ("canBuildCity:\n");
 		for (int i = 0; i < vertexCount; i++) {
-			if (MoveAuthorizer.canBuildCity(vertices[i], fullRes, pieces, Enums.Color.WHITE)) {
+			if (ma.canBuildCity(vertices[i], fullRes, pieces, Enums.Color.WHITE)) {
 				Debug.Log("Can build a city at vertex " + i + "\n");
 			}
 		}
@@ -364,7 +367,7 @@ public class Test : MonoBehaviour {
 		// Check where city walls can be built
 		Debug.Log ("canBuildCityWall:\n");
 		for (int i = 0; i < vertexCount; i++) {
-			if (MoveAuthorizer.canBuildCityWall(vertices[i], fullRes, 2, Enums.Color.WHITE)) {
+			if (ma.canBuildCityWall(vertices[i], fullRes, 2, Enums.Color.WHITE)) {
 				Debug.Log("Can build a city wall at vertex " + i + "\n");
 			}
 		}
@@ -373,7 +376,7 @@ public class Test : MonoBehaviour {
 		// Check where knights can be built
 		Debug.Log ("canBuildKnight:\n");
 		for (int i = 0; i < vertexCount; i++) {
-			if (MoveAuthorizer.canBuildKnight(vertices[i], fullRes, pieces, Enums.Color.WHITE)) {
+			if (ma.canBuildKnight(vertices[i], fullRes, pieces, Enums.Color.WHITE)) {
 				Debug.Log("Can build a knight at vertex " + i + "\n");
 			}
 		}
@@ -382,7 +385,7 @@ public class Test : MonoBehaviour {
 		// Check where roads can be built
 		Debug.Log ("canBuildRoad:\n");
 		for (int i = 0; i < edgeCount; i++) {
-			if (MoveAuthorizer.canBuildRoad(edges[i], fullRes, pieces, Enums.Color.WHITE)) {
+			if (ma.canBuildRoad(edges[i], fullRes, pieces, Enums.Color.WHITE)) {
 				Debug.Log("Can build a road at vertex " + i + "\n");
 			}
 		}
@@ -391,7 +394,7 @@ public class Test : MonoBehaviour {
 		// Check where ships can be built
 		Debug.Log ("canBuildShip:\n");
 		for (int i = 0; i < edgeCount; i++) {
-			if (MoveAuthorizer.canBuildShip(edges[i], fullRes, pieces, Enums.Color.WHITE)) {
+			if (ma.canBuildShip(edges[i], fullRes, pieces, Enums.Color.WHITE)) {
 				Debug.Log("Can build a ship at vertex " + i + "\n");
 			}
 		}
@@ -401,7 +404,7 @@ public class Test : MonoBehaviour {
 		Debug.Log ("canShipMove:\n");
 		for (int i = 0; i < edgeCount; i++) {
 			for (int j = 0; j < edgeCount; j++) {
-				if (MoveAuthorizer.canShipMove(edges[i], edges[j], Enums.Color.WHITE)) {
+				if (ma.canShipMove(edges[i], edges[j], Enums.Color.WHITE)) {
 					Debug.Log("Ship can move from edge " + i + " to edge " + j + "\n");
 				}
 			}
@@ -411,7 +414,7 @@ public class Test : MonoBehaviour {
 		// Check if a knight can chase the robber way
 		Debug.Log ("canChaseRobber:\n");
 		for (int i = 0; i < vertexCount; i++) {
-			if (MoveAuthorizer.canChaseRobber(vertices[i])) {
+			if (ma.canChaseRobber(vertices[i])) {
 				Debug.Log("Can chase robber from vertex " + i + "\n");
 			}
 		}
@@ -420,7 +423,7 @@ public class Test : MonoBehaviour {
 		// Check where the robber can be moved to
 		Debug.Log ("canMoveRobber:\n");
 		for (int i = 0; i < hexCount; i++) {
-			if (MoveAuthorizer.canMoveRobber(hexes[i])) {
+			if (ma.canMoveRobber(hexes[i])) {
 				Debug.Log("Can move robber to hex " + i + "\n");
 			}
 		}
@@ -429,7 +432,7 @@ public class Test : MonoBehaviour {
 		// Check where the pirate can be moved to
 		Debug.Log ("canMovePirate:\n");
 		for (int i = 0; i < hexCount; i++) {
-			if (MoveAuthorizer.canMovePirate(hexes[i])) {
+			if (ma.canMovePirate(hexes[i])) {
 				Debug.Log("Can move pirate to hex " + i + "\n");
 			}
 		}
@@ -438,7 +441,7 @@ public class Test : MonoBehaviour {
 		// Check where the merchant can be placed
 		Debug.Log ("canPlaceMerchant:\n");
 		for (int i = 0; i < hexCount; i++) {
-			if (MoveAuthorizer.canPlaceMerchant(hexes[i])) {
+			if (ma.canPlaceMerchant(hexes[i])) {
 				Debug.Log("Merchant can be placed on hex " + i + "\n");
 			}
 		}
@@ -447,7 +450,7 @@ public class Test : MonoBehaviour {
 		// Check where the initial town-piece can be placed
 		Debug.Log ("canPlaceInitialTownPiece:\n");
 		for (int i = 0; i < vertexCount; i++) {
-			if (MoveAuthorizer.canPlaceInitialTownPiece(vertices[i], validHexes)) {
+			if (ma.canPlaceInitialTownPiece(vertices[i], validHexes)) {
 				Debug.Log("Initial town piece can be placed on vertex " + i + "\n");
 			}
 		}
@@ -456,7 +459,7 @@ public class Test : MonoBehaviour {
 		// Check where the initial road can be placed
 		Debug.Log ("canPlaceInitialRoad:\n");
 		for (int i = 0; i < edgeCount; i++) {
-			if (MoveAuthorizer.canPlaceInitialRoad(edges[i], Enums.Color.WHITE)) {
+			if (ma.canPlaceInitialRoad(edges[i], Enums.Color.WHITE)) {
 				Debug.Log("Initial road can be placed on edge " + i + "\n");
 			}
 		}
@@ -465,7 +468,7 @@ public class Test : MonoBehaviour {
 		// Check where the initial ship can be placed
 		Debug.Log ("canPlaceInitialShip:\n");
 		for (int i = 0; i < edgeCount; i++) {
-			if (MoveAuthorizer.canPlaceInitialShip(edges[i], Enums.Color.WHITE)) {
+			if (ma.canPlaceInitialShip(edges[i], Enums.Color.WHITE)) {
 				Debug.Log("Initial ship can be placed on edge " + i + "\n");
 			}
 		}

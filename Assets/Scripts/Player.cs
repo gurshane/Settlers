@@ -429,9 +429,7 @@ public class Player : NetworkBehaviour {
     {
         this.movedRoad = true;
     }
-
-
-
+		
 	public void roadNotMoved()
 	{
 		this.movedRoad = false;
