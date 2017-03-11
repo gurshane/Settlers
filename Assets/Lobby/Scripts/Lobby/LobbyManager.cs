@@ -389,10 +389,12 @@ namespace Prototype.NetworkLobby
 
         // ----------------- Client callbacks ------------------
 
+
+
         public override void OnClientConnect(NetworkConnection conn)
         {
             base.OnClientConnect(conn);
-
+            Debug.Log(conn.connectionId);
             infoPanel.gameObject.SetActive(false);
 
             conn.RegisterHandler(MsgKicked, KickedMessageHandler);

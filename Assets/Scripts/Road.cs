@@ -7,7 +7,15 @@ public class Road : GamePiece {
 	private bool isShip;
 	private bool builtThisTurn;
 
-	public Road(Enums.Color color, bool isShip) :
+    public Road(bool isShip) :
+        base(Enums.PieceType.ROAD)
+    {
+
+        this.isShip = isShip;
+        this.builtThisTurn = true;
+    }
+
+    public Road(Enums.Color color, bool isShip) :
 		base(color, Enums.PieceType.ROAD) {
 
 		this.isShip = isShip;
@@ -56,13 +64,4 @@ public class Road : GamePiece {
 		return null;
 	}
 
-	// Use this for initialization
-	void Start () {
-		
-	}
-	
-	// Update is called once per frame
-	void Update () {
-		
-	}
 }

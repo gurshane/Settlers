@@ -5,12 +5,13 @@ using UnityEngine.Networking;
 
 public class AssignColor : NetworkBehaviour {
 
-    void Update()
-    {
-        if(isServer && isLocalPlayer)
-        {
-            //GetComponent<GameManager>().UpdateColor();
-        }
-    }
+    //public GameObject player;
+
+    //void OnPlayerConnected(NetworkPlayer np)
+    //{
+        
+    //    var go = Instantiate<GameObject>(player, NetworkBehaviour.connectionToClient);
+    //    //NetworkServer.SpawnWithClientAuthority(go, 
+    //}
 
 }

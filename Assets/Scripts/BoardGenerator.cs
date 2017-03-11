@@ -40,10 +40,12 @@ public class BoardGenerator : NetworkBehaviour {
         doOnce = true;
     }
     // Use this for initialization
+    [ServerCallback]
     void LateUpdate ()
     {
         if(doOnce && isServer)
         {
+            Debug.Log("im the server man");
             doOnce = false;
 
             spawned = new List<GameObject>();
@@ -107,7 +109,7 @@ public class BoardGenerator : NetworkBehaviour {
             GameObject spawnedHex = Instantiate(hexToSpawn, targetTransform.position, Quaternion.identity, targetTransform);
 
             GameObject targetNumber = numberPieces[Random.Range(0, numberPieces.Count)];
-            GameObject spawnedNumber = Instantiate(targetNumber, targetTransform.position, Quaternion.identity, targetTransform);
+            //GameObject spawnedNumber = Instantiate(targetNumber, targetTransform.position, Quaternion.identity, targetTransform);
 
             Hex hex = targetSpawn.gameObject.GetComponent<Hex>();
             string name = hexToSpawn.name;
@@ -151,7 +153,7 @@ public class BoardGenerator : NetworkBehaviour {
             switch (number)
             {
                 case "one":
-                    hex.hexNumber = 1;
+                    hex.hexNumber = Random.Range(8, 12);
                     break;
                 case "two":
                     hex.hexNumber = 2;
@@ -169,7 +171,7 @@ public class BoardGenerator : NetworkBehaviour {
                     hex.hexNumber = 6;
                     break;
                 case "seven":
-                    hex.hexNumber = Random.Range(1, 6);
+                    hex.hexNumber = Random.Range(2, 6);
                     break;
                 case "eight":
                     hex.hexNumber = 8;
@@ -198,7 +200,7 @@ public class BoardGenerator : NetworkBehaviour {
             }
 
             NetworkServer.Spawn(spawnedHex);
-            NetworkServer.Spawn(targetNumber);
+            //NetworkServer.Spawn(targetNumber);
             spawnPositions.Remove(targetSpawn);
         }
     }

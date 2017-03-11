@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class Robber : GamePiece {
 
-	public Robber(Enums.Color color) : base(color, Enums.PieceType.ROBBER) {}
+	public Robber() : base(Enums.PieceType.ROBBER) {}
 
 	// Use this for initialization
 	void Start () {

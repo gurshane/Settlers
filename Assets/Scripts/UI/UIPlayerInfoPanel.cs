@@ -59,7 +59,8 @@ public class UIPlayerInfoPanel : UIElement {
 	/// <param name="p_Player">P player.</param>
 	public void instantiate(Player p_Player)
 	{
-		_PlayerName.text = p_Player.getUserName ();
+        //_PlayerName.text = p_Player.getUserName ();
+        _PlayerName.text = "Hi";
 		_VictoryPoints.text = "" + p_Player.getVictoryCounts ();
 	}
 

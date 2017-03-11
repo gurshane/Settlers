@@ -6,10 +6,16 @@ public class City : GamePiece {
 
 	private bool metropolis;
 
-	public City(Enums.Color color, bool met) :
+    public City() : base(Enums.PieceType.CITY)
+    {
+
+        this.metropolis = false;
+    }
+
+    public City(Enums.Color color) :
 		base(color, Enums.PieceType.CITY) {
 
-		this.metropolis = met;
+        this.metropolis = false;
 	}
 
 	public bool isMetropolis() {

@@ -15,12 +15,87 @@ public class Bank : NetworkBehaviour {
 
     void Start()
     {
-        resources = new int[7];
-        commodities = new int[5];
+        resources = new int[GameManager.instance.getNumberResources()];
+        for (int i = 0; i < resources.Length; i++)
+        {
+            resources[i] = 19;
+        }
+
+        commodities = new int[GameManager.instance.getNumberCommodities()];
+        for (int i = 0; i < resources.Length; i++)
+        {
+            commodities[i] = 12;
+        }
+
+        scienceCards = new List<Enums.ProgressCardName>();
+        scienceCards.Add(Enums.ProgressCardName.ALCHEMIST);
+        scienceCards.Add(Enums.ProgressCardName.ALCHEMIST);
+        scienceCards.Add(Enums.ProgressCardName.CRANE);
+        scienceCards.Add(Enums.ProgressCardName.CRANE);
+        scienceCards.Add(Enums.ProgressCardName.ENGINEER);
+        scienceCards.Add(Enums.ProgressCardName.INVENTOR);
+        scienceCards.Add(Enums.ProgressCardName.INVENTOR);
+        scienceCards.Add(Enums.ProgressCardName.IRRIGATION);
+        scienceCards.Add(Enums.ProgressCardName.IRRIGATION);
+        scienceCards.Add(Enums.ProgressCardName.MEDICINE);
+        scienceCards.Add(Enums.ProgressCardName.MEDICINE);
+        scienceCards.Add(Enums.ProgressCardName.MINING);
+        scienceCards.Add(Enums.ProgressCardName.MINING);
+        scienceCards.Add(Enums.ProgressCardName.SMITH);
+        scienceCards.Add(Enums.ProgressCardName.SMITH);
+        scienceCards.Add(Enums.ProgressCardName.PRINTER);
+        scienceCards.Add(Enums.ProgressCardName.ROADBUILDING);
+        scienceCards.Add(Enums.ProgressCardName.ROADBUILDING);
+
+        politicsCards = new List<Enums.ProgressCardName>();
+        politicsCards.Add(Enums.ProgressCardName.BISHOP);
+        politicsCards.Add(Enums.ProgressCardName.BISHOP);
+        politicsCards.Add(Enums.ProgressCardName.CONSTITUTION);
+        politicsCards.Add(Enums.ProgressCardName.DESERTER);
+        politicsCards.Add(Enums.ProgressCardName.DESERTER);
+        politicsCards.Add(Enums.ProgressCardName.DIPLOMAT);
+        politicsCards.Add(Enums.ProgressCardName.DIPLOMAT);
+        politicsCards.Add(Enums.ProgressCardName.INTRIGUE);
+        politicsCards.Add(Enums.ProgressCardName.INTRIGUE);
+        politicsCards.Add(Enums.ProgressCardName.SABOTEUR);
+        politicsCards.Add(Enums.ProgressCardName.SABOTEUR);
+        politicsCards.Add(Enums.ProgressCardName.SPY);
+        politicsCards.Add(Enums.ProgressCardName.SPY);
+        politicsCards.Add(Enums.ProgressCardName.SPY);
+        politicsCards.Add(Enums.ProgressCardName.WARLORD);
+        politicsCards.Add(Enums.ProgressCardName.WARLORD);
+        politicsCards.Add(Enums.ProgressCardName.WEDDING);
+        politicsCards.Add(Enums.ProgressCardName.WEDDING);
 
         tradeCards = new List<Enums.ProgressCardName>();
-        politicsCards = new List<Enums.ProgressCardName>();
-        scienceCards = new List<Enums.ProgressCardName>();
+        tradeCards.Add(Enums.ProgressCardName.COMMERCIALHARBOR);
+        tradeCards.Add(Enums.ProgressCardName.COMMERCIALHARBOR);
+        tradeCards.Add(Enums.ProgressCardName.MASTERMERCHANT);
+        tradeCards.Add(Enums.ProgressCardName.MASTERMERCHANT);
+        tradeCards.Add(Enums.ProgressCardName.MERCHANT);
+        tradeCards.Add(Enums.ProgressCardName.MERCHANT);
+        tradeCards.Add(Enums.ProgressCardName.MERCHANT);
+        tradeCards.Add(Enums.ProgressCardName.MERCHANT);
+        tradeCards.Add(Enums.ProgressCardName.MERCHANT);
+        tradeCards.Add(Enums.ProgressCardName.MERCHANT);
+        tradeCards.Add(Enums.ProgressCardName.MERCHANTFLEET);
+        tradeCards.Add(Enums.ProgressCardName.MERCHANTFLEET);
+        tradeCards.Add(Enums.ProgressCardName.RESOURCEMONOPOLY);
+        tradeCards.Add(Enums.ProgressCardName.RESOURCEMONOPOLY);
+        tradeCards.Add(Enums.ProgressCardName.RESOURCEMONOPOLY);
+        tradeCards.Add(Enums.ProgressCardName.RESOURCEMONOPOLY);
+        tradeCards.Add(Enums.ProgressCardName.TRADEMONOPOLY);
+        tradeCards.Add(Enums.ProgressCardName.TRADEMONOPOLY);
+
+        scienceCards.Sort(delegate (Enums.ProgressCardName a, Enums.ProgressCardName b) {
+            return (Random.Range(-10.0f, 10.0f).CompareTo(Random.Range(-10.0f, 10.0f)));
+        });
+        politicsCards.Sort(delegate (Enums.ProgressCardName a, Enums.ProgressCardName b) {
+            return (Random.Range(-10.0f, 10.0f).CompareTo(Random.Range(-10.0f, 10.0f)));
+        });
+        tradeCards.Sort(delegate (Enums.ProgressCardName a, Enums.ProgressCardName b) {
+            return (Random.Range(-10.0f, 10.0f).CompareTo(Random.Range(-10.0f, 10.0f)));
+        });
     }
 
     public int getResourceAmount(Enums.ResourceType res) {
@@ -216,41 +291,46 @@ public class Bank : NetworkBehaviour {
 		}
 	}
 
-	// Make a trade with the bank
-	public bool tradeWithBank(int[] resRatios, int[] comRatios, Trades trade) {
-		if (!isValidBankTrade (resRatios, comRatios, trade)) {
-			return false;
-		}
+    // Make a trade with the bank
+    public bool tradeWithBank(int[] resRatios, int[] comRatios, Trades trade)
+    {
+        if (!isValidBankTrade(resRatios, comRatios, trade))
+        {
+            return false;
+        }
 
-		// Extract the information from the trade
-		int[] resOffered = trade.getResourcesOffered ();
-		int[] resWanted = trade.getResourcesWanted ();
-		int[] comOffered = trade.getCommoditiesOffered ();
-		int[] comWanted = trade.getCommoditiesWanted ();
+        // Extract the information from the trade
+        int[] resOffered = trade.getResourcesOffered();
+        int[] resWanted = trade.getResourcesWanted();
+        int[] comOffered = trade.getCommoditiesOffered();
+        int[] comWanted = trade.getCommoditiesWanted();
 
-		Player trader = trade.getPlayerOffering ();
+        Player trader = trade.getPlayerOffering();
 
-		// Update all relevent fields
-		for (int i = 0; i < resOffered.Length; i++) {
-			trader.discardResource ((Enums.ResourceType)i, resOffered [i]);
-			depositResource ((Enums.ResourceType)i, resOffered [i]);
-		}
-		for (int i = 0; i < comOffered.Length; i++) {
-			trader.discardCommodity ((Enums.CommodityType)i, comOffered [i]);
-			depositCommodity ((Enums.CommodityType)i, comOffered [i]);
-		}
-		for (int i = 0; i < resWanted.Length; i++) {
-			trader.addResource ((Enums.ResourceType)i, resWanted [i]);
-			withdrawResource ((Enums.ResourceType)i, resWanted [i]);
-		}
-		for (int i = 0; i < comWanted.Length; i++) {
-			trader.addCommodity ((Enums.CommodityType)i, comWanted [i]);
-			withdrawCommodity ((Enums.CommodityType)i, comWanted [i]);
-		}
-		trader.decrementGoldCount (trade.getGoldOffered());
+        // Update all relevent fields
+        for (int i = 0; i < resOffered.Length; i++)
+        {
+            trader.changeResource((Enums.ResourceType)i, resOffered[i]);
+            depositResource((Enums.ResourceType)i, resOffered[i]);
+        }
+        for (int i = 0; i < comOffered.Length; i++)
+        {
+            trader.changeCommodity((Enums.CommodityType)i, comOffered[i]);
+            depositCommodity((Enums.CommodityType)i, comOffered[i]);
+        }
+        for (int i = 0; i < resWanted.Length; i++)
+        {
+            trader.changeResource((Enums.ResourceType)i, resWanted[i]);
+            withdrawResource((Enums.ResourceType)i, resWanted[i]);
+        }
+        for (int i = 0; i < comWanted.Length; i++)
+        {
+            trader.changeCommodity((Enums.CommodityType)i, comWanted[i]);
+            withdrawCommodity((Enums.CommodityType)i, comWanted[i]);
+        }
+        trader.changeGoldCount(trade.getGoldOffered());
 
-		return true;
-	}
+        return true;
+    }
 
-    
-}
+    }

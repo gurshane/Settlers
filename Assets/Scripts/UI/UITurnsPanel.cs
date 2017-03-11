@@ -69,18 +69,38 @@ public class UITurnsPanel : UIElement {
 	}
 
 	/// <summary>
-	/// Updates the placement text to prompt placing a settlement or route depending on turn
+	/// Updates the placement text to prompt placing a settlement or route depending on turn. 
+	/// Only displays one of the prompts at at time
 	/// </summary>
 	/// <param name="p_Highlighter">P highlighter.</param>
 	private void updatePlacementText(HighLighter p_Highlighter)
 	{
-		if (p_Highlighter.placedFirstSettlement == false) {
-
+		// If first settlement not placed, print a prompt saying so
+		if (p_Highlighter.placedFirstSettlement == false) 
+		{
 			_PlacementText.text = "  - Place First Settlement";
+			return;
 		} 
-		else 
+
+		// If first road/boat not placed, print a prompt saying so
+		if (p_Highlighter.placedFirstEdge == false) 
 		{
 			_PlacementText.text = "  - Place First Road/Boat";
+			return;
+		}
+
+		// If first city not placed, print a prompt saying so
+		if (p_Highlighter.placedFirstCity == false) 
+		{
+			_PlacementText.text = "  - Place First City";
+			return;
+		}
+
+		// If second road/boat not placed, print a prompt saying so
+		if (p_Highlighter.placedSecondEdge == false) 
+		{
+			_PlacementText.text = "  - Place Second Road/Boat";
+			return;
 		}
 	}
 		
