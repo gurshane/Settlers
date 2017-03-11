@@ -145,13 +145,13 @@ public class MoveManager : NetworkBehaviour {
 		GameObject targetKnight;
 		switch (targetLevel) {
 		case 1:
-			targetLevel = Instantiate<GameObject> (prefabHolder.levelOneKnight, displacedLocation, Quaternion.identity);
+			targetKnight = Instantiate<GameObject> (prefabHolder.levelOneKnight, displacedLocation, Quaternion.identity);
 			break;
 		case 2:
-			targetLevel = Instantiate<GameObject> (prefabHolder.levelTwoKnight, displacedLocation, Quaternion.identity);
+			targetKnight = Instantiate<GameObject> (prefabHolder.levelTwoKnight, displacedLocation, Quaternion.identity);
 			break;
 		default:
-			targetLevel = Instantiate<GameObject> (prefabHolder.levelThreeKnight, displacedLocation, Quaternion.identity);
+			targetKnight = Instantiate<GameObject> (prefabHolder.levelThreeKnight, displacedLocation, Quaternion.identity);
 			break;
 		}
 
