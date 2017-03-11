@@ -23,6 +23,7 @@ public class HighLighter : NetworkBehaviour {
     private BoardState boardState;
     private Player p;
 
+    [SyncVar(hook = "OnNumPlayersChanged")]
     public int numPlayers;
     public int numPlayersReady;
 
@@ -58,8 +59,6 @@ public class HighLighter : NetworkBehaviour {
         myDieNumbers = new List<int>();
         boardState = GetComponent<BoardState>();
         p = GetComponent<Player>();
-        numPlayers = 2;
-        numPlayersReady = 0;
         currentTurn = GetComponent<turnOrder>();
 
         red = UnityEngine.Random.Range(0, 255);
@@ -67,10 +66,36 @@ public class HighLighter : NetworkBehaviour {
         blue = UnityEngine.Random.Range(0, 255);
 
 
-        StartCoroutine(pickColor());
+        //StartCoroutine(pickColor());
+
+        if(isLocalPlayer)
+        {
+            CmdPlayerAdded();
+        }
+    }
+
+    void OnNumPlayersChanged(int num)
+    {
+        numPlayers = num;
+        Debug.Log("New player count: " + numPlayers);
+    }
+
+    [ClientRpc]
+    void RpcPlayerAdded()
+    {
+        Debug.Log("server increasing player count");
+        numPlayers++;
+    }
+
+    [Command]
+    void CmdPlayerAdded()
+    {
+        Debug.Log("server stuff" + numPlayers);
+        RpcPlayerAdded();
     }
 
     // Update is called once per frame
+    [ClientCallback]
     void Update() {
         
         if(!isLocalPlayer)
@@ -136,7 +161,7 @@ public class HighLighter : NetworkBehaviour {
                         //newSettlement.transform.Rotate(new Vector3(-90f, 0f, 0f));
                         //newSettlement.transform.Translate(0f, 0f, 10f);
                         //iAmTheSpawner = true;
-                        p.incrementVictoryPoints(1);
+                        //p.incrementVictoryPoints(1);
                         CmdSpawnSettlement(pieceHit.transform.position, pieceHit.transform.rotation, (int)myColor, red, green, blue);
 
                     }
@@ -222,7 +247,7 @@ public class HighLighter : NetworkBehaviour {
                         //newSettlement.transform.Rotate(new Vector3(-90f, 0f, 0f));
                         //newSettlement.transform.Translate(0f, 0f, 10f);
                         //iAmTheSpawner = true;
-                        p.incrementVictoryPoints(2);
+                        //p.incrementVictoryPoints(2);
                         CmdSpawnCity(pieceHit.transform.position, pieceHit.transform.rotation, (int)myColor, red, green, blue);
 
                         foreach(Hex h in boardState.hexPoisition.Values)
@@ -231,7 +256,7 @@ public class HighLighter : NetworkBehaviour {
                             {
                                 if(h.adjacentToVertex(v))
                                 {
-                                    p.addResource(h.resourceType, 1);
+                                    ///p.addResource(h.resourceType, 1);
                                 }
                             }
                         }
@@ -413,8 +438,8 @@ public class HighLighter : NetworkBehaviour {
     {
         if ((p.getResources()[(int)Enums.ResourceType.BRICK] >= 1) && (p.getResources()[(int)Enums.ResourceType.LUMBER] >= 1))
         {
-            p.discardResource(Enums.ResourceType.BRICK, 1);
-            p.discardResource(Enums.ResourceType.LUMBER, 1);
+            //p.discardResource(Enums.ResourceType.BRICK, 1);
+            //p.discardResource(Enums.ResourceType.LUMBER, 1);
             if((int)e.terrainType == (int)Enums.TerrainType.LAND)
             {
                 //GameObject go = Instantiate<GameObject>(GetComponent<PrefabHolder>().road, e.gameObject.transform.position, e.gameObject.transform.rotation);
@@ -439,11 +464,11 @@ public class HighLighter : NetworkBehaviour {
         if((p.getResources()[(int)Enums.ResourceType.BRICK] >= 1) && (p.getResources()[(int)Enums.ResourceType.GRAIN] >= 1) 
             && (p.getResources()[(int)Enums.ResourceType.LUMBER] >= 1) && (p.getResources()[(int)Enums.ResourceType.ORE] >= 1))
         {
-            p.discardResource(Enums.ResourceType.BRICK, 1);
-            p.discardResource(Enums.ResourceType.GRAIN, 1);
-            p.discardResource(Enums.ResourceType.LUMBER, 1);
-            p.discardResource(Enums.ResourceType.ORE, 1);
-            p.incrementVictoryPoints(1);
+            //p/*.discardResource(Enums.ResourceType.BRICK, 1);
+            //p.discardResource(Enums.ResourceType.GRAIN, 1);
+            //p.discardResource(Enums.ResourceType.LUMBER, 1);
+            //p.discardResource(Enums.ResourceType.ORE, 1);
+            //p.incrementVictoryPoints(1);
 
             //GameObject go = Instantiate<GameObject>(GetComponent<PrefabHolder>().settlement, v.gameObject.transform.position, v.gameObject.transform.rotation);
             //go.transform.localScale = go.transform.localScale * 1.5f;
@@ -457,11 +482,11 @@ public class HighLighter : NetworkBehaviour {
     {
         if ((p.getResources()[(int)Enums.ResourceType.GRAIN] >= 2) && (p.getResources()[(int)Enums.ResourceType.ORE] >= 3))
         {
-            p.discardResource(Enums.ResourceType.GRAIN, 2);
-            p.discardResource(Enums.ResourceType.ORE, 3);
-            p.incrementVictoryPoints(1);//because you lose one point for removing the settlement and gain two for the new city
-            //GameObject go = Instantiate<GameObject>(GetComponent<PrefabHolder>().city, v.gameObject.transform.position, v.gameObject.transform.rotation);
-            //go.transform.localScale = go.transform.localScale * 1.5f;
+            //p.discardResource(Enums.ResourceType.GRAIN, 2);
+            //p.discardResource(Enums.ResourceType.ORE, 3);
+            //p.incrementVictoryPoints(1);//because you lose one point for removing the settlement and gain two for the new city
+            ////GameObject go = Instantiate<GameObject>(GetComponent<PrefabHolder>().city, v.gameObject.transform.position, v.gameObject.transform.rotation);
+            ////go.transform.localScale = go.transform.localScale * 1.5f;
             //go.transform.Rotate(new Vector3(-90.0f, 0f, 0f));
             //go.transform.Translate(0f, 0f, 10f);
             CmdSpawnCity(v.gameObject.transform.position, v.gameObject.transform.rotation, (int)myColor, red, green, blue);
@@ -516,7 +541,7 @@ public class HighLighter : NetworkBehaviour {
         }
 
         Vertex source = boardState.vertexPosition[v];
-        City c = new City(myColor, false);
+        City c = new City(myColor);
         c.putOnBoard();
         source.setOccupyingPiece(c);
         boardState.vertexPosition.Remove(v);
@@ -604,8 +629,8 @@ public class HighLighter : NetworkBehaviour {
         {
             return;
         }
-        p.discardResource(from, 4);
-        p.addResource(to, 1);
+        //p.discardResource(from, 4);
+        //p.addResource(to, 1);
     }
 
     IEnumerator pickColor()
@@ -695,11 +720,11 @@ public class HighLighter : NetworkBehaviour {
                         try
                         {
                             City city = (City)gp;
-                            p.addResource(hex.resourceType, 2);
+                            //p.addResource(hex.resourceType, 2);
                         }
                         catch(Exception e)
                         {
-                            p.addResource(hex.resourceType, 1);
+                            //p.addResource(hex.resourceType, 1);
                         }
                         //}
                     }

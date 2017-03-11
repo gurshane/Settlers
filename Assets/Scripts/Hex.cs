@@ -74,14 +74,5 @@ public class Hex : BoardPiece {
 	public void setHexNumber(int hexNumber) {
 		this.hexNumber = hexNumber;
 	}
-
-    void Start()
-    {
-
-    }
-	
-	// Update is called once per frame
-	void Update () {
-		
-	}
+    
 }

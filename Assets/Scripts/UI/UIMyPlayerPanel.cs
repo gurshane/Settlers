@@ -42,12 +42,12 @@ public class UIMyPlayerPanel : UIElement {
 	/// <param name="p_Player">P player.</param>
 	public override void uiUpdate(Player p_Player)
 	{
-		// If the player name is null, return
-		if (isStringNull(p_Player.getUserName())) return;
+        // If the player name is null, return
+        //if (isStringNull(p_Player.getUserName())) return;
 
-		// Update UI Text to display the Player's name
-		_PlayerName.text = "\"" + p_Player.getUserName() + "\"";
-
+        // Update UI Text to display the Player's name
+        //_PlayerName.text = "\"" + p_Player.getUserName() + "\"";
+        _PlayerName.text = "Hi";
 		_VictoryPoints.text = "  Victory Points: " + p_Player.victoryPoints;
 
 		// Update UI Image to display appropriate colour

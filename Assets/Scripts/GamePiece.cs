@@ -10,7 +10,14 @@ public abstract class GamePiece {
 	private Enums.PieceType pieceType;
 	private bool onBoard;
 
-	public GamePiece(Enums.Color color, Enums.PieceType pieceType) {
+    public GamePiece(Enums.PieceType pieceType)
+    {
+        this.myColor = Enums.Color.NONE;
+        this.pieceType = pieceType;
+        this.onBoard = false;
+    }
+
+    public GamePiece(Enums.Color color, Enums.PieceType pieceType) {
 		this.myColor = color;
 		this.pieceType = pieceType;
 		this.onBoard = false;
