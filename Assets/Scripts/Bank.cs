@@ -246,9 +246,7 @@ public class Bank : NetworkBehaviour {
             scienceCards.RemoveAt(0);
         }
     }
-
-    
-
+		
 	// Make sure a given trade is valid
 	public bool isValidBankTrade(int[] resRatios, int[] comRatios, Trades trade) {
 		int totalAvailable = 0;
@@ -298,39 +296,49 @@ public class Bank : NetworkBehaviour {
         {
             return false;
         }
-
-        // Extract the information from the trade
-        int[] resOffered = trade.getResourcesOffered();
-        int[] resWanted = trade.getResourcesWanted();
-        int[] comOffered = trade.getCommoditiesOffered();
-        int[] comWanted = trade.getCommoditiesWanted();
-
-        Player trader = trade.getPlayerOffering();
-
-        // Update all relevent fields
-        for (int i = 0; i < resOffered.Length; i++)
-        {
-            trader.changeResource((Enums.ResourceType)i, resOffered[i]);
-            depositResource((Enums.ResourceType)i, resOffered[i]);
-        }
-        for (int i = 0; i < comOffered.Length; i++)
-        {
-            trader.changeCommodity((Enums.CommodityType)i, comOffered[i]);
-            depositCommodity((Enums.CommodityType)i, comOffered[i]);
-        }
-        for (int i = 0; i < resWanted.Length; i++)
-        {
-            trader.changeResource((Enums.ResourceType)i, resWanted[i]);
-            withdrawResource((Enums.ResourceType)i, resWanted[i]);
-        }
-        for (int i = 0; i < comWanted.Length; i++)
-        {
-            trader.changeCommodity((Enums.CommodityType)i, comWanted[i]);
-            withdrawCommodity((Enums.CommodityType)i, comWanted[i]);
-        }
-        trader.changeGoldCount(trade.getGoldOffered());
-
+			
+		CmdTradeWithBank (resRatios, comRatios, trade);
         return true;
     }
 
+	[Command]
+	public void CmdTradeWithBank (int[] resRatios, int[] comRatios, Trades trade) 
+	{
+		RpcTradeWithBank (resRatios, comRatios, trade);
     }
+
+	[ClientRpc]
+	public void RpcTradeWithBank (int[] resRatios, int[] comRatios, Trades trade) 
+	{
+		// Extract the information from the trade
+		int[] resOffered = trade.getResourcesOffered();
+		int[] resWanted = trade.getResourcesWanted();
+		int[] comOffered = trade.getCommoditiesOffered();
+		int[] comWanted = trade.getCommoditiesWanted();
+
+		Player trader = trade.getPlayerOffering();
+
+		// Update all relevent fields
+		for (int i = 0; i < resOffered.Length; i++)
+		{
+			trader.changeResource((Enums.ResourceType)i, resOffered[i]);
+			depositResource((Enums.ResourceType)i, resOffered[i]);
+		}
+		for (int i = 0; i < comOffered.Length; i++)
+		{
+			trader.changeCommodity((Enums.CommodityType)i, comOffered[i]);
+			depositCommodity((Enums.CommodityType)i, comOffered[i]);
+		}
+		for (int i = 0; i < resWanted.Length; i++)
+		{
+			trader.changeResource((Enums.ResourceType)i, resWanted[i]);
+			withdrawResource((Enums.ResourceType)i, resWanted[i]);
+		}
+		for (int i = 0; i < comWanted.Length; i++)
+		{
+			trader.changeCommodity((Enums.CommodityType)i, comWanted[i]);
+			withdrawCommodity((Enums.CommodityType)i, comWanted[i]);
+		}
+		trader.changeGoldCount(trade.getGoldOffered());
+	}
+}

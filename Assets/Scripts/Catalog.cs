@@ -204,6 +204,13 @@ public interface Catalog {
 	               List<GamePiece> pieces, Enums.Color color);
 	bool buildShip (Edge location, int[] resources,
 	               List<GamePiece> pieces, Enums.Color color);
+
+	bool moveKnight (Vertex source, Vertex target, Enums.Color color);
+	bool displaceKnight (Vertex source, Vertex target, Enums.Color color);
+	bool upgradeKnight (int[] resources, int[] devChart, Vertex v);
+	bool activateKnight (int[] resources, Vertex v);
+	bool upgradeDevChart (Enums.DevChartType dev, int[] commodities, 
+	                     List<GamePiece> pieces, int[] devChart);
 	//----------------------------
 
 
@@ -324,6 +331,10 @@ public interface Catalog {
 	bool hasMovedRoad();
 	void movesRoad();
 	void roadNotMoved ();
+
+	// Aqueduct is reached when a player has level 3 in science
+	bool getAqueduct();
+	void giveAqueduct();
 	//----------------------------
 
 
