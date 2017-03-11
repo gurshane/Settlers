@@ -73,7 +73,7 @@ public class GameManager : NetworkBehaviour {
         Debug.Log("network connection: " + Network.connections.Length);
         ServerInitPlayers();
         ClientInitPlayers();
-        this.CmdSetPlayerTurn();
+        
     }
 
     [Server]
@@ -114,7 +114,7 @@ public class GameManager : NetworkBehaviour {
         
         players = new List<Player>();
         gamePhase = Enums.GamePhase.SETUP_ONE;
-        playerTurn = 5;
+        
         pointsToWin = 16;
         firstDie = 0;
         secondDie = 0;
@@ -135,6 +135,10 @@ public class GameManager : NetworkBehaviour {
 
         init();
 
+        firstTurn();
+        secondTurn();
+        playerTurn = 5;
+        this.CmdSetPlayerTurn();
     }
 
     public int getPlayerTurn()
@@ -178,6 +182,159 @@ public class GameManager : NetworkBehaviour {
         EventDiceRolled(firstDie, secondDie, thirdDie);//call the event on all client objects
     }
 
+    // Resolve a dice roll
+    [Server]
+    private void resolveDice()
+    {
+
+        // Check if a seven was rolled
+        if (firstDie + secondDie == 7)
+        {
+            resolveSeven();
+        }
+        else
+        {
+            distribute();
+        }
+
+        //Barbarian
+
+        //Event Die
+
+        gamePhase = Enums.GamePhase.PHASE_TWO;
+    }
+
+    // Resolve a seven if it is rolled
+    [Server]
+    private void resolveSeven()
+    {
+
+        // If the barbarian has not attacked, nothing happens
+        if (!barbarianHasAttacked)
+        {
+            return;
+        }
+
+        foreach (Player p in players)
+        {
+
+            //Discard cards
+
+        }
+
+        //Choose pirate or robber
+
+        //Move pirate or robber
+
+        //vertices adjacent to robber
+    }
+
+
+    [Server]
+    private void resolveBarbarian()
+    {
+        barbarianPos++;
+        if (barbarianPos > 6)
+        {
+            barbarianPos = 0;
+            barbarianAttack();
+        }
+    }
+
+    private void barbarianAttack()
+    {
+        int knightNum = 0;
+        int citiesCount = 0;
+        List<City> cities = new List<City>();
+        foreach (Vertex v in BoardState.instance.vertexPosition.Values)
+        {
+            GamePiece gp = v.getOccupyingPiece();
+            if (gp != null)
+            {
+                try
+                {
+                    City c = (City)gp;
+                    citiesCount++;
+                }
+                catch
+                {
+
+                }
+            }
+        }
+
+        int[] pKnights = new int[4];
+        for (int i = 0; i < players.Count; i++)
+        {
+            pKnights[i] = 0;
+            List<GamePiece> pieces = players[i].getGamePieces();
+            for (int j = 0; j < pieces.Count; j++)
+            {
+                Knight knight = (Knight)pieces[i];
+                if (knight != null)
+                {
+                    if (knight.isActive())
+                    {
+                        pKnights[i] += knight.getLevel();
+                        knight.deactivateKnight();
+                    }
+                }
+            }
+            knightNum += pKnights[i];
+        }
+        if (knightNum >= citiesCount)
+        {
+            EventBarbarianAttack(true, pKnights);
+        }
+        else
+        {
+            EventBarbarianAttack(false, pKnights);
+        }
+    }
+
+    public delegate void BarbarianAttackDelegate(bool win, int[] winners);
+
+    [SyncEvent]
+    public event BarbarianAttackDelegate EventBarbarianAttack; //event that syncs to all clients
+
+    public delegate void NextPlayerDelegate();
+
+    [SyncEvent]
+    public event NextPlayerDelegate EventNextPlayer;
+
+
+
+    public delegate void FirstTurnDelegate();
+
+    [SyncEvent]
+    public event FirstTurnDelegate EventFirstTurn; //event that syncs to all clients
+
+    public void firstTurn()
+    {
+        for (int i = 0; i<players.Count;i++)
+        {
+            playerTurn = i;
+            EventFirstTurn();
+        }
+    }
+
+
+    public delegate void SecondTurnDelegate();
+
+    [SyncEvent]
+    public event FirstTurnDelegate EventSecondTurn;
+
+    public void secondTurn()
+    {
+        for (int i = players.Count - 1; i>=0; i++)
+        {
+            playerTurn = i;
+            EventSecondTurn();
+        }
+    }
+
+
+
 
     public int getNumberResources() {
 		return numResources;
@@ -198,173 +355,6 @@ public class GameManager : NetworkBehaviour {
 	public int getPointsToWin() {
 		return pointsToWin;
 	}
-
-    // Complete an initial first turn
-    public void initialFirstTurn()
-    {
-        currentPlayer = getNextPlayer(false);
-        gamePhase = Enums.GamePhase.SETUP_ONE;
-
-        // Current player places pieces
-
-        if (Object.ReferenceEquals(currentPlayer, players[players.Count - 1]))
-        {
-            initialSecondTurn(true);
-        }
-        else
-        {
-            initialFirstTurn();
-        }
-    }
-
-    // Complete an initial second turn
-    public void initialSecondTurn(bool first)
-    {
-        if (first && Object.ReferenceEquals(currentPlayer, players[players.Count - 1]))
-        {
-            currentPlayer = currentPlayer;
-        }
-        else
-        {
-            currentPlayer = getNextPlayer(true);
-        }
-        gamePhase = Enums.GamePhase.SETUP_TWO;
-
-        // Current player places pieces
-
-        if (Object.ReferenceEquals(currentPlayer, players[0]))
-        {
-            beginTurn(true);
-        }
-        else
-        {
-            initialSecondTurn(false);
-        }
-    }
-
-    // Begin Game
-
-    // End Game
-
-    public void endGame()
-    {
-    }
-
-    // Begin a Turn
-    public void beginTurn(bool first)
-    {
-        if (first)
-        {
-            currentPlayer = currentPlayer;
-        }
-        else
-        {
-            currentPlayer = getNextPlayer(false);
-        }
-        gamePhase = Enums.GamePhase.PHASE_ONE;
-
-        // current player rolls dice
-    }
-
-    // End a turn
-    public void endTurn()
-    {
-
-        // If a player has won, end the game
-        foreach (Player p in players)
-        {
-            if (p.getVictoryCounts() >= pointsToWin)
-            {
-                endGame();
-                return;
-            }
-        }
-
-        // Do some cleanup steps
-        foreach (Player p in players)
-        {
-            p.roadNotMoved();
-
-            // If any player has more than 4 progress cards, they must discard
-            if (p.getProgressCards().Count > progressCardLimit)
-            {
-
-                // Those players discard down to 4 progress cards
-
-            }
-
-            // Set some turn specific booleans to false
-            List<GamePiece> pieceList = p.getGamePieces();
-            foreach (GamePiece piece in pieceList)
-            {
-                if (piece.getPieceType() == Enums.PieceType.KNIGHT)
-                {
-                    Knight k = (Knight)piece;
-                    k.notActivatedThisTurn();
-                    k.notUpgradedThisTurn();
-                }
-                else if (piece.getPieceType() == Enums.PieceType.ROAD)
-                {
-                    Road r = (Road)piece;
-                    r.notBuiltThisTurn();
-                }
-            }
-        }
-
-        // Begin the next turn
-        beginTurn(false);
-    }
-
-    // Find the next player
-    private Player getNextPlayer(bool reverse)
-    {
-
-        // If current player is null, get the first player in the turn order
-        if (Object.ReferenceEquals(currentPlayer, null))
-        {
-            return players[0];
-        }
-
-        // Check if turns are moving in reverse order
-        if (!reverse)
-        {
-            if (Object.ReferenceEquals(currentPlayer, players[players.Count - 1]))
-            {
-                return players[0];
-            }
-            else
-            {
-                for (int i = 0; i < players.Count - 1; i++)
-                {
-                    if (Object.ReferenceEquals(players[i], currentPlayer))
-                    {
-                        return players[i + 1];
-                    }
-                }
-            }
-        }
-        else
-        {
-            if (Object.ReferenceEquals(currentPlayer, players[0]))
-            {
-                return players[players.Count - 1];
-            }
-            else
-            {
-                for (int i = 1; i < players.Count; i++)
-                {
-                    if (Object.ReferenceEquals(players[i], currentPlayer))
-                    {
-                        return players[i - 1];
-                    }
-                }
-            }
-        }
-
-        // Return the first player by default
-        return players[0];
-    }
-
 
     public Enums.GamePhase getGamePhase() {
 		return gamePhase;
@@ -512,184 +502,7 @@ public class GameManager : NetworkBehaviour {
         }
     }
 
-    // Get a dice roll, randomly
-    public void rollDice()
-    {
 
-        // Get random values for all the dice
-        firstDie = (int)Random.Range(1, 7);
-        secondDie = (int)Random.Range(1, 7);
-        int evnt = (int)Random.Range(1, 7);
-
-        // Assign an event die outcome to the event die
-        switch (evnt)
-        {
-            case 1:
-                eventDie = Enums.EventDie.TRADE;
-                break;
-            case 2:
-                eventDie = Enums.EventDie.POLITICS;
-                break;
-            case 3:
-                eventDie = Enums.EventDie.SCIENCE;
-                break;
-            default:
-                eventDie = Enums.EventDie.BARBARIAN;
-                break;
-        }
-
-        // Resolve the outcome of the dice roll
-        resolveDice();
-    }
-
-    // Pick the dice (for alchemist)
-    public void rollDice(int d1, int d2)
-    {
-
-        firstDie = d1;
-        secondDie = d2;
-        int evnt = (int)Random.Range(1, 7);
-
-        // Assign an event die outcome to the event die
-        switch (evnt)
-        {
-            case 1:
-                eventDie = Enums.EventDie.TRADE;
-                break;
-            case 2:
-                eventDie = Enums.EventDie.POLITICS;
-                break;
-            case 3:
-                eventDie = Enums.EventDie.SCIENCE;
-                break;
-            default:
-                eventDie = Enums.EventDie.BARBARIAN;
-                break;
-        }
-
-        // Resolve the dice outcome
-        resolveDice();
-    }
-
-    // Resolve a dice roll
-    [Server]
-    private void resolveDice()
-    {
-
-        // Check if a seven was rolled
-        if (firstDie + secondDie == 7)
-        {
-            resolveSeven();
-        }
-        else
-        {
-            distribute();
-        }
-
-        //Barbarian
-
-        //Event Die
-
-        gamePhase = Enums.GamePhase.PHASE_TWO;
-    }
-
-    // Resolve a seven if it is rolled
-    [Server]
-    private void resolveSeven()
-    {
-
-        // If the barbarian has not attacked, nothing happens
-        if (!barbarianHasAttacked)
-        {
-            return;
-        }
-
-        foreach (Player p in players)
-        {
-
-            //Discard cards
-
-        }
-
-        //Choose pirate or robber
-
-        //Move pirate or robber
-
-        //vertices adjacent to robber
-    }
-
-
-    [Server]
-    private void resolveBarbarian()
-    {
-        barbarianPos++;
-        if (barbarianPos > 6)
-        {
-            barbarianPos = 0;
-            barbarianAttack();
-        }
-    }
-
-    private void barbarianAttack()
-    {
-        int knightNum = 0;
-        int citiesCount = 0;
-        List<City> cities = new List<City>();
-        foreach(Vertex v in BoardState.instance.vertexPosition.Values)
-        {
-            GamePiece gp = v.getOccupyingPiece();
-            if(gp != null)
-            {
-                try
-                {
-                    City c = (City)gp;
-                    citiesCount++;
-                }
-                catch
-                {
-
-                }
-            }
-        }
-
-        int[] pKnights = new int[4];
-        for (int i = 0; i < players.Count; i++)
-        {
-            pKnights[i] = 0;
-            List<GamePiece> pieces = players[i].getGamePieces();
-            for (int j = 0; j < pieces.Count; j++)
-            {
-                Knight knight = (Knight)pieces[i];
-                if (knight != null)
-                {
-                    if (knight.isActive())
-                    {
-                        pKnights[i] += knight.getLevel();
-                        knight.deactivateKnight();
-                    }
-                }
-            }
-            knightNum += pKnights[i];
-        }
-        if (knightNum >= citiesCount)
-        {
-            EventBarbarianAttack(true, pKnights);
-        }
-        else
-        {
-            EventBarbarianAttack(false, pKnights);
-        }
-    }
-
-    public delegate void BarbarianAttackDelegate(bool win, int[] winners);
-
-    [SyncEvent]
-    public event BarbarianAttackDelegate EventBarbarianAttack; //event that syncs to all clients
-
-    public delegate void NextPlayerDelegate();
-
-    [SyncEvent]
-    public event NextPlayerDelegate EventNextPlayer;
 
 
     // Distribute the appropriate resources to all players
