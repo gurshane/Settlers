@@ -11,6 +11,7 @@ public class MoveManager : NetworkBehaviour {
     Bank bank;
     BoardState boardState;
     MoveAuthorizer ma;
+	Graph graph;
 
     void Start()
     {
@@ -19,6 +20,7 @@ public class MoveManager : NetworkBehaviour {
         boardState = GetComponent<BoardState>();
         prefabHolder = GetComponent<PrefabHolder>();
         ma = new MoveAuthorizer();
+		graph = new Graph ();
     }
 
     // Move a knight from source to target
@@ -55,6 +57,7 @@ public class MoveManager : NetworkBehaviour {
 			break;
 		}
 		NetworkServer.Spawn(knight);
+		NetworkServer.UnSpawn(boardState.spawnedObjects[source]);
         RpcMoveKnight(source, target, knight);
     }
 
@@ -73,6 +76,7 @@ public class MoveManager : NetworkBehaviour {
         // Deactivate the knight
         sourceKnight.deactivateKnight();
 		boardState.spawnedObjects.Add(target, knight);
+		boardState.spawnedObjects.Remove (source);
 
     }
 
@@ -90,7 +94,31 @@ public class MoveManager : NetworkBehaviour {
 		Knight kTarget = (Knight)target.getOccupyingPiece ();
 		int targetLevel = kTarget.getLevel ();
 
-		CmdDisplaceKnight(source.transform.position, target.transform.position, sourceLevel, targetLevel);
+		Vertex displacedLocation = null;
+		foreach (Vertex v in boardState.vertexPosition.Values) {
+			displacedLocation = v;
+			break;
+		}
+
+		bool gone = true;
+		foreach (Vertex v in boardState.vertexPosition.Values) {
+			if (graph.areConnectedVertices (v, target, color)) {
+				if (!Object.ReferenceEquals (v.getOccupyingPiece (), null)) {
+					if (Object.ReferenceEquals (v, source)) {
+						displacedLocation = v;
+						gone = false;
+						break;
+					}
+				} else {
+					displacedLocation = v;
+					gone = false;
+					break;
+				}
+			}
+		}
+
+		CmdDisplaceKnight(source.transform.position, target.transform.position, 
+			displacedLocation.transform.position, sourceLevel, targetLevel, gone);
 
 		// Check if longest route needs to be updated
 
@@ -98,7 +126,8 @@ public class MoveManager : NetworkBehaviour {
 	}
 
     [Command]
-	void CmdDisplaceKnight(Vector3 source, Vector3 target, int sourceLevel, int targetLevel)
+	void CmdDisplaceKnight(Vector3 source, Vector3 target,
+		Vector3 displacedLocation, int sourceLevel, int targetLevel, bool gone)
 	{
 		GameObject sourceKnight;
 		switch (sourceLevel) {
@@ -112,12 +141,33 @@ public class MoveManager : NetworkBehaviour {
 			sourceKnight = Instantiate<GameObject> (prefabHolder.levelThreeKnight, target, Quaternion.identity);
 			break;
 		}
+
+		GameObject targetKnight;
+		switch (targetLevel) {
+		case 1:
+			targetLevel = Instantiate<GameObject> (prefabHolder.levelOneKnight, displacedLocation, Quaternion.identity);
+			break;
+		case 2:
+			targetLevel = Instantiate<GameObject> (prefabHolder.levelTwoKnight, displacedLocation, Quaternion.identity);
+			break;
+		default:
+			targetLevel = Instantiate<GameObject> (prefabHolder.levelThreeKnight, displacedLocation, Quaternion.identity);
+			break;
+		}
+
+		if (!gone) {
+			NetworkServer.Spawn (targetKnight);
+		}
+
 		NetworkServer.Spawn(sourceKnight);
-		RpcDisplaceKnight(source, target, sourceKnight);
+		NetworkServer.UnSpawn (boardState.spawnedObjects [source]);
+		NetworkServer.UnSpawn (boardState.spawnedObjects [target]);
+		RpcDisplaceKnight(source, target, displacedLocation, sourceKnight, targetKnight, gone);
     }
 
     [ClientRpc]
-	void RpcDisplaceKnight(Vector3 source, Vector3 target, GameObject sourceKnightObject)
+	void RpcDisplaceKnight(Vector3 source, Vector3 target, Vector3 displacedLocation, 
+		GameObject sourceKnightObject, GameObject targetKnightObject, bool gone)
     {
         Vertex sourcePiece = boardState.vertexPosition[source];
         Vertex targetPiece = boardState.vertexPosition[target];
@@ -135,6 +185,13 @@ public class MoveManager : NetworkBehaviour {
 
         // Deactivate the knight
         sourceKnight.deactivateKnight();
+
+		if (!gone) {
+			boardState.spawnedObjects.Add (displacedLocation, targetKnightObject);
+		}
+
+		boardState.spawnedObjects.Remove(target);
+		boardState.spawnedObjects.Remove(source);
 		boardState.spawnedObjects.Add(target, sourceKnightObject);
     }
 
@@ -246,15 +303,13 @@ public class MoveManager : NetworkBehaviour {
     [Command]
     void CmdBuildSettlement(Vector3 location)
     {
-        RpcBuildSettlement(location);
-
         GameObject newSettlement = Instantiate<GameObject>(prefabHolder.settlement, location, Quaternion.identity);
-        boardState.spawnedObjects.Add(location, newSettlement);
         NetworkServer.Spawn(newSettlement);
+		RpcBuildSettlement(location, newSettlement);
     }
 
     [ClientRpc]
-    void RpcBuildSettlement(Vector3 location)
+	void RpcBuildSettlement(Vector3 location, GameObject newSettlement)
     {
         Vertex source = boardState.vertexPosition[location];
 
@@ -265,6 +320,7 @@ public class MoveManager : NetworkBehaviour {
 
         source.setOccupyingPiece(settlement);
         settlement.putOnBoard();
+		boardState.spawnedObjects.Add(location, newSettlement);
     }
 
 
@@ -294,15 +350,13 @@ public class MoveManager : NetworkBehaviour {
     [Command]
     void CmdBuildCity(Vector3 location)
     {
-        RpcBuildCity(location);
-
         GameObject spawnedCity = Instantiate<GameObject>(prefabHolder.city, location, Quaternion.identity);
-        boardState.spawnedObjects.Add(location, spawnedCity);
         NetworkServer.Spawn(spawnedCity);
+		RpcBuildCity(location, spawnedCity);
     }
 
     [ClientRpc]
-    void RpcBuildCity(Vector3 location)
+	void RpcBuildCity(Vector3 location, GameObject spawnedCity)
     {
         // Remove the current settlement
         Vertex source = boardState.vertexPosition[location];
@@ -316,6 +370,7 @@ public class MoveManager : NetworkBehaviour {
 
         source.setOccupyingPiece(city);
         city.putOnBoard();
+		boardState.spawnedObjects.Add(location, spawnedCity);
     }
 
 	// Check if a city wall can be built at a vertex
@@ -328,17 +383,16 @@ public class MoveManager : NetworkBehaviour {
     [Command]
     void CmdBuildCityWall(Vector3 location)
     {
-        RpcBuildCityWall(location);
-
         GameObject spawnedCityWall = Instantiate<GameObject>(prefabHolder.cityWall, location, Quaternion.identity);
-        boardState.spawnedObjects.Add(location, spawnedCityWall);
         NetworkServer.Spawn(spawnedCityWall);
+		RpcBuildCityWall(location, spawnedCityWall);
+
     }
 
     [ClientRpc]
-    void RpcBuildCityWall(Vector3 location)
+	void RpcBuildCityWall(Vector3 location, GameObject spawnedCityWall)
     {
-
+		boardState.spawnedObjects.Add(location, spawnedCityWall);
     }
 
 	// Build a knight at location
@@ -351,17 +405,15 @@ public class MoveManager : NetworkBehaviour {
     [Command]
     void CmdBuildKnight(Vector3 location)
     {
-        RpcBuildKnight(location);
-
         GameObject spawnedKnight = Instantiate<GameObject>(prefabHolder.levelOneKnight, location, Quaternion.identity);
-        boardState.spawnedObjects.Add(location, spawnedKnight);
         NetworkServer.Spawn(spawnedKnight);
+		RpcBuildKnight(location, spawnedKnight);
     }
 
     [ClientRpc]
-    void RpcBuildKnight(Vector3 location)
+    void RpcBuildKnight(Vector3 location, GameObject spawnedKnight)
     {
-
+		boardState.spawnedObjects.Add(location, spawnedKnight);
     }
 
 	// Build a road at location
@@ -390,15 +442,13 @@ public class MoveManager : NetworkBehaviour {
     [Command]
     void CmdBuildRoad(Vector3 location)
     {
-        RpcBuildRoad(location);
-
         GameObject spawnedRoad = Instantiate<GameObject>(prefabHolder.road, location, Quaternion.identity);
-        boardState.spawnedObjects.Add(location, spawnedRoad);
         NetworkServer.Spawn(spawnedRoad);
+		RpcBuildRoad(location, spawnedRoad);
     }
 
     [ClientRpc]
-    void RpcBuildRoad(Vector3 location)
+    void RpcBuildRoad(Vector3 location, GameObject spawnedRoad)
     {
         Edge edge = boardState.edgePosition[location];
 
@@ -409,6 +459,7 @@ public class MoveManager : NetworkBehaviour {
         edge.setOccupyingPiece(road);
         road.putOnBoard();
         road.wasBuiltThisTurn();
+		boardState.spawnedObjects.Add(location, spawnedRoad);
     }
 
 	// Build a ship at location
@@ -437,15 +488,13 @@ public class MoveManager : NetworkBehaviour {
     [Command]
     void CmdBuildShip(Vector3 location)
     {
-        RpcBuildShip(location);
-
         GameObject spawnedBoat = Instantiate<GameObject>(prefabHolder.boat, location, Quaternion.identity);
-        boardState.spawnedObjects.Add(location, spawnedBoat);
         NetworkServer.Spawn(spawnedBoat);
+		RpcBuildShip(location, spawnedBoat);
     }
 
     [ClientRpc]
-    void RpcBuildShip(Vector3 location)
+    void RpcBuildShip(Vector3 location, GameObject spawnedBoat)
     {
         Edge edge = boardState.edgePosition[location];
 
@@ -456,6 +505,7 @@ public class MoveManager : NetworkBehaviour {
         edge.setOccupyingPiece(ship);
         ship.putOnBoard();
         ship.wasBuiltThisTurn();
+		boardState.spawnedObjects.Add(location, spawnedBoat);
     }
 
 	// Move a ship from source to target
