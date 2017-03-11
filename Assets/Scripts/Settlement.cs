@@ -4,7 +4,9 @@ using UnityEngine;
 
 public class Settlement : GamePiece {
 
-	public Settlement(Enums.Color color) : base(color, Enums.PieceType.SETTLEMENT) {}
+    public Settlement() : base(Enums.PieceType.SETTLEMENT) { }
+
+    public Settlement(Enums.Color color) : base(color, Enums.PieceType.SETTLEMENT) {}
 
 	public static Settlement getFreeSettlement (List<GamePiece> pieces) {
 		foreach (GamePiece p in pieces) {
@@ -16,14 +18,5 @@ public class Settlement : GamePiece {
 		}
 		return null;
 	}
-
-	// Use this for initialization
-	void Start () {
-		
-	}
-	
-	// Update is called once per frame
-	void Update () {
-		
-	}
+    
 }

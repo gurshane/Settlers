@@ -9,7 +9,15 @@ public class Knight : GamePiece {
 	private bool hasBeenUpgraded;
 	private bool activatedThisTurn;
 
-	public Knight(Enums.Color color) :
+    public Knight() : base(Enums.PieceType.KNIGHT)
+    {
+        this.level = 1;
+        this.active = false;
+        this.hasBeenUpgraded = false;
+        this.activatedThisTurn = false;
+    }
+
+    public Knight(Enums.Color color) :
 		base(color, Enums.PieceType.KNIGHT) {
 
 		this.level = 1;

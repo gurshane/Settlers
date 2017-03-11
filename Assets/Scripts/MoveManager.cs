@@ -10,6 +10,7 @@ public class MoveManager : NetworkBehaviour {
     PrefabHolder prefabHolder;
     Bank bank;
     BoardState boardState;
+    MoveAuthorizer ma;
 
     void Start()
     {
@@ -17,13 +18,14 @@ public class MoveManager : NetworkBehaviour {
         bank = GetComponent<Bank>();
         boardState = GetComponent<BoardState>();
         prefabHolder = GetComponent<PrefabHolder>();
+        ma = new MoveAuthorizer();
     }
 
     // Move a knight from source to target
     public bool moveKnight(Vertex source, Vertex target, Enums.Color color, int currentLongest) {
 
 		// Check if the knight can be moved
-		if (!MoveAuthorizer.canKnightMove (source, target, color)) {
+		if (!ma.canKnightMove (source, target, color)) {
 			return false;
 		}
 
@@ -60,7 +62,7 @@ public class MoveManager : NetworkBehaviour {
 	public bool displaceKnight(Vertex source, Vertex target, Enums.Color color) {
 		
 		// Check if the knight can displace
-		if (!MoveAuthorizer.canKnightDisplace (source, target, color)) {
+		if (!ma.canKnightDisplace (source, target, color)) {
 			return false;
 		}
 
@@ -144,7 +146,7 @@ public class MoveManager : NetworkBehaviour {
 	public bool buidSettlement(Vertex location, int[] resources,
 		List<GamePiece> pieces, Enums.Color color) {
 
-		if (!MoveAuthorizer.canBuildSettlement (location, resources, pieces, color)) {
+		if (!ma.canBuildSettlement (location, resources, pieces, color)) {
 			return false;
 		}
 
@@ -153,24 +155,23 @@ public class MoveManager : NetworkBehaviour {
         Player current = GetComponent<Player>();//gameManager.getCurrentPlayer();
 
         // Add an appropriate amount of victory points
-        current.incrementVictoryPoints (1);
-		current.incrementVictoryPoints (location.getChits ());
-
+        current.changeVictoryPoints(1);
+        current.changeVictoryPoints(location.getChits());
         // Spend the correct resources
-        current.discardResource (Enums.ResourceType.BRICK, 1);
-		bank.depositResource (Enums.ResourceType.BRICK, 1);
+        // Spend the correct resources
+        current.changeResource(Enums.ResourceType.BRICK, -1);
+        bank.depositResource(Enums.ResourceType.BRICK, 1);
 
-		current.discardResource (Enums.ResourceType.GRAIN, 1);
-		bank.depositResource (Enums.ResourceType.GRAIN, 1);
+        current.changeResource(Enums.ResourceType.GRAIN, -1);
+        bank.depositResource(Enums.ResourceType.GRAIN, 1);
 
-		current.discardResource (Enums.ResourceType.WOOL, 1);
-		bank.depositResource (Enums.ResourceType.WOOL, 1);
+        current.changeResource(Enums.ResourceType.WOOL, -1);
+        bank.depositResource(Enums.ResourceType.WOOL, 1);
 
-		current.discardResource (Enums.ResourceType.LUMBER, 1);
-		bank.depositResource (Enums.ResourceType.LUMBER, 1);
-
-		// Check if there is a port
-		updatePort (location);
+        current.changeResource(Enums.ResourceType.LUMBER, -1);
+        bank.depositResource(Enums.ResourceType.LUMBER, 1);
+        // Check if there is a port
+        updatePort (location);
 
 		// Update longest road
 
@@ -206,7 +207,7 @@ public class MoveManager : NetworkBehaviour {
 	public bool buildCity(Vertex location, int[] resources,
 		List<GamePiece> pieces, Enums.Color color) {
 
-		if (!MoveAuthorizer.canBuildCity (location, resources, pieces, color)) {
+		if (!ma.canBuildCity (location, resources, pieces, color)) {
 			return false;
 		}
 
@@ -214,16 +215,15 @@ public class MoveManager : NetworkBehaviour {
 
         // Add an appropriate amount of victory points
         Player current = GetComponent<Player>();//gameManager.getCurrentPlayer();
-        current.incrementVictoryPoints (1);
+        current.changeVictoryPoints(1);
 
-		// Spend the resources
-		current.discardResource (Enums.ResourceType.GRAIN, 2);
-		bank.depositResource (Enums.ResourceType.GRAIN, 2);
+        // Spend the resources
+        current.changeResource(Enums.ResourceType.GRAIN, -2);
+        bank.depositResource(Enums.ResourceType.GRAIN, 2);
 
-		current.discardResource (Enums.ResourceType.ORE, 3);
-		bank.depositResource (Enums.ResourceType.ORE, 3);
-
-		return true;
+        current.changeResource(Enums.ResourceType.ORE, -3);
+        bank.depositResource(Enums.ResourceType.ORE, 3);
+        return true;
 	}
 
     [Command]
@@ -303,7 +303,7 @@ public class MoveManager : NetworkBehaviour {
 	public bool buildRoad(Edge location, int[] resources,
 		List<GamePiece> pieces, Enums.Color color) {
 
-		if (!MoveAuthorizer.canBuildRoad (location, resources, pieces, color)) {
+		if (!ma.canBuildRoad (location, resources, pieces, color)) {
 			return false;
 		}
 
@@ -311,16 +311,15 @@ public class MoveManager : NetworkBehaviour {
 
         Player current = GetComponent<Player>();// gameManager.getCurrentPlayer ();
 
-		// Spend the resources
-		current.discardResource (Enums.ResourceType.BRICK, 1);
-		bank.depositResource (Enums.ResourceType.BRICK, 1);
+        // Spend the resources
+        current.changeResource(Enums.ResourceType.BRICK, -1);
+        bank.depositResource(Enums.ResourceType.BRICK, 1);
 
-		current.discardResource (Enums.ResourceType.LUMBER, 1);
-		bank.depositResource (Enums.ResourceType.LUMBER, 1);
+        current.changeResource(Enums.ResourceType.LUMBER, -1);
+        bank.depositResource(Enums.ResourceType.LUMBER, 1);
+        //Update longest route
 
-		//Update longest route
-
-		return true;
+        return true;
 	}
 
     [Command]
@@ -351,7 +350,7 @@ public class MoveManager : NetworkBehaviour {
 	public bool buildShip(Edge location, int[] resources,
 		List<GamePiece> pieces, Enums.Color color) {
 
-		if (!MoveAuthorizer.canBuildShip (location, resources, pieces, color)) {
+		if (!ma.canBuildShip (location, resources, pieces, color)) {
 			return false;
 		}
 
@@ -359,16 +358,15 @@ public class MoveManager : NetworkBehaviour {
 
         Player current = GetComponent<Player>();// gameManager.getCurrentPlayer ();
 
-		// Spend the resources
-		current.discardResource (Enums.ResourceType.WOOL, 1);
-		bank.depositResource (Enums.ResourceType.WOOL, 1);
+        // Spend the resources
+        current.changeResource(Enums.ResourceType.WOOL, -1);
+        bank.depositResource(Enums.ResourceType.WOOL, 1);
 
-		current.discardResource (Enums.ResourceType.LUMBER, 1);
-		bank.depositResource (Enums.ResourceType.LUMBER, 1);
+        current.changeResource(Enums.ResourceType.LUMBER, -1);
+        bank.depositResource(Enums.ResourceType.LUMBER, 1);
+        //Update longest route
 
-		//Update longest route
-
-		return true;
+        return true;
 	}
 
     [Command]
@@ -489,63 +487,55 @@ public class MoveManager : NetworkBehaviour {
 
 	// Place an initial settlement
 	public bool placeInitialSettlement (Vertex v, List<GamePiece> pieces, List<Hex> validHexes) {
-		if (!MoveAuthorizer.canPlaceInitialTownPiece (v, validHexes)) {
+		if (!ma.canPlaceInitialTownPiece (v, validHexes)) {
 			return false;
 		}
 
         CmdBuildSettlement(v.transform.position);
 
         // Get the resources around the settlement
-        Player current = GetComponent<Player>();// gameManager.getCurrentPlayer ();
-		foreach (Hex h in validHexes) {
-			if (h.adjacentToVertex (v)) {
-				Enums.ResourceType res = gameManager.getResourceFromHex (h.getHexType());
-				if (res != Enums.ResourceType.NONE) {
-					current.addResource (res, 1);
-					bank.withdrawResource (res, 1);
-				}
-			}
-		}
+        Player current = GameManager.instance.getCurrentPlayer();
 
-		// Update the victory points and add a port
-		current.incrementVictoryPoints (1);
-        
+        // Update the victory points and add a port
+        current.changeVictoryPoints(1);
         updatePort(v);
 
-		return true;
-	}
+        return true;
+    }
 
     // Place an initial city
     public bool placeInitialCity (Vertex v, List<GamePiece> pieces, List<Hex> validHexes) {
-		if (!MoveAuthorizer.canPlaceInitialTownPiece (v, validHexes)) {
+		if (!ma.canPlaceInitialTownPiece (v, validHexes)) {
 			return false;
 		}
 
         CmdBuildCity(v.transform.position);
 
         // Get the resources around the city
-        Player current = GetComponent<Player>();// gameManager.getCurrentPlayer ();
-		foreach (Hex h in validHexes) {
-			if (h.adjacentToVertex (v)) {
-				Enums.ResourceType res = gameManager.getResourceFromHex (h.getHexType());
-				if (res != Enums.ResourceType.NONE) {
-					current.addResource (res, 1);
-					bank.withdrawResource (res, 1);
-				}
-			}
-		}
+        Player current = GameManager.instance.getCurrentPlayer();
+        foreach (Hex h in validHexes)
+        {
+            if (h.adjacentToVertex(v))
+            {
+                Enums.ResourceType res = GameManager.instance.getResourceFromHex(h.getHexType());
+                if (res != Enums.ResourceType.NONE)
+                {
+                    current.changeResource(res, 1);
+                    bank.withdrawResource(res, 1);
+                }
+            }
+        }
 
-		// Update the victory points and add a port 
-		current.incrementVictoryPoints (2);
-        
+        // Update the victory points and add a port 
+        current.changeVictoryPoints(2);
         updatePort(v);
 
-		return true;
-	}
+        return true;
+    }
 
 	// Place an initial road
 	public bool placeInitialRoad (Edge e, Enums.Color color, List<GamePiece> pieces) {
-		if (!MoveAuthorizer.canPlaceInitialRoad (e, color)) {
+		if (!ma.canPlaceInitialRoad (e, color)) {
 			return false;
 		}
 
@@ -556,7 +546,7 @@ public class MoveManager : NetworkBehaviour {
 	 
 	// Place an initial ship
 	public bool placeInitialShip (Edge e, Enums.Color color, List<GamePiece> pieces) {
-		if (!MoveAuthorizer.canPlaceInitialShip (e, color)) {
+		if (!ma.canPlaceInitialShip (e, color)) {
 			return false;
 		}
 
@@ -597,7 +587,7 @@ public class MoveManager : NetworkBehaviour {
 					ratios [i] = 3;
 				}
 			}
-			current.updateResoureRatios (ratios);
+			current.updateResourceRatios (ratios);
 
 		// If there is a specific port, update the correct ratio
 		} else if (port != Enums.PortType.NONE) {

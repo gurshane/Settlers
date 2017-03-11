@@ -40,10 +40,12 @@ public class BoardGenerator : NetworkBehaviour {
         doOnce = true;
     }
     // Use this for initialization
+    [ServerCallback]
     void LateUpdate ()
     {
         if(doOnce && isServer)
         {
+            Debug.Log("im the server man");
             doOnce = false;
 
             spawned = new List<GameObject>();
