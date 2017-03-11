@@ -11,6 +11,7 @@ public class MoveManager : NetworkBehaviour {
     Bank bank;
     BoardState boardState;
     MoveAuthorizer ma;
+	Graph graph;
 
     void Start()
     {
@@ -19,6 +20,7 @@ public class MoveManager : NetworkBehaviour {
         boardState = GetComponent<BoardState>();
         prefabHolder = GetComponent<PrefabHolder>();
         ma = new MoveAuthorizer();
+		graph = new Graph ();
     }
 
     // Move a knight from source to target
@@ -29,7 +31,10 @@ public class MoveManager : NetworkBehaviour {
 			return false;
 		}
 
-        CmdMoveKnight(source.transform.position, target.transform.position);
+		Knight k = (Knight)source.getOccupyingPiece ();
+		int level = k.getLevel ();
+
+        CmdMoveKnight(source.transform.position, target.transform.position, level);
 
 		// Check if longest route needs to be updated
 
@@ -37,13 +42,27 @@ public class MoveManager : NetworkBehaviour {
 	}
 
     [Command]
-    void CmdMoveKnight(Vector3 source, Vector3 target)
+	void CmdMoveKnight(Vector3 source, Vector3 target, int level)
     {
-        RpcMoveKnight(source, target);
+		GameObject knight;
+		switch (level) {
+		case 1:
+			knight = Instantiate<GameObject> (prefabHolder.levelOneKnight, target, Quaternion.identity);
+			break;
+		case 2:
+			knight = Instantiate<GameObject> (prefabHolder.levelTwoKnight, target, Quaternion.identity);
+			break;
+		default:
+			knight = Instantiate<GameObject> (prefabHolder.levelThreeKnight, target, Quaternion.identity);
+			break;
+		}
+		NetworkServer.Spawn(knight);
+		NetworkServer.UnSpawn(boardState.spawnedObjects[source]);
+        RpcMoveKnight(source, target, knight);
     }
 
     [ClientRpc]
-    void RpcMoveKnight(Vector3 source, Vector3 target)
+	void RpcMoveKnight(Vector3 source, Vector3 target, GameObject knight)
     {
         Vertex sourcePiece = boardState.vertexPosition[source];
         Vertex targetPiece = boardState.vertexPosition[target];
@@ -56,6 +75,9 @@ public class MoveManager : NetworkBehaviour {
 
         // Deactivate the knight
         sourceKnight.deactivateKnight();
+		boardState.spawnedObjects.Add(target, knight);
+		boardState.spawnedObjects.Remove (source);
+
     }
 
 	// Displace a knight at target with knight at source
@@ -66,20 +88,86 @@ public class MoveManager : NetworkBehaviour {
 			return false;
 		}
 
-        CmdDisplaceKnight(source.transform.position, target.transform.position);
+		Knight kSource = (Knight)source.getOccupyingPiece ();
+		int sourceLevel = kSource.getLevel ();
+
+		Knight kTarget = (Knight)target.getOccupyingPiece ();
+		int targetLevel = kTarget.getLevel ();
+
+		Vertex displacedLocation = null;
+		foreach (Vertex v in boardState.vertexPosition.Values) {
+			displacedLocation = v;
+			break;
+		}
+
+		bool gone = true;
+		foreach (Vertex v in boardState.vertexPosition.Values) {
+			if (graph.areConnectedVertices (v, target, color)) {
+				if (!Object.ReferenceEquals (v.getOccupyingPiece (), null)) {
+					if (Object.ReferenceEquals (v, source)) {
+						displacedLocation = v;
+						gone = false;
+						break;
+					}
+				} else {
+					displacedLocation = v;
+					gone = false;
+					break;
+				}
+			}
+		}
+
+		CmdDisplaceKnight(source.transform.position, target.transform.position, 
+			displacedLocation.transform.position, sourceLevel, targetLevel, gone);
+
 		// Check if longest route needs to be updated
 
 		return true;
 	}
 
     [Command]
-    void CmdDisplaceKnight(Vector3 source, Vector3 target)
-    {
-        RpcDisplaceKnight(source, target);
+	void CmdDisplaceKnight(Vector3 source, Vector3 target,
+		Vector3 displacedLocation, int sourceLevel, int targetLevel, bool gone)
+	{
+		GameObject sourceKnight;
+		switch (sourceLevel) {
+		case 1:
+			sourceKnight = Instantiate<GameObject> (prefabHolder.levelOneKnight, target, Quaternion.identity);
+			break;
+		case 2:
+			sourceKnight = Instantiate<GameObject> (prefabHolder.levelTwoKnight, target, Quaternion.identity);
+			break;
+		default:
+			sourceKnight = Instantiate<GameObject> (prefabHolder.levelThreeKnight, target, Quaternion.identity);
+			break;
+		}
+
+		GameObject targetKnight;
+		switch (targetLevel) {
+		case 1:
+			targetKnight = Instantiate<GameObject> (prefabHolder.levelOneKnight, displacedLocation, Quaternion.identity);
+			break;
+		case 2:
+			targetKnight = Instantiate<GameObject> (prefabHolder.levelTwoKnight, displacedLocation, Quaternion.identity);
+			break;
+		default:
+			targetKnight = Instantiate<GameObject> (prefabHolder.levelThreeKnight, displacedLocation, Quaternion.identity);
+			break;
+		}
+
+		if (!gone) {
+			NetworkServer.Spawn (targetKnight);
+		}
+
+		NetworkServer.Spawn(sourceKnight);
+		NetworkServer.UnSpawn (boardState.spawnedObjects [source]);
+		NetworkServer.UnSpawn (boardState.spawnedObjects [target]);
+		RpcDisplaceKnight(source, target, displacedLocation, sourceKnight, targetKnight, gone);
     }
 
     [ClientRpc]
-    void RpcDisplaceKnight(Vector3 source, Vector3 target)
+	void RpcDisplaceKnight(Vector3 source, Vector3 target, Vector3 displacedLocation, 
+		GameObject sourceKnightObject, GameObject targetKnightObject, bool gone)
     {
         Vertex sourcePiece = boardState.vertexPosition[source];
         Vertex targetPiece = boardState.vertexPosition[target];
@@ -97,24 +185,58 @@ public class MoveManager : NetworkBehaviour {
 
         // Deactivate the knight
         sourceKnight.deactivateKnight();
+
+		if (!gone) {
+			boardState.spawnedObjects.Add (displacedLocation, targetKnightObject);
+		}
+
+		boardState.spawnedObjects.Remove(target);
+		boardState.spawnedObjects.Remove(source);
+		boardState.spawnedObjects.Add(target, sourceKnightObject);
     }
 
 	// Upgrade a knight at vertex v
-	public bool upgradeKnight(int[] resources, int[] devChart, Vertex v) {
-        CmdUpgradeKnight(resources, devChart, v.transform.position);
+	public bool upgradeKnight(int[] resources, int[] devChart, Vertex v, List<GamePiece> pieces) {
+
+		// Check if the knight can be upgraded
+		if (!ma.canUpgradeKnight (resources, devChart, v, pieces)) {
+			return false;
+		}
+
+		Knight k = (Knight)v.getOccupyingPiece ();
+		int level = k.getLevel ();
+
+        CmdUpgradeKnight(resources, devChart, v.transform.position, level);
 		return true;
 	}
 
     [Command]
-    void CmdUpgradeKnight(int[] resources, int[] devChart, Vector3 v)
-    {
-        RpcUpgradeKnight(resources, devChart, v);
+	void CmdUpgradeKnight(int[] resources, int[] devChart, Vector3 v, int level)
+	{
+		GameObject newKnight;
+		switch (level) {
+		case 1:
+			newKnight = Instantiate<GameObject> (prefabHolder.levelTwoKnight, v, Quaternion.identity);
+			break;
+		default:
+			newKnight = Instantiate<GameObject> (prefabHolder.levelThreeKnight, v, Quaternion.identity);
+			break;
+		}
+		NetworkServer.Spawn(newKnight);
+		RpcUpgradeKnight(resources, devChart, v, newKnight);
     }
 
     [ClientRpc]
-    void RpcUpgradeKnight(int[] resources, int[] devChart, Vector3 v)
+	void RpcUpgradeKnight(int[] resources, int[] devChart, Vector3 v, GameObject newKnight)
     {
+		Vertex source = boardState.vertexPosition[v];
 
+		// Upgrade the knight
+		Knight knight = (Knight)source.getOccupyingPiece();
+
+		knight.upgrade ();
+
+		boardState.spawnedObjects.Add(v, newKnight);
     }
 
 	// Activate a knight at vertex v
@@ -152,7 +274,7 @@ public class MoveManager : NetworkBehaviour {
 
         CmdBuildSettlement(location.transform.position);
 
-        Player current = GetComponent<Player>();//gameManager.getCurrentPlayer();
+		Player current = GameManager.instance.getCurrentPlayer ();
 
         // Add an appropriate amount of victory points
         current.changeVictoryPoints(1);
@@ -181,25 +303,24 @@ public class MoveManager : NetworkBehaviour {
     [Command]
     void CmdBuildSettlement(Vector3 location)
     {
-        RpcBuildSettlement(location);
-
         GameObject newSettlement = Instantiate<GameObject>(prefabHolder.settlement, location, Quaternion.identity);
-        boardState.spawnedObjects.Add(location, newSettlement);
         NetworkServer.Spawn(newSettlement);
+		RpcBuildSettlement(location, newSettlement);
     }
 
     [ClientRpc]
-    void RpcBuildSettlement(Vector3 location)
+	void RpcBuildSettlement(Vector3 location, GameObject newSettlement)
     {
         Vertex source = boardState.vertexPosition[location];
 
-        List<GamePiece> pieces = GetComponent<Player>().getGamePieces();// gameManager.getCurrentPlayer().getGamePieces();
+		List<GamePiece> pieces = GameManager.instance.getCurrentPlayer ().getGamePieces();// gameManager.getCurrentPlayer().getGamePieces();
 
         // Put a settlement on the board
         Settlement settlement = Settlement.getFreeSettlement(pieces);
 
         source.setOccupyingPiece(settlement);
         settlement.putOnBoard();
+		boardState.spawnedObjects.Add(location, newSettlement);
     }
 
 
@@ -214,7 +335,7 @@ public class MoveManager : NetworkBehaviour {
         CmdBuildCity(location.transform.position);
 
         // Add an appropriate amount of victory points
-        Player current = GetComponent<Player>();//gameManager.getCurrentPlayer();
+		Player current = GameManager.instance.getCurrentPlayer ();//gameManager.getCurrentPlayer();
         current.changeVictoryPoints(1);
 
         // Spend the resources
@@ -229,15 +350,13 @@ public class MoveManager : NetworkBehaviour {
     [Command]
     void CmdBuildCity(Vector3 location)
     {
-        RpcBuildCity(location);
-
         GameObject spawnedCity = Instantiate<GameObject>(prefabHolder.city, location, Quaternion.identity);
-        boardState.spawnedObjects.Add(location, spawnedCity);
         NetworkServer.Spawn(spawnedCity);
+		RpcBuildCity(location, spawnedCity);
     }
 
     [ClientRpc]
-    void RpcBuildCity(Vector3 location)
+	void RpcBuildCity(Vector3 location, GameObject spawnedCity)
     {
         // Remove the current settlement
         Vertex source = boardState.vertexPosition[location];
@@ -246,11 +365,12 @@ public class MoveManager : NetworkBehaviour {
         settlement.takeOffBoard();
 
         // Build a city
-        List<GamePiece> pieces = GetComponent<Player>().getGamePieces();// gameManager.getCurrentPlayer().getGamePieces();
+		List<GamePiece> pieces = GameManager.instance.getCurrentPlayer ().getGamePieces();// gameManager.getCurrentPlayer().getGamePieces();
         City city = City.getFreeCity(pieces);
 
         source.setOccupyingPiece(city);
         city.putOnBoard();
+		boardState.spawnedObjects.Add(location, spawnedCity);
     }
 
 	// Check if a city wall can be built at a vertex
@@ -263,17 +383,16 @@ public class MoveManager : NetworkBehaviour {
     [Command]
     void CmdBuildCityWall(Vector3 location)
     {
-        RpcBuildCityWall(location);
-
         GameObject spawnedCityWall = Instantiate<GameObject>(prefabHolder.cityWall, location, Quaternion.identity);
-        boardState.spawnedObjects.Add(location, spawnedCityWall);
         NetworkServer.Spawn(spawnedCityWall);
+		RpcBuildCityWall(location, spawnedCityWall);
+
     }
 
     [ClientRpc]
-    void RpcBuildCityWall(Vector3 location)
+	void RpcBuildCityWall(Vector3 location, GameObject spawnedCityWall)
     {
-
+		boardState.spawnedObjects.Add(location, spawnedCityWall);
     }
 
 	// Build a knight at location
@@ -286,17 +405,15 @@ public class MoveManager : NetworkBehaviour {
     [Command]
     void CmdBuildKnight(Vector3 location)
     {
-        RpcBuildKnight(location);
-
         GameObject spawnedKnight = Instantiate<GameObject>(prefabHolder.levelOneKnight, location, Quaternion.identity);
-        boardState.spawnedObjects.Add(location, spawnedKnight);
         NetworkServer.Spawn(spawnedKnight);
+		RpcBuildKnight(location, spawnedKnight);
     }
 
     [ClientRpc]
-    void RpcBuildKnight(Vector3 location)
+    void RpcBuildKnight(Vector3 location, GameObject spawnedKnight)
     {
-
+		boardState.spawnedObjects.Add(location, spawnedKnight);
     }
 
 	// Build a road at location
@@ -309,7 +426,7 @@ public class MoveManager : NetworkBehaviour {
 
         CmdBuildRoad(location.transform.position);
 
-        Player current = GetComponent<Player>();// gameManager.getCurrentPlayer ();
+		Player current = GameManager.instance.getCurrentPlayer ();// gameManager.getCurrentPlayer ();
 
         // Spend the resources
         current.changeResource(Enums.ResourceType.BRICK, -1);
@@ -325,25 +442,24 @@ public class MoveManager : NetworkBehaviour {
     [Command]
     void CmdBuildRoad(Vector3 location)
     {
-        RpcBuildRoad(location);
-
         GameObject spawnedRoad = Instantiate<GameObject>(prefabHolder.road, location, Quaternion.identity);
-        boardState.spawnedObjects.Add(location, spawnedRoad);
         NetworkServer.Spawn(spawnedRoad);
+		RpcBuildRoad(location, spawnedRoad);
     }
 
     [ClientRpc]
-    void RpcBuildRoad(Vector3 location)
+    void RpcBuildRoad(Vector3 location, GameObject spawnedRoad)
     {
         Edge edge = boardState.edgePosition[location];
 
         // Put a road on the given edge
-        List<GamePiece> pieces = GetComponent<Player>().getGamePieces();// gameManager.getCurrentPlayer().getGamePieces();
+		List<GamePiece> pieces = GameManager.instance.getCurrentPlayer ().getGamePieces();// gameManager.getCurrentPlayer().getGamePieces();
         Road road = Road.getFreeRoad(pieces);
         
         edge.setOccupyingPiece(road);
         road.putOnBoard();
         road.wasBuiltThisTurn();
+		boardState.spawnedObjects.Add(location, spawnedRoad);
     }
 
 	// Build a ship at location
@@ -356,7 +472,7 @@ public class MoveManager : NetworkBehaviour {
 
         CmdBuildShip(location.transform.position);
 
-        Player current = GetComponent<Player>();// gameManager.getCurrentPlayer ();
+		Player current = GameManager.instance.getCurrentPlayer ();// gameManager.getCurrentPlayer ();
 
         // Spend the resources
         current.changeResource(Enums.ResourceType.WOOL, -1);
@@ -372,25 +488,24 @@ public class MoveManager : NetworkBehaviour {
     [Command]
     void CmdBuildShip(Vector3 location)
     {
-        RpcBuildShip(location);
-
         GameObject spawnedBoat = Instantiate<GameObject>(prefabHolder.boat, location, Quaternion.identity);
-        boardState.spawnedObjects.Add(location, spawnedBoat);
         NetworkServer.Spawn(spawnedBoat);
+		RpcBuildShip(location, spawnedBoat);
     }
 
     [ClientRpc]
-    void RpcBuildShip(Vector3 location)
+    void RpcBuildShip(Vector3 location, GameObject spawnedBoat)
     {
         Edge edge = boardState.edgePosition[location];
 
         // Put a road on the given edge
-        List<GamePiece> pieces = GetComponent<Player>().getGamePieces();// gameManager.getCurrentPlayer().getGamePieces();
+		List<GamePiece> pieces = GameManager.instance.getCurrentPlayer ().getGamePieces();// gameManager.getCurrentPlayer().getGamePieces();
         Road ship = Road.getFreeShip(pieces);
 
         edge.setOccupyingPiece(ship);
         ship.putOnBoard();
         ship.wasBuiltThisTurn();
+		boardState.spawnedObjects.Add(location, spawnedBoat);
     }
 
 	// Move a ship from source to target
@@ -576,7 +691,7 @@ public class MoveManager : NetworkBehaviour {
 
 	// Update the current players resource ratios according to the given vertex
 	private void updatePort(Vertex v) {
-        Player current = GetComponent<Player>();// gameManager.getCurrentPlayer ();
+        Player current = GameManager.instance.getCurrentPlayer ();
 		int[] ratios = current.getResourceRatios ();
 		Enums.PortType port = v.getPortType ();
 
@@ -594,5 +709,4 @@ public class MoveManager : NetworkBehaviour {
 			current.updateResourceRatio (getResourceFromPort (port), 2);
 		}
 	}
-    
 }
