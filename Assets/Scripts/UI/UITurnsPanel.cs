@@ -52,20 +52,20 @@ public class UITurnsPanel : UIElement {
 	/// <param name="p_Highlighter">P highlighter.</param>
 	private void updateFirstTurnText(HighLighter p_Highlighter)
 	{
-		if (p_Highlighter.firstTurn == true) {
-			_TurnText.text = "  FIRST TURN";
-			updatePlacementText (p_Highlighter);
-		}
-		else if (p_Highlighter.firstTurn == false) {
-			_TurnText.text = "";
-			_PlacementText.text = "  WAITING FOR OTHER PLAYERS";
-		} 
+		//if (p_Highlighter.firstTurn == true) {
+		//	_TurnText.text = "  FIRST TURN";
+		//	updatePlacementText (p_Highlighter);
+		//}
+		//else if (p_Highlighter.firstTurn == false) {
+		//	_TurnText.text = "";
+		//	_PlacementText.text = "  WAITING FOR OTHER PLAYERS";
+		//} 
 
-		if (p_Highlighter.secondTurn == true) 
-		{
-			_TurnText.text = "  SECOND TURN";
-			_PlacementText.text = "";
-		}
+		//if (p_Highlighter.secondTurn == true) 
+		//{
+		//	_TurnText.text = "  SECOND TURN";
+		//	_PlacementText.text = "";
+		//}
 	}
 
 	/// <summary>
@@ -75,33 +75,33 @@ public class UITurnsPanel : UIElement {
 	/// <param name="p_Highlighter">P highlighter.</param>
 	private void updatePlacementText(HighLighter p_Highlighter)
 	{
-		// If first settlement not placed, print a prompt saying so
-		if (p_Highlighter.placedFirstSettlement == false) 
-		{
-			_PlacementText.text = "  - Place First Settlement";
-			return;
-		} 
+		//// If first settlement not placed, print a prompt saying so
+		//if (p_Highlighter.placedFirstSettlement == false) 
+		//{
+		//	_PlacementText.text = "  - Place First Settlement";
+		//	return;
+		//} 
 
-		// If first road/boat not placed, print a prompt saying so
-		if (p_Highlighter.placedFirstEdge == false) 
-		{
-			_PlacementText.text = "  - Place First Road/Boat";
-			return;
-		}
+		//// If first road/boat not placed, print a prompt saying so
+		//if (p_Highlighter.placedFirstEdge == false) 
+		//{
+		//	_PlacementText.text = "  - Place First Road/Boat";
+		//	return;
+		//}
 
-		// If first city not placed, print a prompt saying so
-		if (p_Highlighter.placedFirstCity == false) 
-		{
-			_PlacementText.text = "  - Place First City";
-			return;
-		}
+		//// If first city not placed, print a prompt saying so
+		//if (p_Highlighter.placedFirstCity == false) 
+		//{
+		//	_PlacementText.text = "  - Place First City";
+		//	return;
+		//}
 
-		// If second road/boat not placed, print a prompt saying so
-		if (p_Highlighter.placedSecondEdge == false) 
-		{
-			_PlacementText.text = "  - Place Second Road/Boat";
-			return;
-		}
+		//// If second road/boat not placed, print a prompt saying so
+		//if (p_Highlighter.placedSecondEdge == false) 
+		//{
+		//	_PlacementText.text = "  - Place Second Road/Boat";
+		//	return;
+		//}
 	}
 		
 }

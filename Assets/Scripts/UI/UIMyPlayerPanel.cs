@@ -61,14 +61,14 @@ public class UIMyPlayerPanel : UIElement {
 	public void updateIconColor(Player p_Player)
 	{
 		// Get the color of the player from its Highlighter Component
-		Color playerColor = convert( p_Player.GetComponent<HighLighter> ().myColor );
+		//Color playerColor = convert( p_Player.GetComponent<HighLighter> ().myColor );
 
 		// Get the Fill image on the UI - 
 		// the first child of the _PlayerIcon attribute of this instance of myPlayerPanel
-		Image playerIconFillImage = _PlayerIcon.transform.GetChild (0).GetComponent<Image> ();
+		//Image playerIconFillImage = _PlayerIcon.transform.GetChild (0).GetComponent<Image> ();
 
 		// Set the Fill image color to the newly acquired color
-		playerIconFillImage.color = playerColor;
+		//playerIconFillImage.color = playerColor;
 	}
 
 	/// <summary>
