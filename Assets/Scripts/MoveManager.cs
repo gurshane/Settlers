@@ -24,7 +24,7 @@ public class MoveManager : NetworkBehaviour {
     }
 
     // Move a knight from source to target
-    public bool moveKnight(Vertex source, Vertex target, Enums.Color color, int currentLongest) {
+    public bool moveKnight(Vertex source, Vertex target, Enums.Color color) {
 
 		// Check if the knight can be moved
 		if (!ma.canKnightMove (source, target, color)) {

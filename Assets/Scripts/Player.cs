@@ -113,10 +113,15 @@ public class Player : NetworkBehaviour {
 
     public void Update()
     {
-        if(isLocalPlayer)
+        if(!isLocalPlayer)
         {
-            
+			return;   
         }
+
+		if (Input.GetKeyDown (KeyCode.Space)) {
+			CmdEndTurn ();
+		}
+
     }
     
     public int getID()
