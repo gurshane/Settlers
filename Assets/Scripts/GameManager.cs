@@ -45,7 +45,6 @@ public class GameManager : NetworkBehaviour {
     [SyncVar]
     private int barbarianPos;
 
-    private Player currentPlayer;
     private Hex pirateLocation;
 	private Hex robberLocation;
 	private Dictionary<Enums.DevChartType, Vertex> metropolises;
@@ -57,7 +56,6 @@ public class GameManager : NetworkBehaviour {
 
     // Overall Game State
     private List<Player> players;
-    private List<Enums.TurnOrder> playOrder;
 
     TradeManager tradeManager;
     Bank bank;
@@ -199,71 +197,12 @@ public class GameManager : NetworkBehaviour {
 		return pointsToWin;
 	}
 
-    // Complete an initial first turn
-    public void initialFirstTurn()
-    {
-        currentPlayer = getNextPlayer(false);
-        gamePhase = Enums.GamePhase.SETUP_ONE;
-
-        // Current player places pieces
-
-        if (Object.ReferenceEquals(currentPlayer, players[players.Count - 1]))
-        {
-            initialSecondTurn(true);
-        }
-        else
-        {
-            initialFirstTurn();
-        }
-    }
-
-    // Complete an initial second turn
-    public void initialSecondTurn(bool first)
-    {
-        if (first && Object.ReferenceEquals(currentPlayer, players[players.Count - 1]))
-        {
-            currentPlayer = currentPlayer;
-        }
-        else
-        {
-            currentPlayer = getNextPlayer(true);
-        }
-        gamePhase = Enums.GamePhase.SETUP_TWO;
-
-        // Current player places pieces
-
-        if (Object.ReferenceEquals(currentPlayer, players[0]))
-        {
-            beginTurn(true);
-        }
-        else
-        {
-            initialSecondTurn(false);
-        }
-    }
-
     // Begin Game
 
     // End Game
 
     public void endGame()
     {
-    }
-
-    // Begin a Turn
-    public void beginTurn(bool first)
-    {
-        if (first)
-        {
-            currentPlayer = currentPlayer;
-        }
-        else
-        {
-            currentPlayer = getNextPlayer(false);
-        }
-        gamePhase = Enums.GamePhase.PHASE_ONE;
-
-        // current player rolls dice
     }
 
     // End a turn
@@ -312,7 +251,6 @@ public class GameManager : NetworkBehaviour {
         }
 
         // Begin the next turn
-        beginTurn(false);
     }
 
     // Find the next player
@@ -320,7 +258,7 @@ public class GameManager : NetworkBehaviour {
     {
 
         // If current player is null, get the first player in the turn order
-        if (Object.ReferenceEquals(currentPlayer, null))
+		if (Object.ReferenceEquals(getCurrentPlayer(), null))
         {
             return players[0];
         }
@@ -328,7 +266,7 @@ public class GameManager : NetworkBehaviour {
         // Check if turns are moving in reverse order
         if (!reverse)
         {
-            if (Object.ReferenceEquals(currentPlayer, players[players.Count - 1]))
+			if (Object.ReferenceEquals(getCurrentPlayer(), players[players.Count - 1]))
             {
                 return players[0];
             }
@@ -336,7 +274,7 @@ public class GameManager : NetworkBehaviour {
             {
                 for (int i = 0; i < players.Count - 1; i++)
                 {
-                    if (Object.ReferenceEquals(players[i], currentPlayer))
+					if (Object.ReferenceEquals(players[i], getCurrentPlayer()))
                     {
                         return players[i + 1];
                     }
@@ -345,7 +283,7 @@ public class GameManager : NetworkBehaviour {
         }
         else
         {
-            if (Object.ReferenceEquals(currentPlayer, players[0]))
+			if (Object.ReferenceEquals(getCurrentPlayer(), players[0]))
             {
                 return players[players.Count - 1];
             }
@@ -353,7 +291,7 @@ public class GameManager : NetworkBehaviour {
             {
                 for (int i = 1; i < players.Count; i++)
                 {
-                    if (Object.ReferenceEquals(players[i], currentPlayer))
+					if (Object.ReferenceEquals(players[i], getCurrentPlayer()))
                     {
                         return players[i - 1];
                     }
@@ -362,7 +300,7 @@ public class GameManager : NetworkBehaviour {
         }
 
         // Return the first player by default
-        return players[0];
+        return null;
     }
 
 
@@ -465,7 +403,7 @@ public class GameManager : NetworkBehaviour {
     
     public Player getCurrentPlayer()
     {
-        return currentPlayer;
+		return players[getPlayerTurn()];
     }
 
     public Player getPlayer(Enums.Color color)
