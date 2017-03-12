@@ -22,7 +22,7 @@ public class Bank : NetworkBehaviour {
         }
 
         commodities = new int[GameManager.instance.getNumberCommodities()];
-        for (int i = 0; i < resources.Length; i++)
+        for (int i = 0; i < commodities.Length; i++)
         {
             commodities[i] = 12;
         }
