@@ -27,7 +27,6 @@ public class Bank : NetworkBehaviour {
             commodities[i] = 12;
         }
 
-
         scienceCards = new List<Enums.ProgressCardName>();
         scienceCards.Add(Enums.ProgressCardName.ALCHEMIST);
         scienceCards.Add(Enums.ProgressCardName.ALCHEMIST);

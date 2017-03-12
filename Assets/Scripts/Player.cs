@@ -58,7 +58,7 @@ public class Player : NetworkBehaviour {
             gm.EventSecondTurn += SecondTurn;
         }
     }
-     
+
     void Start()
     {
         spawnedPieces = new Dictionary<Vector3, GamePiece>();
@@ -441,8 +441,6 @@ public class Player : NetworkBehaviour {
         this.commodityRatios[comP] = newRatio;
     }
     
-  
-
 
     public bool changeCommodity(CommodityType commodityType, int num)
     {
