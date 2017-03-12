@@ -59,6 +59,12 @@ public class Player : NetworkBehaviour {
         }
     }
 
+    [ClientRpc]
+    public void RpcInit()
+    {
+        gm = GameObject.FindObjectOfType<GameManager>();
+    }
+
     void Start()
     {
 		Debug.Log ("Player Start");

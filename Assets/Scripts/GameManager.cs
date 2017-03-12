@@ -83,7 +83,9 @@ public class GameManager : NetworkBehaviour {
         {
             Player player = objects[i].GetComponent<Player>();
             player.Init(i);
-			players.Add (player);
+            player.RpcInit();
+            players.Add (player);
+
         }
     }
 
