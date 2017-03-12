@@ -43,12 +43,13 @@ public class Player : NetworkBehaviour {
 
     private Dictionary<Vector3, GamePiece> spawnedPieces;
 
+    [Server]
     public void Init(int iD)
     {
         this.iD = iD;
         Debug.Log("Initiated Player: " + iD);
         gm = GameObject.FindObjectOfType<GameManager>();
-        Debug.Log("networkclien" + NetworkClient.active);
+        Debug.Log("networkclient" + NetworkClient.active);
         if (NetworkClient.active)
         {
             gm.EventDiceRolled += DiceRolled;
@@ -62,7 +63,12 @@ public class Player : NetworkBehaviour {
     [ClientRpc]
     public void RpcInit()
     {
-        gm = GameObject.FindObjectOfType<GameManager>();
+        Debug.Log("is Client: " + isClient);
+        Debug.Log("Is Server: " + isServer);
+        Debug.Log("isLocal: " + isLocalPlayer);
+
+        gm = GameObject.FindWithTag("GameManager").GetComponent<GameManager>();
+        Debug.Log(gm);
     }
 
     void Start()
@@ -123,7 +129,7 @@ public class Player : NetworkBehaviour {
 
     public void Update()
     {
-		if(!isLocalPlayer && gm.getPlayerTurn() != iD)
+		if(!isLocalPlayer || (!Object.ReferenceEquals(gm,null) && gm.getPlayerTurn() != iD))
         {
 			return;   
         }

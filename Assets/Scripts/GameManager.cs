@@ -64,13 +64,14 @@ public class GameManager : NetworkBehaviour {
     
     static public GameManager instance = null;
 
-    public void init() //initializer
+    [Server]
+    public void ServerInit() //initializer
     {
         Debug.Log("Started Init");
         players = new List<Player>();
         Debug.Log("network connection: " + Network.connections.Length);
         ServerInitPlayers();
-        ClientInitPlayers();
+        RpcClientInitPlayers();
         this.CmdSetPlayerTurn();
     }
 
@@ -89,8 +90,8 @@ public class GameManager : NetworkBehaviour {
         }
     }
 
-    [Client]
-    private void ClientInitPlayers()
+    [ClientRpc]
+    private void RpcClientInitPlayers()
     {
         GameObject[] objects = GameObject.FindGameObjectsWithTag("Player");
         Debug.Log(objects.Length);
@@ -133,7 +134,7 @@ public class GameManager : NetworkBehaviour {
 
         bank = GetComponent<Bank>();
 
-        init();
+        ServerInit();
 
     }
 
