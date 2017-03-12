@@ -48,7 +48,7 @@ public class Player : NetworkBehaviour {
     {
         this.iD = iD;
         Debug.Log("Initiated Player: " + iD);
-        gm = GameObject.FindObjectOfType<GameManager>();
+        getGm();
         Debug.Log("networkclient" + NetworkClient.active);
         if (NetworkClient.active)
         {
@@ -60,8 +60,7 @@ public class Player : NetworkBehaviour {
         }
     }
 
-    [ClientRpc]
-    public void RpcInit()
+    public void getGm()
     {
         Debug.Log("is Client: " + isClient);
         Debug.Log("Is Server: " + isServer);

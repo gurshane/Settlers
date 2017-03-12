@@ -72,7 +72,6 @@ public class GameManager : NetworkBehaviour {
         Debug.Log("network connection: " + Network.connections.Length);
         ServerInitPlayers();
         ClientInitPlayers();
-        this.CmdSetPlayerTurn();
     }
 
     [Server]
@@ -84,7 +83,6 @@ public class GameManager : NetworkBehaviour {
         {
             Player player = objects[i].GetComponent<Player>();
             player.Init(i);
-            player.RpcInit();
             players.Add (player);
 
         }
@@ -98,6 +96,7 @@ public class GameManager : NetworkBehaviour {
         for (int i = 0; i < objects.Length; i++)
         {
             Player player = objects[i].GetComponent<Player>();
+            player.getGm();
             players[player.getID()] = player;
         }
     }
@@ -109,15 +108,13 @@ public class GameManager : NetworkBehaviour {
 
     void Start()
     {
-        //GameObject toSpawn = GameObject.FindWithTag("GameManager");
-        //NetworkServer.Spawn(toSpawn); 
+        int connected = 0; 
         tradeManager = GetComponent<TradeManager>();
         bank = GetComponent<Bank>();
         moveManager = GetComponent<MoveManager>();
         
         players = new List<Player>();
         gamePhase = Enums.GamePhase.SETUP_ONE;
-        playerTurn = 5;
         pointsToWin = 16;
         firstDie = 0;
         secondDie = 0;
