@@ -148,6 +148,7 @@ public class GameManager : NetworkBehaviour {
         {
             playerTurn = 0;
         }
+		Debug.Log ("turn = " + playerTurn);
         EventNextPlayer();
     }
 

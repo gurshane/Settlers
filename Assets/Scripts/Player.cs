@@ -117,7 +117,7 @@ public class Player : NetworkBehaviour {
 
     public void Update()
     {
-        if(!isLocalPlayer)
+		if(!isLocalPlayer && gm.getPlayerTurn() != iD)
         {
 			return;   
         }
