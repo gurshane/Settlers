@@ -48,7 +48,7 @@ public class Player : NetworkBehaviour {
         this.iD = iD;
         Debug.Log("Initiated Player: " + iD);
         gm = GameObject.FindObjectOfType<GameManager>();
-        Debug.Log(NetworkClient.active);
+        Debug.Log("networkclien" + NetworkClient.active);
         if (NetworkClient.active)
         {
             gm.EventDiceRolled += DiceRolled;
@@ -61,6 +61,8 @@ public class Player : NetworkBehaviour {
 
     void Start()
     {
+		Debug.Log ("Player Start");
+
         spawnedPieces = new Dictionary<Vector3, GamePiece>();
 
         iD = -1;
@@ -506,7 +508,7 @@ public class Player : NetworkBehaviour {
             return;
         }
         //call UI element displaying results of die roll  
-        Debug.Log(" " + first + " " + second + " " + third);
+        Debug.Log("Dicerolled " + first + " " + second + " " + third);
         //this.CmdEndTurn();
     }
 
@@ -514,7 +516,7 @@ public class Player : NetworkBehaviour {
     {
         if (!isLocalPlayer)
             return;
-        Debug.Log(gm.getPlayerTurn());
+        Debug.Log("nextplayerturn" + gm.getPlayerTurn());
         if (gm.getPlayerTurn() == iD)
         {
             startTurn();

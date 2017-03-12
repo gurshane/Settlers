@@ -45,7 +45,6 @@ public class GameManager : NetworkBehaviour {
     [SyncVar]
     private int barbarianPos;
 
-    private Player currentPlayer;
     private Hex pirateLocation;
 	private Hex robberLocation;
 	private Dictionary<Enums.DevChartType, Vertex> metropolises;
@@ -68,6 +67,7 @@ public class GameManager : NetworkBehaviour {
 
     public void init() //initializer
     {
+		
         Debug.Log("Started Init");
         players = new List<Player>();
         Debug.Log("network connection: " + Network.connections.Length);
@@ -80,7 +80,7 @@ public class GameManager : NetworkBehaviour {
     private void ServerInitPlayers()
     {
         GameObject[] objects = GameObject.FindGameObjectsWithTag("Player");
-        Debug.Log(objects.Length);
+        Debug.Log("serverinitplayers" + objects.Length);
         for (int i = 0; i < objects.Length; i++)
         {
             Player player = objects[i].GetComponent<Player>();
@@ -93,7 +93,7 @@ public class GameManager : NetworkBehaviour {
     private void ClientInitPlayers()
     {
         GameObject[] objects = GameObject.FindGameObjectsWithTag("Player");
-        Debug.Log(objects.Length);
+        Debug.Log("clientinitplayers" + objects.Length);
         for (int i = 0; i < objects.Length; i++)
         {
             Player player = objects[i].GetComponent<Player>();
@@ -108,10 +108,12 @@ public class GameManager : NetworkBehaviour {
 
     void Start()
     {
-        tradeManager = GetComponent<TradeManager>();
-        bank = GetComponent<Bank>();
-        moveManager = GetComponent<MoveManager>();
+        //tradeManager = GetComponent<TradeManager>();
+        //bank = GetComponent<Bank>();
+        //moveManager = GetComponent<MoveManager>();
         
+		Debug.Log ("Game Manager Start");
+
         players = new List<Player>();
         gamePhase = Enums.GamePhase.SETUP_ONE;
         
@@ -130,8 +132,6 @@ public class GameManager : NetworkBehaviour {
         barbarianHasAttacked = false;
 
         graph = new Graph();
-
-        bank = GetComponent<Bank>();
 
         init();
 
@@ -453,10 +453,6 @@ public class GameManager : NetworkBehaviour {
         return players[id];
     }
     
-    public Player getCurrentPlayer()
-    {
-        return currentPlayer;
-    }
 
     public Player getPlayer(Enums.Color color)
     {
