@@ -83,7 +83,7 @@ public class GameManager : NetworkBehaviour {
         {
             Player player = objects[i].GetComponent<Player>();
             player.Init(i);
-            players[i] = player;
+			players.Add (player);
         }
     }
 
@@ -343,6 +343,16 @@ public class GameManager : NetworkBehaviour {
 	public void barbarianAttackedThisGame() {
 		barbarianHasAttacked = true;
 	}
+
+	public delegate void FirstTurnDelegate();
+
+	[SyncEvent]
+	public event FirstTurnDelegate EventFirstTurn;
+
+	public delegate void SecondTurnDelegate();
+
+	[SyncEvent]
+	public event SecondTurnDelegate EventSecondTurn;
 
     // return true upon success, false upon failure
     // give the given player a metropolis on the chosen city
