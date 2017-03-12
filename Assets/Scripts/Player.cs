@@ -54,6 +54,8 @@ public class Player : NetworkBehaviour {
             gm.EventDiceRolled += DiceRolled;
             gm.EventBarbarianAttack += BarbarianAttacked;
             gm.EventNextPlayer += NextPlayerTurn;
+            gm.EventFirstTurn += FirstTurn;
+            gm.EventSecondTurn += SecondTurn;
         }
     }
 
@@ -505,7 +507,7 @@ public class Player : NetworkBehaviour {
         }
         //call UI element displaying results of die roll  
         Debug.Log(" " + first + " " + second + " " + third);
-        this.CmdEndTurn();
+        //this.CmdEndTurn();
     }
 
     public void NextPlayerTurn()
@@ -522,5 +524,17 @@ public class Player : NetworkBehaviour {
     public void BarbarianAttacked(bool win, int[] winners)
     {
         Debug.Log("Winners");
+    }
+
+    public void FirstTurn()
+    {
+        //place Piece
+        //place Road
+    }
+
+    public void SecondTurn()
+    {
+        //place City
+        //place Road 
     }
 }
