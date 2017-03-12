@@ -31,7 +31,7 @@ public class GameManager : NetworkBehaviour {
     public int color = 0;
 
     [SyncVar]
-    private int playerTurn;
+    public int playerTurn;
 
     [SyncVar]
     private int merchantController;
@@ -109,6 +109,8 @@ public class GameManager : NetworkBehaviour {
 
     void Start()
     {
+        GameObject toSpawn = GameObject.FindWithTag("GameManager");
+        NetworkServer.Spawn(toSpawn); 
         tradeManager = GetComponent<TradeManager>();
         bank = GetComponent<Bank>();
         moveManager = GetComponent<MoveManager>();

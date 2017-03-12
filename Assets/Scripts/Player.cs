@@ -11,7 +11,7 @@ public class Player : NetworkBehaviour {
     public GameManager gm;
 
     [SyncVar]
-    private int iD;
+    public int iD;
 
     [SyncVar]
     public Enums.Color myColor;
@@ -65,7 +65,7 @@ public class Player : NetworkBehaviour {
     {
         Debug.Log("is Client: " + isClient);
         Debug.Log("Is Server: " + isServer);
-        Debug.Log("isLocal: " + isLocalPlayer);
+        Debug.Log(iD + "iD isLocal: " + isLocalPlayer);
 
         gm = GameObject.FindWithTag("GameManager").GetComponent<GameManager>();
         Debug.Log(gm);
@@ -129,12 +129,13 @@ public class Player : NetworkBehaviour {
 
     public void Update()
     {
-		if(!isLocalPlayer || (!Object.ReferenceEquals(gm,null) && gm.getPlayerTurn() != iD))
+		if(!isLocalPlayer || gm.getPlayerTurn() != iD)
         {
 			return;   
         }
 
 		if (Input.GetKeyDown (KeyCode.Space)) {
+            Debug.Log("ended turn for " + iD);
 			CmdEndTurn ();
 		}
 
@@ -491,6 +492,8 @@ public class Player : NetworkBehaviour {
     {
         gm.CmdSetPlayerTurn();
     }
+
+
 
     [ClientRpc]
     public void RpcDiceRoll(int iD)
