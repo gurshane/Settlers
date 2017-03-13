@@ -57,9 +57,9 @@ public class GameManager : NetworkBehaviour {
     // Overall Game State
     private List<Player> players;
 
-    TradeManager tradeManager;
+    /*TradeManager tradeManager;
     Bank bank;
-    MoveManager moveManager;
+    MoveManager moveManager;*/
     Graph graph;
     
     static public GameManager instance = null;
@@ -91,13 +91,19 @@ public class GameManager : NetworkBehaviour {
     [Client]
     private void ClientInitPlayers()
     {
+        Debug.Log("Started ClientInitPlayers");
         GameObject[] objects = GameObject.FindGameObjectsWithTag("Player");
         Debug.Log(objects.Length);
+        Player[] temp = new Player[objects.Length];
         for (int i = 0; i < objects.Length; i++)
         {
             Player player = objects[i].GetComponent<Player>();
             player.getGm();
-            players[player.getID()] = player;
+            temp[player.getID()] = player;
+        }
+        for (int i = 0; i<temp.Length; i++)
+        {
+            players.Add(temp[i]);
         }
     }
 
@@ -108,10 +114,13 @@ public class GameManager : NetworkBehaviour {
 
     void Start()
     {
-        int connected = 0; 
-        tradeManager = GetComponent<TradeManager>();
+        if (isClient)
+        {
+            Debug.Log("Client game manager start");
+        }
+        /*tradeManager = GetComponent<TradeManager>();
         bank = GetComponent<Bank>();
-        moveManager = GetComponent<MoveManager>();
+        moveManager = GetComponent<MoveManager>();*/
         
         players = new List<Player>();
         gamePhase = Enums.GamePhase.SETUP_ONE;
@@ -131,19 +140,50 @@ public class GameManager : NetworkBehaviour {
 
         graph = new Graph();
 
-        bank = GetComponent<Bank>();
-
         Init();
+        /*for (int i = 0; i<players.Count; i++)
+        {
+            while (players[i].GetComponent<NetworkIdentity>().connectionToClient.isConnected == false)
+            {
 
+            } 
+            //wait until player is connected
+        }*/
+        //first turn
+        firstTurn();
+        secondTurn();
+        //second turn
     }
+
+    [Server]
+    public void firstTurn()
+    {
+        for (int i = 0; i<players.Count; i++)
+        {
+            playerTurn = i;
+            EventFirstTurn();
+        }
+    }
+
+    [Server]
+    public void secondTurn()
+    {
+        for (int i = players.Count - 1; i >= players.Count; i--)
+        {
+            playerTurn = i;
+            EventSecondTurn();
+        }
+        EventNextPlayer();
+    }
+
+
 
     public int getPlayerTurn()
     {
         return this.playerTurn;
     }
 
-    [Command]
-    public void CmdSetPlayerTurn()
+    public void SetPlayerTurn()
     {
         playerTurn++;
         if (this.playerTurn >= players.Count)
@@ -159,8 +199,7 @@ public class GameManager : NetworkBehaviour {
     [SyncEvent]
     public event DiceRolledDelegate EventDiceRolled; //event that syncs to all clients
 
-    [Command]
-    public void CmdStartTurn()//control flow function
+    public void StartTurn()//control flow function
     {
         for (int i = 0; i < players.Count; i++)
         {
@@ -169,8 +208,7 @@ public class GameManager : NetworkBehaviour {
         resolveDice();
     }
 
-    [Command]
-    public void CmdDiceRolled()
+    public void DiceRolled()
     {
         firstDie = UnityEngine.Random.Range(1, 7);
         secondDie = UnityEngine.Random.Range(1, 7);
@@ -204,108 +242,7 @@ public class GameManager : NetworkBehaviour {
 
     // End Game
 
-    public void endGame()
-    {
-    }
-
-    // End a turn
-    public void endTurn()
-    {
-
-        // If a player has won, end the game
-        foreach (Player p in players)
-        {
-            if (p.getVictoryCounts() >= pointsToWin)
-            {
-                endGame();
-                return;
-            }
-        }
-
-        // Do some cleanup steps
-        foreach (Player p in players)
-        {
-            p.roadNotMoved();
-
-            // If any player has more than 4 progress cards, they must discard
-            if (p.getProgressCards().Count > progressCardLimit)
-            {
-
-                // Those players discard down to 4 progress cards
-
-            }
-
-            // Set some turn specific booleans to false
-            List<GamePiece> pieceList = p.getGamePieces();
-            foreach (GamePiece piece in pieceList)
-            {
-                if (piece.getPieceType() == Enums.PieceType.KNIGHT)
-                {
-                    Knight k = (Knight)piece;
-                    k.notActivatedThisTurn();
-                    k.notUpgradedThisTurn();
-                }
-                else if (piece.getPieceType() == Enums.PieceType.ROAD)
-                {
-                    Road r = (Road)piece;
-                    r.notBuiltThisTurn();
-                }
-            }
-        }
-
-        // Begin the next turn
-    }
-
-    // Find the next player
-    private Player getNextPlayer(bool reverse)
-    {
-
-        // If current player is null, get the first player in the turn order
-		if (Object.ReferenceEquals(getCurrentPlayer(), null))
-        {
-            return players[0];
-        }
-
-        // Check if turns are moving in reverse order
-        if (!reverse)
-        {
-			if (Object.ReferenceEquals(getCurrentPlayer(), players[players.Count - 1]))
-            {
-                return players[0];
-            }
-            else
-            {
-                for (int i = 0; i < players.Count - 1; i++)
-                {
-					if (Object.ReferenceEquals(players[i], getCurrentPlayer()))
-                    {
-                        return players[i + 1];
-                    }
-                }
-            }
-        }
-        else
-        {
-			if (Object.ReferenceEquals(getCurrentPlayer(), players[0]))
-            {
-                return players[players.Count - 1];
-            }
-            else
-            {
-                for (int i = 1; i < players.Count; i++)
-                {
-					if (Object.ReferenceEquals(players[i], getCurrentPlayer()))
-                    {
-                        return players[i - 1];
-                    }
-                }
-            }
-        }
-
-        // Return the first player by default
-        return null;
-    }
-
+    
 
     public Enums.GamePhase getGamePhase() {
 		return gamePhase;
@@ -463,64 +400,7 @@ public class GameManager : NetworkBehaviour {
         }
     }
 
-    // Get a dice roll, randomly
-    public void rollDice()
-    {
-
-        // Get random values for all the dice
-        firstDie = (int)Random.Range(1, 7);
-        secondDie = (int)Random.Range(1, 7);
-        int evnt = (int)Random.Range(1, 7);
-
-        // Assign an event die outcome to the event die
-        switch (evnt)
-        {
-            case 1:
-                eventDie = Enums.EventDie.TRADE;
-                break;
-            case 2:
-                eventDie = Enums.EventDie.POLITICS;
-                break;
-            case 3:
-                eventDie = Enums.EventDie.SCIENCE;
-                break;
-            default:
-                eventDie = Enums.EventDie.BARBARIAN;
-                break;
-        }
-
-        // Resolve the outcome of the dice roll
-        resolveDice();
-    }
-
-    // Pick the dice (for alchemist)
-    public void rollDice(int d1, int d2)
-    {
-
-        firstDie = d1;
-        secondDie = d2;
-        int evnt = (int)Random.Range(1, 7);
-
-        // Assign an event die outcome to the event die
-        switch (evnt)
-        {
-            case 1:
-                eventDie = Enums.EventDie.TRADE;
-                break;
-            case 2:
-                eventDie = Enums.EventDie.POLITICS;
-                break;
-            case 3:
-                eventDie = Enums.EventDie.SCIENCE;
-                break;
-            default:
-                eventDie = Enums.EventDie.BARBARIAN;
-                break;
-        }
-
-        // Resolve the dice outcome
-        resolveDice();
-    }
+   
 
     // Resolve a dice roll
     [Server]

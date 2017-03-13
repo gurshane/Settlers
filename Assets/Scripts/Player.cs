@@ -43,12 +43,20 @@ public class Player : NetworkBehaviour {
 
     private Dictionary<Vector3, GamePiece> spawnedPieces;
 
-    [Server]
     public void Init(int iD)
     {
         this.iD = iD;
         Debug.Log("Initiated Player: " + iD);
         getGm();
+    }
+
+    public void getGm()
+    {
+        Debug.Log("is Client: " + isClient);
+        Debug.Log("Is Server: " + isServer);
+        Debug.Log(iD + "iD isLocal: " + isLocalPlayer);
+        gm = GameObject.FindWithTag("GameManager").GetComponent<GameManager>();
+        Debug.Log(gm);
         Debug.Log("networkclient" + NetworkClient.active);
         if (NetworkClient.active)
         {
@@ -58,16 +66,6 @@ public class Player : NetworkBehaviour {
             gm.EventFirstTurn += FirstTurn;
             gm.EventSecondTurn += SecondTurn;
         }
-    }
-
-    public void getGm()
-    {
-        Debug.Log("is Client: " + isClient);
-        Debug.Log("Is Server: " + isServer);
-        Debug.Log(iD + "iD isLocal: " + isLocalPlayer);
-
-        gm = GameObject.FindWithTag("GameManager").GetComponent<GameManager>();
-        Debug.Log(gm);
     }
 
     void Start()
@@ -480,16 +478,19 @@ public class Player : NetworkBehaviour {
         this.commodities[comP] += num;
     }
 
-    public void startTurn()
+    [Command]
+    public void CmdStartTurn()
     {
         Status status = Status.ACTIVE;
-        gm.CmdStartTurn();
-        //enable HUD actions 
+        gm.StartTurn();
     }
+
+
+
     [Command]
     public void CmdEndTurn()
     {
-        gm.CmdSetPlayerTurn();
+        gm.SetPlayerTurn();
     }
 
 
@@ -506,13 +507,19 @@ public class Player : NetworkBehaviour {
             //call UI element forcing dice roll
             //upon dice roll click return call the following method to release event catched in DiceRolled
             Debug.Log("Your Turn");
-            gm.CmdDiceRolled();
+            CmdDiceRoll();
         }
         else
         {
             Debug.Log("Player " + iD + "'s turn");
             //UI element notifying other players that the game is waiting for the dice to be rolled
         }
+    }
+
+    [Command]
+    public void CmdDiceRoll()
+    {
+        gm.DiceRolled();
     }
 
     public void DiceRolled(int first, int second, int third)
@@ -533,7 +540,8 @@ public class Player : NetworkBehaviour {
         Debug.Log("nextplayerturn" + gm.getPlayerTurn());
         if (gm.getPlayerTurn() == iD)
         {
-            startTurn();
+            //EnableHUD
+            CmdStartTurn();
         }
     }
 
@@ -544,12 +552,18 @@ public class Player : NetworkBehaviour {
 
     public void FirstTurn()
     {
+        if (!isLocalPlayer || gm.getPlayerTurn() != iD)
+            return;
+        Debug.Log("Player first turn for " + iD);
         //place Piece
         //place Road
     }
 
     public void SecondTurn()
     {
+        if (!isLocalPlayer || gm.getPlayerTurn() != iD)
+            return;
+        Debug.Log("Player second turn for " + iD);
         //place City
         //place Road 
     }
