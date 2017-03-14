@@ -221,11 +221,16 @@ public class Bank : NetworkBehaviour {
     {
 		Enums.ProgressCardName ret;
 
-		if (progressType == Enums.DevChartType.TRADE) {
+		if (progressType == Enums.DevChartType.TRADE)
+        {
 			ret = tradeCards [0];
-		} else if (progressType == Enums.DevChartType.POLITICS) {
+		}
+        else if (progressType == Enums.DevChartType.POLITICS)
+        {
 			ret = politicsCards [0];
-		} else {
+		}
+        else
+        {
 			ret = scienceCards [0];
 		}
 
@@ -270,32 +275,41 @@ public class Bank : NetworkBehaviour {
 		int[] comWanted = trade.getCommoditiesWanted ();
 
 		// Find the total offered amount
-		for (int i = 0; i < resOffered.Length; i++) {
+		for (int i = 0; i < resOffered.Length; i++)
+        {
 			totalAvailable += resOffered [i] / resRatios [i];
 		}
-		for (int i = 0; i < comOffered.Length; i++) {
+		for (int i = 0; i < comOffered.Length; i++)
+        {
 			totalAvailable += comOffered [i] / comRatios [i];
 		}
 		totalAvailable += trade.getGoldOffered () / 2;
 
 		// Find the total requested amount
-		for (int i = 0; i < resWanted.Length; i++) {
-			if (resWanted [i] > resources [i]) {
+		for (int i = 0; i < resWanted.Length; i++)
+        {
+			if (resWanted [i] > resources [i])
+            {
 				return false;
 			}
 			totalWanted += resWanted [i];
 		}
-		for (int i = 0; i < comWanted.Length; i++) {
-			if (comWanted [i] > commodities [i]) {
+		for (int i = 0; i < comWanted.Length; i++)
+        {
+			if (comWanted [i] > commodities [i])
+            {
 				return false;
 			}
 			totalWanted += comWanted [i];
 		}
 
 		// Return true if the requested amount is valid
-		if (totalWanted != 0 && totalWanted <= totalAvailable) {
+		if (totalWanted != 0 && totalWanted <= totalAvailable)
+        {
 			return true;
-		} else {
+		}
+        else
+        {
 			return false;
 		}
 	}

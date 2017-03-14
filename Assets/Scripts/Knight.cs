@@ -18,7 +18,8 @@ public class Knight : GamePiece {
     }
 
     public Knight(Enums.Color color) :
-		base(color, Enums.PieceType.KNIGHT) {
+		base(color, Enums.PieceType.KNIGHT)
+    {
 
 		this.level = 1;
 		this.active = false;
@@ -26,66 +27,71 @@ public class Knight : GamePiece {
 		this.activatedThisTurn = false;
 	}
 
-	public void updateLevel(int level) {
+	public void updateLevel(int level)
+    {
 		this.level = level;
 	}
 
-	public void upgrade() {
+	public void upgrade()
+    {
 		this.level++;
 		this.hasBeenUpgraded = true;
 	}
 
-	public void activateKnight() {
+	public void activateKnight()
+    {
 		this.active = true;
 		this.activatedThisTurn = true;
 	}
 
-	public void deactivateKnight() {
+	public void deactivateKnight()
+    {
 		this.active = false;
 	}
 
-	public int getLevel() {
+	public int getLevel()
+    {
 		return this.level;
 	}
 
-	public bool isActive() {
+	public bool isActive()
+    {
 		return this.active;
 	}
 
-	public bool wasUpgraded() {
+	public bool wasUpgraded()
+    {
 		return this.hasBeenUpgraded;
 	}
 
-	public bool wasActivatedThisTurn() {
+	public bool wasActivatedThisTurn()
+    {
 		return this.activatedThisTurn;
 	}
 
-	public void notActivatedThisTurn() {
+	public void notActivatedThisTurn()
+    {
 		this.activatedThisTurn = false;
 	}
 
-	public void notUpgradedThisTurn() {
+	public void notUpgradedThisTurn()
+    {
 		this.hasBeenUpgraded = false;
 	}
 
-	public static Knight getFreeKnight(List<GamePiece> pieces) {
-		foreach (GamePiece p in pieces) {
-			if (p.getPieceType () == Enums.PieceType.KNIGHT) {
-				if (!p.isOnBoard ()) {
+	public static Knight getFreeKnight(List<GamePiece> pieces)
+    {
+		foreach (GamePiece p in pieces)
+        {
+			if (p.getPieceType () == Enums.PieceType.KNIGHT)
+            {
+				if (!p.isOnBoard ())
+                {
 					return (Knight)p;
 				}
 			}
 		}
 		return null;
 	}
-
-	// Use this for initialization
-	void Start () {
-		
-	}
-	
-	// Update is called once per frame
-	void Update () {
-		
-	}
+    
 }

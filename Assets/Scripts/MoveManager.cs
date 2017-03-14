@@ -47,7 +47,8 @@ public class MoveManager : NetworkBehaviour {
 	void CmdMoveKnight(Vector3 source, Vector3 target, int level)
     {
 		GameObject knight;
-		switch (level) {
+		switch (level)
+        {
 		case 1:
 			knight = Instantiate<GameObject> (prefabHolder.levelOneKnight, target, Quaternion.identity);
 			break;
@@ -83,10 +84,12 @@ public class MoveManager : NetworkBehaviour {
     }
 
 	// Displace a knight at target with knight at source
-	public bool displaceKnight(Vertex source, Vertex target, Enums.Color color) {
+	public bool displaceKnight(Vertex source, Vertex target, Enums.Color color)
+    {
 		
 		// Check if the knight can displace
-		if (!ma.canKnightDisplace (source, target, color)) {
+		if (!ma.canKnightDisplace (source, target, color))
+        {
 			return false;
 		}
 
@@ -97,21 +100,28 @@ public class MoveManager : NetworkBehaviour {
 		int targetLevel = kTarget.getLevel ();
 
 		Vertex displacedLocation = null;
-		foreach (Vertex v in boardState.vertexPosition.Values) {
+		foreach (Vertex v in boardState.vertexPosition.Values)
+        {
 			displacedLocation = v;
 			break;
 		}
 
 		bool gone = true;
-		foreach (Vertex v in boardState.vertexPosition.Values) {
-			if (graph.areConnectedVertices (v, target, color)) {
-				if (!Object.ReferenceEquals (v.getOccupyingPiece (), null)) {
-					if (Object.ReferenceEquals (v, source)) {
+		foreach (Vertex v in boardState.vertexPosition.Values)
+        {
+			if (graph.areConnectedVertices (v, target, color))
+            {
+				if (!Object.ReferenceEquals (v.getOccupyingPiece (), null))
+                {
+					if (Object.ReferenceEquals (v, source))
+                    {
 						displacedLocation = v;
 						gone = false;
 						break;
 					}
-				} else {
+				}
+                else
+                {
 					displacedLocation = v;
 					gone = false;
 					break;
@@ -132,7 +142,8 @@ public class MoveManager : NetworkBehaviour {
 		Vector3 displacedLocation, int sourceLevel, int targetLevel, bool gone)
 	{
 		GameObject sourceKnight;
-		switch (sourceLevel) {
+		switch (sourceLevel)
+        {
 		case 1:
 			sourceKnight = Instantiate<GameObject> (prefabHolder.levelOneKnight, target, Quaternion.identity);
 			break;
@@ -145,7 +156,8 @@ public class MoveManager : NetworkBehaviour {
 		}
 
 		GameObject targetKnight;
-		switch (targetLevel) {
+		switch (targetLevel)
+        {
 		case 1:
 			targetKnight = Instantiate<GameObject> (prefabHolder.levelOneKnight, displacedLocation, Quaternion.identity);
 			break;
@@ -157,7 +169,8 @@ public class MoveManager : NetworkBehaviour {
 			break;
 		}
 
-		if (!gone) {
+		if (!gone)
+        {
 			NetworkServer.Spawn (targetKnight);
 		}
 
@@ -188,7 +201,8 @@ public class MoveManager : NetworkBehaviour {
         // Deactivate the knight
         sourceKnight.deactivateKnight();
 
-		if (!gone) {
+		if (!gone)
+        {
 			boardState.spawnedObjects.Add (displacedLocation, targetKnightObject);
 		}
 
@@ -198,10 +212,12 @@ public class MoveManager : NetworkBehaviour {
     }
 
 	// Upgrade a knight at vertex v
-	public bool upgradeKnight(int[] resources, int[] devChart, Vertex v, List<GamePiece> pieces) {
+	public bool upgradeKnight(int[] resources, int[] devChart, Vertex v, List<GamePiece> pieces)
+    {
 
 		// Check if the knight can be upgraded
-		if (!ma.canUpgradeKnight (resources, devChart, v, pieces)) {
+		if (!ma.canUpgradeKnight (resources, devChart, v, pieces))
+        {
 			return false;
 		}
 
@@ -216,7 +232,8 @@ public class MoveManager : NetworkBehaviour {
 	void CmdUpgradeKnight(int[] resources, int[] devChart, Vector3 v, int level)
 	{
 		GameObject newKnight;
-		switch (level) {
+		switch (level)
+        {
 		case 1:
 			newKnight = Instantiate<GameObject> (prefabHolder.levelTwoKnight, v, Quaternion.identity);
 			break;
@@ -242,7 +259,8 @@ public class MoveManager : NetworkBehaviour {
     }
 
 	// Activate a knight at vertex v
-	public bool activateKnight(int[] resources, Vertex v) {
+	public bool activateKnight(int[] resources, Vertex v)
+    {
         CmdActivateKnight(resources, v.transform.position);
 		return true;
 	}
@@ -261,16 +279,19 @@ public class MoveManager : NetworkBehaviour {
 
 	// Upgrade a development chart in the specified field
 	public bool upgradeDevChart(Enums.DevChartType dev, int[] commodities, 
-		List<GamePiece> pieces, int[] devChart) {
+		List<GamePiece> pieces, int[] devChart)
+    {
         
 		return true;
 	}
 
 	// Build a settlement at location
 	public bool buidSettlement(Vertex location, int[] resources,
-		List<GamePiece> pieces, Enums.Color color) {
+		List<GamePiece> pieces, Enums.Color color)
+    {
 
-		if (!ma.canBuildSettlement (location, resources, pieces, color)) {
+		if (!ma.canBuildSettlement (location, resources, pieces, color))
+        {
 			return false;
 		}
 
@@ -328,9 +349,11 @@ public class MoveManager : NetworkBehaviour {
 
 	// Build a city at location
 	public bool buildCity(Vertex location, int[] resources,
-		List<GamePiece> pieces, Enums.Color color) {
+		List<GamePiece> pieces, Enums.Color color)
+    {
 
-		if (!ma.canBuildCity (location, resources, pieces, color)) {
+		if (!ma.canBuildCity (location, resources, pieces, color))
+        {
 			return false;
 		}
 
@@ -377,7 +400,8 @@ public class MoveManager : NetworkBehaviour {
 
 	// Check if a city wall can be built at a vertex
 	public bool buildCityWall(Vertex location, int[] resources,
-		int cityWalls, Enums.Color color) {
+		int cityWalls, Enums.Color color)
+    {
         CmdBuildCityWall(location.transform.position);
 		return true;
 	}
@@ -399,7 +423,8 @@ public class MoveManager : NetworkBehaviour {
 
 	// Build a knight at location
 	public bool buildKnight(Vertex location, int[] resources,
-		List<GamePiece> pieces, Enums.Color color) {
+		List<GamePiece> pieces, Enums.Color color)
+    {
         CmdBuildKnight(location.transform.position);
 		return true;
 	}
@@ -420,9 +445,11 @@ public class MoveManager : NetworkBehaviour {
 
 	// Build a road at location
 	public bool buildRoad(Edge location, int[] resources,
-		List<GamePiece> pieces, Enums.Color color) {
+		List<GamePiece> pieces, Enums.Color color)
+    {
 
-		if (!ma.canBuildRoad (location, resources, pieces, color)) {
+		if (!ma.canBuildRoad (location, resources, pieces, color))
+        {
 			return false;
 		}
 
@@ -466,9 +493,11 @@ public class MoveManager : NetworkBehaviour {
 
 	// Build a ship at location
 	public bool buildShip(Edge location, int[] resources,
-		List<GamePiece> pieces, Enums.Color color) {
+		List<GamePiece> pieces, Enums.Color color)
+    {
 
-		if (!ma.canBuildShip (location, resources, pieces, color)) {
+		if (!ma.canBuildShip (location, resources, pieces, color))
+        {
 			return false;
 		}
 
@@ -511,7 +540,8 @@ public class MoveManager : NetworkBehaviour {
     }
 
 	// Move a ship from source to target
-	public bool moveShip(Edge source, Edge target, Enums.Color color) {
+	public bool moveShip(Edge source, Edge target, Enums.Color color)
+    {
         CmdMoveShip(source.transform.position, target.transform.position);
 		return true;
 	}
@@ -529,7 +559,8 @@ public class MoveManager : NetworkBehaviour {
     }
 
 	// Chase robber from source
-	public bool chaseRobber(Vertex source) {
+	public bool chaseRobber(Vertex source)
+    {
         CmdChaseRobber(source.transform.position);
 		return true;
 	}
@@ -547,7 +578,8 @@ public class MoveManager : NetworkBehaviour {
     }
 
 	// Move robber to target
-	public bool moveRobber(Hex target) {
+	public bool moveRobber(Hex target)
+    {
         CmdMoveRobber(target.transform.position);
 		return true;
 	}
@@ -565,7 +597,8 @@ public class MoveManager : NetworkBehaviour {
     }
 
 	// Move Pirate to target
-	public bool movePirate(Hex target) {
+	public bool movePirate(Hex target)
+    {
         CmdMovePirate(target.transform.position);
 		return true;
 	}
@@ -583,7 +616,8 @@ public class MoveManager : NetworkBehaviour {
     }
 
 	// Place Merchant at target
-	public bool placeMerchant(Hex target) {
+	public bool placeMerchant(Hex target)
+    {
 
         CmdPlaceMerchant(target.transform.position);
 
@@ -603,8 +637,10 @@ public class MoveManager : NetworkBehaviour {
     }
 
 	// Place an initial settlement
-	public bool placeInitialSettlement (Vertex v, List<GamePiece> pieces, List<Hex> validHexes) {
-		if (!ma.canPlaceInitialTownPiece (v, validHexes)) {
+	public bool placeInitialSettlement (Vertex v, List<GamePiece> pieces, List<Hex> validHexes)
+    {
+		if (!ma.canPlaceInitialTownPiece (v, validHexes))
+        {
 			return false;
 		}
 
@@ -621,8 +657,10 @@ public class MoveManager : NetworkBehaviour {
     }
 
     // Place an initial city
-    public bool placeInitialCity (Vertex v, List<GamePiece> pieces, List<Hex> validHexes) {
-		if (!ma.canPlaceInitialTownPiece (v, validHexes)) {
+    public bool placeInitialCity (Vertex v, List<GamePiece> pieces, List<Hex> validHexes)
+    {
+		if (!ma.canPlaceInitialTownPiece (v, validHexes))
+        {
 			return false;
 		}
 
@@ -651,8 +689,10 @@ public class MoveManager : NetworkBehaviour {
     }
 
 	// Place an initial road
-	public bool placeInitialRoad (Edge e, Enums.Color color, List<GamePiece> pieces) {
-		if (!ma.canPlaceInitialRoad (e, color)) {
+	public bool placeInitialRoad (Edge e, Enums.Color color, List<GamePiece> pieces)
+    {
+		if (!ma.canPlaceInitialRoad (e, color))
+        {
 			return false;
 		}
 
@@ -662,8 +702,10 @@ public class MoveManager : NetworkBehaviour {
 	}
 	 
 	// Place an initial ship
-	public bool placeInitialShip (Edge e, Enums.Color color, List<GamePiece> pieces) {
-		if (!ma.canPlaceInitialShip (e, color)) {
+	public bool placeInitialShip (Edge e, Enums.Color color, List<GamePiece> pieces)
+    {
+		if (!ma.canPlaceInitialShip (e, color))
+        {
 			return false;
 		}
 
@@ -673,9 +715,11 @@ public class MoveManager : NetworkBehaviour {
 	}
 
 	// Get a resource type from a port type
-	private Enums.ResourceType getResourceFromPort(Enums.PortType port) {
+	private Enums.ResourceType getResourceFromPort(Enums.PortType port)
+    {
 
-		switch (port) {
+		switch (port)
+        {
 		case Enums.PortType.BRICK:
 			return Enums.ResourceType.BRICK;
 		case Enums.PortType.WOOL:
@@ -692,22 +736,28 @@ public class MoveManager : NetworkBehaviour {
 	}
 
 	// Update the current players resource ratios according to the given vertex
-	private void updatePort(Vertex v) {
+	private void updatePort(Vertex v)
+    {
 		Player current = GameManager.instance.getPlayer(GameManager.instance.getPlayerTurn());
 		int[] ratios = current.getResourceRatios ();
 		Enums.PortType port = v.getPortType ();
 
 		// If the port is generic, update the ratios accordingly
-		if (port == Enums.PortType.GENERIC) {
-			for (int i = 0; i < ratios.Length; i++) {
-				if (ratios [i] > 3) {
+		if (port == Enums.PortType.GENERIC)
+        {
+			for (int i = 0; i < ratios.Length; i++)
+            {
+				if (ratios [i] > 3)
+                {
 					ratios [i] = 3;
 				}
 			}
 			current.updateResourceRatios (ratios);
 
 		// If there is a specific port, update the correct ratio
-		} else if (port != Enums.PortType.NONE) {
+		}
+        else if (port != Enums.PortType.NONE)
+        {
 			current.updateResourceRatio (getResourceFromPort (port), 2);
 		}
 	}

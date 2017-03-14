@@ -16,33 +16,43 @@ public class Road : GamePiece {
     }
 
     public Road(Enums.Color color, bool isShip) :
-		base(color, Enums.PieceType.ROAD) {
+		base(color, Enums.PieceType.ROAD)
+    {
 
 		this.isShip = isShip;
 		this.builtThisTurn = true;
 	}
 
-	public bool getIsShip() {
+	public bool getIsShip()
+    {
 		return isShip;
 	}
 
-	public bool getBuiltThisTurn() {
+	public bool getBuiltThisTurn()
+    {
 		return this.builtThisTurn;
 	}
 
-	public void wasBuiltThisTurn() {
+	public void wasBuiltThisTurn()
+    {
 		this.builtThisTurn = true;
 	}
 
-	public void notBuiltThisTurn() {
+	public void notBuiltThisTurn()
+    {
 		this.builtThisTurn = false;
 	}
 
-	public static Road getFreeRoad(List<GamePiece> pieces) {
-		foreach (GamePiece p in pieces) {
-			if (p.getPieceType () == Enums.PieceType.ROAD) {
-				if ( !((Road)p).getIsShip () ) {
-					if (!p.isOnBoard ()) {
+	public static Road getFreeRoad(List<GamePiece> pieces)
+    {
+		foreach (GamePiece p in pieces)
+        {
+			if (p.getPieceType () == Enums.PieceType.ROAD)
+            {
+				if ( !((Road)p).getIsShip () )
+                {
+					if (!p.isOnBoard ())
+                    {
 						return (Road)p;
 					}
 				}
@@ -51,11 +61,16 @@ public class Road : GamePiece {
 		return null;
 	}
 
-	public static Road getFreeShip(List<GamePiece> pieces) {
-		foreach (GamePiece p in pieces) {
-			if (p.getPieceType () == Enums.PieceType.ROAD) {
-				if ( ((Road)p).getIsShip () ) {
-					if (!p.isOnBoard ()) {
+	public static Road getFreeShip(List<GamePiece> pieces)
+    {
+		foreach (GamePiece p in pieces)
+        {
+			if (p.getPieceType () == Enums.PieceType.ROAD)
+            {
+				if ( ((Road)p).getIsShip () )
+                {
+					if (!p.isOnBoard ())
+                    {
 						return (Road)p;
 					}
 				}
