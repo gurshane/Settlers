@@ -43,7 +43,7 @@ public class Player : NetworkBehaviour {
 
     private Dictionary<Vector3, GamePiece> spawnedPieces;
 
-    public void Init(int iD)
+    public void Init(int iD)//call this if server is loaded after player
     {
         this.iD = iD;
         Debug.Log("Initiated Player: " + iD);
@@ -68,13 +68,21 @@ public class Player : NetworkBehaviour {
         }
     }
 
+    public void OnLoad()//
+    {
+        getGm();
+        if (gm == null)//check if gameManager has been spawned yet
+        {
+            return;
+        }
+        
+        gm.Init();
+    }
+
     void Start()
     {
-		Debug.Log ("Player Start");
 
         spawnedPieces = new Dictionary<Vector3, GamePiece>();
-
-        iD = -1;
 
         pieces = new List<GamePiece>();
         for (int i = 0; i < 5; i++)
@@ -119,9 +127,12 @@ public class Player : NetworkBehaviour {
 
         if (isLocalPlayer)
         {
+            
             gameObject.name = Network.player.ipAddress;
             Instantiate(myHud);
         }
+        OnLoad();
+
     }
 
     public void Update()
@@ -498,7 +509,7 @@ public class Player : NetworkBehaviour {
     [ClientRpc]
     public void RpcDiceRoll(int iD)
     {
-        if (!isLocalPlayer)
+        if (!isLocalPlayer || iD != this.iD)
         {
             return;
         }
@@ -530,19 +541,16 @@ public class Player : NetworkBehaviour {
         }
         //call UI element displaying results of die roll  
         Debug.Log("Dicerolled " + first + " " + second + " " + third);
-        //this.CmdEndTurn();
     }
 
     public void NextPlayerTurn()
     {
-        if (!isLocalPlayer)
-            return;
-        Debug.Log("nextplayerturn" + gm.getPlayerTurn());
-        if (gm.getPlayerTurn() == iD)
+        if (!isLocalPlayer || gm.getPlayerTurn() != iD)
         {
-            //EnableHUD
-            CmdStartTurn();
+            return;
         }
+        Debug.Log("nextplayerturn" + gm.getPlayerTurn());
+        CmdStartTurn();
     }
 
     public void BarbarianAttacked(bool win, int[] winners)
@@ -553,7 +561,9 @@ public class Player : NetworkBehaviour {
     public void FirstTurn()
     {
         if (!isLocalPlayer || gm.getPlayerTurn() != iD)
+        {
             return;
+        }
         Debug.Log("Player first turn for " + iD);
         //place Piece
         //place Road
@@ -562,7 +572,9 @@ public class Player : NetworkBehaviour {
     public void SecondTurn()
     {
         if (!isLocalPlayer || gm.getPlayerTurn() != iD)
+        {
             return;
+        }
         Debug.Log("Player second turn for " + iD);
         //place City
         //place Road 

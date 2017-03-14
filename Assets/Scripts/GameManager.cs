@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Enums;
 using UnityEngine.Networking;
+using Prototype.NetworkLobby; 
 
 public class GameManager : NetworkBehaviour {
 
@@ -64,42 +65,52 @@ public class GameManager : NetworkBehaviour {
     
     static public GameManager instance = null;
 
-    
+
     public void Init() //initializer
     {
+        GameObject[] objects = GameObject.FindGameObjectsWithTag("Player");
+        if (objects.Length != GameObject.FindObjectOfType<LobbyManager>()._playerNumber)
+        {
+            Debug.Log("Objects length is: " + objects.Length + " _playerNumber is: " + GameObject.FindObjectOfType<LobbyManager>()._playerNumber + "...returning");
+            return;
+        }
+        Debug.Log("Objects length is: " + objects.Length + " _playerNumber is: " + GameObject.FindObjectOfType<LobbyManager>()._playerNumber + "...continuing");
         Debug.Log("Started Init");
         players = new List<Player>();
         Debug.Log("network connection: " + Network.connections.Length);
-        ServerInitPlayers();
-        ClientInitPlayers();
+        ServerInitPlayers(objects);
+        ClientInitPlayers(objects);
+        Debug.Log("Players count: " + players.Count);
+        firstTurn();
+        secondTurn();
     }
 
     [Server]
-    private void ServerInitPlayers()
+    private void ServerInitPlayers(GameObject [] objects)
     {
-        GameObject[] objects = GameObject.FindGameObjectsWithTag("Player");
         Debug.Log(objects.Length);
         for (int i = 0; i < objects.Length; i++)
         {
             Player player = objects[i].GetComponent<Player>();
             player.Init(i);
             players.Add (player);
-
+            
         }
     }
 
     [Client]
-    private void ClientInitPlayers()
+    private void ClientInitPlayers(GameObject[] objects)
     {
         Debug.Log("Started ClientInitPlayers");
-        GameObject[] objects = GameObject.FindGameObjectsWithTag("Player");
-        Debug.Log(objects.Length);
+        Debug.Log("Number of objects tagged Player: " + objects.Length);//why only 1 player object found?
+        //client connections delay issues, how to delay until all connections present?
+        //why isnt syncvar properly working on player objects for iD number?????    
         Player[] temp = new Player[objects.Length];
         for (int i = 0; i < objects.Length; i++)
         {
             Player player = objects[i].GetComponent<Player>();
             player.getGm();
-            temp[player.getID()] = player;
+            temp[player.getID()] = player;//error because -1 
         }
         for (int i = 0; i<temp.Length; i++)
         {
@@ -118,9 +129,6 @@ public class GameManager : NetworkBehaviour {
         {
             Debug.Log("Client game manager start");
         }
-        /*tradeManager = GetComponent<TradeManager>();
-        bank = GetComponent<Bank>();
-        moveManager = GetComponent<MoveManager>();*/
         
         players = new List<Player>();
         gamePhase = Enums.GamePhase.SETUP_ONE;
@@ -138,21 +146,7 @@ public class GameManager : NetworkBehaviour {
 
         barbarianHasAttacked = false;
 
-        graph = new Graph();
-
         Init();
-        /*for (int i = 0; i<players.Count; i++)
-        {
-            while (players[i].GetComponent<NetworkIdentity>().connectionToClient.isConnected == false)
-            {
-
-            } 
-            //wait until player is connected
-        }*/
-        //first turn
-        firstTurn();
-        secondTurn();
-        //second turn
     }
 
     [Server]
@@ -168,7 +162,7 @@ public class GameManager : NetworkBehaviour {
     [Server]
     public void secondTurn()
     {
-        for (int i = players.Count - 1; i >= players.Count; i--)
+        for (int i = players.Count - 1; i >= 0; i--)
         {
             playerTurn = i;
             EventSecondTurn();
@@ -183,6 +177,7 @@ public class GameManager : NetworkBehaviour {
         return this.playerTurn;
     }
 
+    [Server]
     public void SetPlayerTurn()
     {
         playerTurn++;
@@ -199,6 +194,7 @@ public class GameManager : NetworkBehaviour {
     [SyncEvent]
     public event DiceRolledDelegate EventDiceRolled; //event that syncs to all clients
 
+    [Server]
     public void StartTurn()//control flow function
     {
         for (int i = 0; i < players.Count; i++)
@@ -208,6 +204,7 @@ public class GameManager : NetworkBehaviour {
         resolveDice();
     }
 
+    [Server]
     public void DiceRolled()
     {
         firstDie = UnityEngine.Random.Range(1, 7);
@@ -268,9 +265,9 @@ public class GameManager : NetworkBehaviour {
 		return longestRouteController;
 	}
 
-	public Hex getPirateLocation() {
-		return pirateLocation;
-	}
+	/*public Hex getPirateLocation() {
+		return pirateLocationD
+	}*/
 
 	public Hex getRobberLocation() {
 		return robberLocation;
@@ -339,6 +336,11 @@ public class GameManager : NetworkBehaviour {
 
     public void determineLongestRoute()
     {
+    }
+
+    public List<Player> getPlayers()
+    {
+        return this.players;
     }
 
     public Player getPlayer(int id)
