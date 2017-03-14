@@ -8,7 +8,8 @@ public class turnOrder : MonoBehaviour {
     public Enums.Color currentTurn;
 
 	// Use this for initialization
-	void Start () {
+	void Start ()
+    {
         currentTurn = Enums.Color.WHITE;
 	}
 	

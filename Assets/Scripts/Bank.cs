@@ -98,16 +98,20 @@ public class Bank : NetworkBehaviour {
         });
     }
 
-    public int getResourceAmount(Enums.ResourceType res) {
+    public int getResourceAmount(Enums.ResourceType res)
+    {
 		return resources [(int)res];
 	}
 
-	public int getCommodityAmount(Enums.CommodityType com) {
+	public int getCommodityAmount(Enums.CommodityType com)
+    {
 		return commodities [(int)com];
 	}
 
-	public bool withdrawResource(Enums.ResourceType res, int amount) {
-		if (resources [(int)res] < amount) {
+	public bool withdrawResource(Enums.ResourceType res, int amount)
+    {
+		if (resources [(int)res] < amount)
+        {
 			return false;
 		}
         CmdDecrementResources(res, amount);
@@ -126,8 +130,10 @@ public class Bank : NetworkBehaviour {
         resources[(int)res] -= amount;
     }
 
-	public bool withdrawCommodity(Enums.CommodityType com, int amount) {
-		if (commodities [(int)com] < amount) {
+	public bool withdrawCommodity(Enums.CommodityType com, int amount)
+    {
+		if (commodities [(int)com] < amount)
+        {
 			return false;
 		}
         CmdDecrementCommodities(com, amount);
@@ -146,7 +152,8 @@ public class Bank : NetworkBehaviour {
         commodities[(int)com] -= amount;
     }
 
-    public void depositResource(Enums.ResourceType res, int amount) {
+    public void depositResource(Enums.ResourceType res, int amount)
+    {
         CmdIncreaseResources(res, amount);
 	}
 
@@ -162,7 +169,8 @@ public class Bank : NetworkBehaviour {
         resources[(int)res] += amount;
     }
 
-	public void depositCommodity(Enums.CommodityType com, int amount) {
+	public void depositCommodity(Enums.CommodityType com, int amount)
+    {
         CmdIncreaseCommodities(com, amount);
 	}
 
@@ -180,7 +188,8 @@ public class Bank : NetworkBehaviour {
 
 	// Put the given progress card on the bottom of a progress card pile
 	public void depositProgressCard(Enums.DevChartType progressType, 
-		Enums.ProgressCardName progressCard){
+		Enums.ProgressCardName progressCard)
+    {
         CmdAddProgressCard(progressType, progressCard);
 	}
 
@@ -208,14 +217,20 @@ public class Bank : NetworkBehaviour {
     }
 
 	// Draw and return a progress card from the requested pile
-	public Enums.ProgressCardName withdrawProgressCard(Enums.DevChartType progressType) {
+	public Enums.ProgressCardName withdrawProgressCard(Enums.DevChartType progressType)
+    {
 		Enums.ProgressCardName ret;
 
-		if (progressType == Enums.DevChartType.TRADE) {
+		if (progressType == Enums.DevChartType.TRADE)
+        {
 			ret = tradeCards [0];
-		} else if (progressType == Enums.DevChartType.POLITICS) {
+		}
+        else if (progressType == Enums.DevChartType.POLITICS)
+        {
 			ret = politicsCards [0];
-		} else {
+		}
+        else
+        {
 			ret = scienceCards [0];
 		}
 
@@ -248,7 +263,8 @@ public class Bank : NetworkBehaviour {
     }
 		
 	// Make sure a given trade is valid
-	public bool isValidBankTrade(int[] resRatios, int[] comRatios, Trades trade) {
+	public bool isValidBankTrade(int[] resRatios, int[] comRatios, Trades trade)
+    {
 		int totalAvailable = 0;
 		int totalWanted = 0;
 
@@ -259,32 +275,41 @@ public class Bank : NetworkBehaviour {
 		int[] comWanted = trade.getCommoditiesWanted ();
 
 		// Find the total offered amount
-		for (int i = 0; i < resOffered.Length; i++) {
+		for (int i = 0; i < resOffered.Length; i++)
+        {
 			totalAvailable += resOffered [i] / resRatios [i];
 		}
-		for (int i = 0; i < comOffered.Length; i++) {
+		for (int i = 0; i < comOffered.Length; i++)
+        {
 			totalAvailable += comOffered [i] / comRatios [i];
 		}
 		totalAvailable += trade.getGoldOffered () / 2;
 
 		// Find the total requested amount
-		for (int i = 0; i < resWanted.Length; i++) {
-			if (resWanted [i] > resources [i]) {
+		for (int i = 0; i < resWanted.Length; i++)
+        {
+			if (resWanted [i] > resources [i])
+            {
 				return false;
 			}
 			totalWanted += resWanted [i];
 		}
-		for (int i = 0; i < comWanted.Length; i++) {
-			if (comWanted [i] > commodities [i]) {
+		for (int i = 0; i < comWanted.Length; i++)
+        {
+			if (comWanted [i] > commodities [i])
+            {
 				return false;
 			}
 			totalWanted += comWanted [i];
 		}
 
 		// Return true if the requested amount is valid
-		if (totalWanted != 0 && totalWanted <= totalAvailable) {
+		if (totalWanted != 0 && totalWanted <= totalAvailable)
+        {
 			return true;
-		} else {
+		}
+        else
+        {
 			return false;
 		}
 	}
