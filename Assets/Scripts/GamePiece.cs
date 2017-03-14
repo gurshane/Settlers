@@ -6,7 +6,6 @@ using Enums;
 public abstract class GamePiece {
 
 	private Enums.Color myColor;
-	private string ownerName;
 	private Enums.PieceType pieceType;
 	private bool onBoard;
 
@@ -25,10 +24,6 @@ public abstract class GamePiece {
 
 	public Enums.Color getColor() {
 		return this.myColor;
-	}
-
-	public string getOwnerName() {
-		return this.ownerName;
 	}
 
 	public Enums.PieceType getPieceType() {

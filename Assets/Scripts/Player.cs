@@ -11,7 +11,7 @@ public class Player : NetworkBehaviour {
     public GameManager gm;
 
     [SyncVar]
-    private int iD;
+    public int iD;
 
     [SyncVar]
     public Enums.Color myColor;
@@ -47,18 +47,31 @@ public class Player : NetworkBehaviour {
     {
         this.iD = iD;
         Debug.Log("Initiated Player: " + iD);
-        gm = GameObject.FindObjectOfType<GameManager>();
-        Debug.Log(NetworkClient.active);
+        getGm();
+    }
+
+    public void getGm()
+    {
+        Debug.Log("is Client: " + isClient);
+        Debug.Log("Is Server: " + isServer);
+        Debug.Log(iD + "iD isLocal: " + isLocalPlayer);
+        gm = GameObject.FindWithTag("GameManager").GetComponent<GameManager>();
+        Debug.Log(gm);
+        Debug.Log("networkclient" + NetworkClient.active);
         if (NetworkClient.active)
         {
             gm.EventDiceRolled += DiceRolled;
             gm.EventBarbarianAttack += BarbarianAttacked;
             gm.EventNextPlayer += NextPlayerTurn;
+            gm.EventFirstTurn += FirstTurn;
+            gm.EventSecondTurn += SecondTurn;
         }
     }
 
     void Start()
     {
+		Debug.Log ("Player Start");
+
         spawnedPieces = new Dictionary<Vector3, GamePiece>();
 
         iD = -1;
@@ -113,10 +126,16 @@ public class Player : NetworkBehaviour {
 
     public void Update()
     {
-        if(isLocalPlayer)
+		if(!isLocalPlayer || gm.getPlayerTurn() != iD)
         {
-            
+			return;   
         }
+
+		if (Input.GetKeyDown (KeyCode.Space)) {
+            Debug.Log("ended turn for " + iD);
+			CmdEndTurn ();
+		}
+
     }
     
     public int getID()
@@ -459,17 +478,22 @@ public class Player : NetworkBehaviour {
         this.commodities[comP] += num;
     }
 
-    public void startTurn()
+    [Command]
+    public void CmdStartTurn()
     {
         Status status = Status.ACTIVE;
-        gm.CmdStartTurn();
-        //enable HUD actions 
+        gm.StartTurn();
     }
+
+
+
     [Command]
     public void CmdEndTurn()
     {
-        gm.CmdSetPlayerTurn();
+        gm.SetPlayerTurn();
     }
+
+
 
     [ClientRpc]
     public void RpcDiceRoll(int iD)
@@ -483,13 +507,19 @@ public class Player : NetworkBehaviour {
             //call UI element forcing dice roll
             //upon dice roll click return call the following method to release event catched in DiceRolled
             Debug.Log("Your Turn");
-            gm.CmdDiceRolled();
+            CmdDiceRoll();
         }
         else
         {
             Debug.Log("Player " + iD + "'s turn");
             //UI element notifying other players that the game is waiting for the dice to be rolled
         }
+    }
+
+    [Command]
+    public void CmdDiceRoll()
+    {
+        gm.DiceRolled();
     }
 
     public void DiceRolled(int first, int second, int third)
@@ -499,23 +529,42 @@ public class Player : NetworkBehaviour {
             return;
         }
         //call UI element displaying results of die roll  
-        Debug.Log(" " + first + " " + second + " " + third);
-        this.CmdEndTurn();
+        Debug.Log("Dicerolled " + first + " " + second + " " + third);
+        //this.CmdEndTurn();
     }
 
     public void NextPlayerTurn()
     {
         if (!isLocalPlayer)
             return;
-        Debug.Log(gm.getPlayerTurn());
+        Debug.Log("nextplayerturn" + gm.getPlayerTurn());
         if (gm.getPlayerTurn() == iD)
         {
-            startTurn();
+            //EnableHUD
+            CmdStartTurn();
         }
     }
 
     public void BarbarianAttacked(bool win, int[] winners)
     {
         Debug.Log("Winners");
+    }
+
+    public void FirstTurn()
+    {
+        if (!isLocalPlayer || gm.getPlayerTurn() != iD)
+            return;
+        Debug.Log("Player first turn for " + iD);
+        //place Piece
+        //place Road
+    }
+
+    public void SecondTurn()
+    {
+        if (!isLocalPlayer || gm.getPlayerTurn() != iD)
+            return;
+        Debug.Log("Player second turn for " + iD);
+        //place City
+        //place Road 
     }
 }

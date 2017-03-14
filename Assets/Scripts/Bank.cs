@@ -22,7 +22,7 @@ public class Bank : NetworkBehaviour {
         }
 
         commodities = new int[GameManager.instance.getNumberCommodities()];
-        for (int i = 0; i < resources.Length; i++)
+        for (int i = 0; i < commodities.Length; i++)
         {
             commodities[i] = 12;
         }
@@ -296,20 +296,7 @@ public class Bank : NetworkBehaviour {
         {
             return false;
         }
-			
-		CmdTradeWithBank (resRatios, comRatios, trade);
-        return true;
-    }
 
-	[Command]
-	public void CmdTradeWithBank (int[] resRatios, int[] comRatios, Trades trade) 
-	{
-		RpcTradeWithBank (resRatios, comRatios, trade);
-    }
-
-	[ClientRpc]
-	public void RpcTradeWithBank (int[] resRatios, int[] comRatios, Trades trade) 
-	{
 		// Extract the information from the trade
 		int[] resOffered = trade.getResourcesOffered();
 		int[] resWanted = trade.getResourcesWanted();
@@ -317,6 +304,26 @@ public class Bank : NetworkBehaviour {
 		int[] comWanted = trade.getCommoditiesWanted();
 
 		Player trader = trade.getPlayerOffering();
+		int tradeId = trader.getID ();
+		int gold = trade.getGoldOffered ();
+			
+		CmdTradeWithBank (resOffered, resWanted, comOffered, comWanted, tradeId, gold);
+        return true;
+    }
+
+	[Command]
+	public void CmdTradeWithBank (int[] resOffered, int[] resWanted,
+		int[] comOffered, int[]comWanted, int tradeId, int gold) 
+	{
+		RpcTradeWithBank (resOffered, resWanted, comOffered, comWanted, tradeId, gold);
+    }
+
+	[ClientRpc]
+	public void RpcTradeWithBank (int[] resOffered, int[] resWanted,
+		int[] comOffered, int[]comWanted, int tradeId, int gold) 
+	{
+
+		Player trader = GameManager.instance.getPlayer (tradeId);
 
 		// Update all relevent fields
 		for (int i = 0; i < resOffered.Length; i++)
@@ -339,6 +346,6 @@ public class Bank : NetworkBehaviour {
 			trader.changeCommodity((Enums.CommodityType)i, comWanted[i]);
 			withdrawCommodity((Enums.CommodityType)i, comWanted[i]);
 		}
-		trader.changeGoldCount(trade.getGoldOffered());
+		trader.changeGoldCount(gold);
 	}
 }

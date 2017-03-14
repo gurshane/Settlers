@@ -16,15 +16,15 @@ public class MoveManager : NetworkBehaviour {
     void Start()
     {
         gameManager = GetComponent<GameManager>();
-        bank = GetComponent<Bank>();
-        boardState = GetComponent<BoardState>();
-        prefabHolder = GetComponent<PrefabHolder>();
+        //bank = GetComponent<Bank>();
+        //boardState = GetComponent<BoardState>();
+        //prefabHolder = GetComponent<PrefabHolder>();
         ma = new MoveAuthorizer();
 		graph = new Graph ();
     }
 
     // Move a knight from source to target
-    public bool moveKnight(Vertex source, Vertex target, Enums.Color color, int currentLongest) {
+    public bool moveKnight(Vertex source, Vertex target, Enums.Color color) {
 
 		// Check if the knight can be moved
 		if (!ma.canKnightMove (source, target, color)) {
@@ -274,7 +274,7 @@ public class MoveManager : NetworkBehaviour {
 
         CmdBuildSettlement(location.transform.position);
 
-		Player current = GameManager.instance.getCurrentPlayer ();
+		Player current = GameManager.instance.getPlayer(GameManager.instance.getPlayerTurn());
 
         // Add an appropriate amount of victory points
         current.changeVictoryPoints(1);
@@ -313,7 +313,7 @@ public class MoveManager : NetworkBehaviour {
     {
         Vertex source = boardState.vertexPosition[location];
 
-		List<GamePiece> pieces = GameManager.instance.getCurrentPlayer ().getGamePieces();// gameManager.getCurrentPlayer().getGamePieces();
+		List<GamePiece> pieces = GameManager.instance.getPlayer(GameManager.instance.getPlayerTurn()).getGamePieces();// gameManager.getCurrentPlayer().getGamePieces();
 
         // Put a settlement on the board
         Settlement settlement = Settlement.getFreeSettlement(pieces);
@@ -335,7 +335,7 @@ public class MoveManager : NetworkBehaviour {
         CmdBuildCity(location.transform.position);
 
         // Add an appropriate amount of victory points
-		Player current = GameManager.instance.getCurrentPlayer ();//gameManager.getCurrentPlayer();
+		Player current = GameManager.instance.getPlayer(GameManager.instance.getPlayerTurn());
         current.changeVictoryPoints(1);
 
         // Spend the resources
@@ -365,7 +365,7 @@ public class MoveManager : NetworkBehaviour {
         settlement.takeOffBoard();
 
         // Build a city
-		List<GamePiece> pieces = GameManager.instance.getCurrentPlayer ().getGamePieces();// gameManager.getCurrentPlayer().getGamePieces();
+		List<GamePiece> pieces = GameManager.instance.getPlayer(GameManager.instance.getPlayerTurn()).getGamePieces();// gameManager.getCurrentPlayer().getGamePieces();
         City city = City.getFreeCity(pieces);
 
         source.setOccupyingPiece(city);
@@ -426,7 +426,7 @@ public class MoveManager : NetworkBehaviour {
 
         CmdBuildRoad(location.transform.position);
 
-		Player current = GameManager.instance.getCurrentPlayer ();// gameManager.getCurrentPlayer ();
+		Player current = GameManager.instance.getPlayer(GameManager.instance.getPlayerTurn());
 
         // Spend the resources
         current.changeResource(Enums.ResourceType.BRICK, -1);
@@ -453,7 +453,7 @@ public class MoveManager : NetworkBehaviour {
         Edge edge = boardState.edgePosition[location];
 
         // Put a road on the given edge
-		List<GamePiece> pieces = GameManager.instance.getCurrentPlayer ().getGamePieces();// gameManager.getCurrentPlayer().getGamePieces();
+		List<GamePiece> pieces = GameManager.instance.getPlayer(GameManager.instance.getPlayerTurn()).getGamePieces();// gameManager.getCurrentPlayer().getGamePieces();
         Road road = Road.getFreeRoad(pieces);
         
         edge.setOccupyingPiece(road);
@@ -472,7 +472,7 @@ public class MoveManager : NetworkBehaviour {
 
         CmdBuildShip(location.transform.position);
 
-		Player current = GameManager.instance.getCurrentPlayer ();// gameManager.getCurrentPlayer ();
+		Player current = GameManager.instance.getPlayer(GameManager.instance.getPlayerTurn());
 
         // Spend the resources
         current.changeResource(Enums.ResourceType.WOOL, -1);
@@ -499,7 +499,7 @@ public class MoveManager : NetworkBehaviour {
         Edge edge = boardState.edgePosition[location];
 
         // Put a road on the given edge
-		List<GamePiece> pieces = GameManager.instance.getCurrentPlayer ().getGamePieces();// gameManager.getCurrentPlayer().getGamePieces();
+		List<GamePiece> pieces = GameManager.instance.getPlayer(GameManager.instance.getPlayerTurn()).getGamePieces();// gameManager.getCurrentPlayer().getGamePieces();
         Road ship = Road.getFreeShip(pieces);
 
         edge.setOccupyingPiece(ship);
@@ -609,7 +609,7 @@ public class MoveManager : NetworkBehaviour {
         CmdBuildSettlement(v.transform.position);
 
         // Get the resources around the settlement
-        Player current = GameManager.instance.getCurrentPlayer();
+		Player current = GameManager.instance.getPlayer(GameManager.instance.getPlayerTurn());
 
         // Update the victory points and add a port
         current.changeVictoryPoints(1);
@@ -627,7 +627,7 @@ public class MoveManager : NetworkBehaviour {
         CmdBuildCity(v.transform.position);
 
         // Get the resources around the city
-        Player current = GameManager.instance.getCurrentPlayer();
+		Player current = GameManager.instance.getPlayer(GameManager.instance.getPlayerTurn());
         foreach (Hex h in validHexes)
         {
             if (h.adjacentToVertex(v))
@@ -691,7 +691,7 @@ public class MoveManager : NetworkBehaviour {
 
 	// Update the current players resource ratios according to the given vertex
 	private void updatePort(Vertex v) {
-        Player current = GameManager.instance.getCurrentPlayer ();
+		Player current = GameManager.instance.getPlayer(GameManager.instance.getPlayerTurn());
 		int[] ratios = current.getResourceRatios ();
 		Enums.PortType port = v.getPortType ();
 
