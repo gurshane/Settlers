@@ -101,6 +101,10 @@ public class GameManager : NetworkBehaviour {
     [Client]
     private void ClientInitPlayers(GameObject[] objects)
     {
+        if (isServer && isClient)
+        {
+            return;
+        }
         Debug.Log("Started ClientInitPlayers");
         Debug.Log("Number of objects tagged Player: " + objects.Length);//why only 1 player object found?
         //client connections delay issues, how to delay until all connections present?
