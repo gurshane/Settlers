@@ -16,12 +16,12 @@ public class MoveManager : NetworkBehaviour {
 
     void Start()
     {
-        //bank = GetComponent<Bank>();
         ma = new MoveAuthorizer();
 		graph = new Graph ();
     }
 
 	public void Init() {
+		bank = GameObject.FindWithTag ("Bank").GetComponent<Bank> ();
 		gameManager = GameObject.FindWithTag ("GameManager").GetComponent<GameManager> ();
 		prefabHolder = GameObject.FindWithTag ("PrefabHolder").GetComponent<PrefabHolder> ();
 	}
@@ -41,18 +41,17 @@ public class MoveManager : NetworkBehaviour {
 		Knight k = (Knight)source.getOccupyingPiece ();
 		int level = k.getLevel ();
 
-        CmdMoveKnight(source.transform.position, target.transform.position, level, color);
+		objNetId = this.GetComponent<NetworkIdentity> ();        
+		objNetId.AssignClientAuthority (connectionToClient);
+
+        RpcMoveKnight(source.transform.position, target.transform.position, level, color);
+
+		objNetId.RemoveClientAuthority (connectionToClient);
 
 		// Check if longest route needs to be updated
 
 		return true;
 	}
-
-    [Command]
-	void CmdMoveKnight(Vector3 source, Vector3 target, int level, Enums.Color color)
-    {
-		RpcMoveKnight(source, target, level, color);
-    }
 
     [ClientRpc]
 	void RpcMoveKnight(Vector3 source, Vector3 target, int level, Enums.Color color)
@@ -123,20 +122,18 @@ public class MoveManager : NetworkBehaviour {
 			}
 		}
 
-		CmdDisplaceKnight(source.transform.position, target.transform.position, 
+		objNetId = this.GetComponent<NetworkIdentity> ();        
+		objNetId.AssignClientAuthority (connectionToClient);
+
+		RpcDisplaceKnight(source.transform.position, target.transform.position, 
 			displacedLocation.transform.position, sourceLevel, targetLevel, gone, color);
+
+		objNetId.RemoveClientAuthority (connectionToClient);
 
 		// Check if longest route needs to be updated
 
 		return true;
 	}
-
-    [Command]
-	void CmdDisplaceKnight(Vector3 source, Vector3 target,
-		Vector3 displacedLocation, int sourceLevel, int targetLevel, bool gone, Enums.Color color)
-	{
-		RpcDisplaceKnight(source, target, displacedLocation, sourceLevel, targetLevel, gone, color);
-    }
 
     [ClientRpc]
 	void RpcDisplaceKnight(Vector3 source, Vector3 target, Vector3 displacedLocation,
@@ -190,15 +187,14 @@ public class MoveManager : NetworkBehaviour {
 		int level = k.getLevel ();
 
 		Enums.Color color = GameManager.instance.getPlayer(GameManager.instance.getPlayerTurn()).getColor();
-        CmdUpgradeKnight(resources, devChart, v.transform.position, level, color);
+
+		objNetId = this.GetComponent<NetworkIdentity> ();        
+		objNetId.AssignClientAuthority (connectionToClient);
+        RpcUpgradeKnight(resources, devChart, v.transform.position, level, color);
+
+		objNetId.RemoveClientAuthority (connectionToClient);
 		return true;
 	}
-
-    [Command]
-	void CmdUpgradeKnight(int[] resources, int[] devChart, Vector3 v, int level, Enums.Color color)
-	{
-		RpcUpgradeKnight(resources, devChart, v, level, color);
-    }
 
     [ClientRpc]
 	void RpcUpgradeKnight(int[] resources, int[] devChart, Vector3 v, int level, Enums.Color color)
@@ -219,15 +215,13 @@ public class MoveManager : NetworkBehaviour {
 	// Activate a knight at vertex v
 	public bool activateKnight(int[] resources, Vertex v)
     {
-        CmdActivateKnight(resources, v.transform.position);
+		objNetId = this.GetComponent<NetworkIdentity> ();        
+		objNetId.AssignClientAuthority (connectionToClient);
+
+        RpcActivateKnight(resources, v.transform.position);
+		objNetId.RemoveClientAuthority (connectionToClient);
 		return true;
 	}
-
-    [Command]
-    void CmdActivateKnight(int[] resources, Vector3 v)
-    {
-        RpcActivateKnight(resources, v);
-    }
 
     [ClientRpc]
     void RpcActivateKnight(int[] resources, Vector3 v)
@@ -253,7 +247,11 @@ public class MoveManager : NetworkBehaviour {
 			return false;
 		}
 
-        CmdBuildSettlement(location.transform.position, color);
+		objNetId = this.GetComponent<NetworkIdentity> ();        
+		objNetId.AssignClientAuthority (connectionToClient);
+
+        RpcBuildSettlement(location.transform.position, color);
+		objNetId.RemoveClientAuthority (connectionToClient);
 
 		Player current = GameManager.instance.getPlayer(GameManager.instance.getPlayerTurn());
 
@@ -281,13 +279,6 @@ public class MoveManager : NetworkBehaviour {
 		return true;
 	}
 
-    [Command]
-	void CmdBuildSettlement(Vector3 location, Enums.Color color)
-    {
-		Debug.Log ("CMDBUILDSETTE");
-		RpcBuildSettlement(location, color);
-    }
-
     [ClientRpc]
 	void RpcBuildSettlement(Vector3 location, Enums.Color color)
     {
@@ -295,7 +286,6 @@ public class MoveManager : NetworkBehaviour {
 		GameObject newSettlement = Instantiate<GameObject>(prefabHolder.settlement, location, Quaternion.identity);
 		newSettlement.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
 
-		Debug.Log ("RPCBUILDSETT");
 		List<GamePiece> pieces = GameManager.instance.getPlayer(GameManager.instance.getPlayerTurn()).getGamePieces();// gameManager.getCurrentPlayer().getGamePieces();
 
         // Put a settlement on the board
@@ -317,7 +307,12 @@ public class MoveManager : NetworkBehaviour {
 			return false;
 		}
 
-        CmdBuildCity(location.transform.position, color, false);
+		objNetId = this.GetComponent<NetworkIdentity> ();        
+		objNetId.AssignClientAuthority (connectionToClient);
+
+        RpcBuildCity(location.transform.position, color, false);
+
+		objNetId.RemoveClientAuthority (connectionToClient);
 
         // Add an appropriate amount of victory points
 		Player current = GameManager.instance.getPlayer(GameManager.instance.getPlayerTurn());
@@ -331,12 +326,6 @@ public class MoveManager : NetworkBehaviour {
         bank.depositResource(Enums.ResourceType.ORE, 3);
         return true;
 	}
-
-    [Command]
-	void CmdBuildCity(Vector3 location, Enums.Color color, bool initial)
-    {
-		RpcBuildCity(location, color, initial);
-    }
 
     [ClientRpc]
 	void RpcBuildCity(Vector3 location, Enums.Color color, bool initial)
@@ -365,16 +354,13 @@ public class MoveManager : NetworkBehaviour {
 	public bool buildCityWall(Vertex location, int[] resources,
 		int cityWalls, Enums.Color color)
     {
-        CmdBuildCityWall(location.transform.position, color);
+
+		objNetId = this.GetComponent<NetworkIdentity> ();        
+		objNetId.AssignClientAuthority (connectionToClient);
+        RpcBuildCityWall(location.transform.position, color);
+		objNetId.RemoveClientAuthority (connectionToClient);
 		return true;
 	}
-
-    [Command]
-	void CmdBuildCityWall(Vector3 location, Enums.Color color)
-    {
-		RpcBuildCityWall(location, color);
-
-    }
 
     [ClientRpc]
 	void RpcBuildCityWall(Vector3 location, Enums.Color color)
@@ -388,15 +374,12 @@ public class MoveManager : NetworkBehaviour {
 	public bool buildKnight(Vertex location, int[] resources,
 		List<GamePiece> pieces, Enums.Color color)
     {
-        CmdBuildKnight(location.transform.position, color);
+		objNetId = this.GetComponent<NetworkIdentity> ();        
+		objNetId.AssignClientAuthority (connectionToClient);
+        RpcBuildKnight(location.transform.position, color);
+		objNetId.RemoveClientAuthority (connectionToClient);
 		return true;
 	}
-
-    [Command]
-	void CmdBuildKnight(Vector3 location, Enums.Color color)
-    {
-		RpcBuildKnight(location, color);
-    }
 
     [ClientRpc]
 	void RpcBuildKnight(Vector3 location, Enums.Color color)
@@ -416,7 +399,10 @@ public class MoveManager : NetworkBehaviour {
 			return false;
 		}
 
-        CmdBuildRoad(location.transform.position, color);
+		objNetId = this.GetComponent<NetworkIdentity> ();        
+		objNetId.AssignClientAuthority (connectionToClient);
+        RpcBuildRoad(location.transform.position, color);
+		objNetId.RemoveClientAuthority (connectionToClient);
 
 		Player current = GameManager.instance.getPlayer(GameManager.instance.getPlayerTurn());
 
@@ -430,12 +416,6 @@ public class MoveManager : NetworkBehaviour {
 
         return true;
 	}
-
-    [Command]
-	void CmdBuildRoad(Vector3 location, Enums.Color color)
-    {
-		RpcBuildRoad(location, color);
-    }
 
     [ClientRpc]
 	void RpcBuildRoad(Vector3 location, Enums.Color color)
@@ -464,7 +444,10 @@ public class MoveManager : NetworkBehaviour {
 			return false;
 		}
 
-        CmdBuildShip(location.transform.position, color);
+		objNetId = this.GetComponent<NetworkIdentity> ();        
+		objNetId.AssignClientAuthority (connectionToClient);
+        RpcBuildShip(location.transform.position, color);
+		objNetId.RemoveClientAuthority (connectionToClient);
 
 		Player current = GameManager.instance.getPlayer(GameManager.instance.getPlayerTurn());
 
@@ -478,12 +461,7 @@ public class MoveManager : NetworkBehaviour {
 
         return true;
 	}
-
-    [Command]
-	void CmdBuildShip(Vector3 location, Enums.Color color)
-    {
-		RpcBuildShip(location, color);
-    }
+		
 
     [ClientRpc]
 	void RpcBuildShip(Vector3 location, Enums.Color color)
@@ -505,15 +483,12 @@ public class MoveManager : NetworkBehaviour {
 	// Move a ship from source to target
 	public bool moveShip(Edge source, Edge target)
     {
-        CmdMoveShip(source.transform.position, target.transform.position);
+		objNetId = this.GetComponent<NetworkIdentity> ();        
+		objNetId.AssignClientAuthority (connectionToClient);
+        RpcMoveShip(source.transform.position, target.transform.position);
+		objNetId.RemoveClientAuthority (connectionToClient);
 		return true;
 	}
-
-    [Command]
-    void CmdMoveShip(Vector3 source, Vector3 target)
-    {
-        RpcMoveShip(source, target);
-    }
 
     [ClientRpc]
     void RpcMoveShip(Vector3 source, Vector3 target)
@@ -524,15 +499,12 @@ public class MoveManager : NetworkBehaviour {
 	// Chase robber from source
 	public bool chaseRobber(Vertex source)
     {
-        CmdChaseRobber(source.transform.position);
+		objNetId = this.GetComponent<NetworkIdentity> ();        
+		objNetId.AssignClientAuthority (connectionToClient);
+        RpcChaseRobber(source.transform.position);
+		objNetId.RemoveClientAuthority (connectionToClient);
 		return true;
 	}
-
-    [Command]
-    void CmdChaseRobber(Vector3 source)
-    {
-        RpcChaseRobber(source);
-    }
 
     [ClientRpc]
     void RpcChaseRobber(Vector3 source)
@@ -543,15 +515,12 @@ public class MoveManager : NetworkBehaviour {
 	// Move robber to target
 	public bool moveRobber(Hex target)
     {
-        CmdMoveRobber(target.transform.position);
+		objNetId = this.GetComponent<NetworkIdentity> ();        
+		objNetId.AssignClientAuthority (connectionToClient);
+        RpcMoveRobber(target.transform.position);
+		objNetId.RemoveClientAuthority (connectionToClient);
 		return true;
 	}
-
-    [Command]
-    void CmdMoveRobber(Vector3 target)
-    {
-        RpcMoveRobber(target);
-    }
 
     [ClientRpc]
     void RpcMoveRobber(Vector3 target)
@@ -562,15 +531,12 @@ public class MoveManager : NetworkBehaviour {
 	// Move Pirate to target
 	public bool movePirate(Hex target)
     {
-        CmdMovePirate(target.transform.position);
+		objNetId = this.GetComponent<NetworkIdentity> ();        
+		objNetId.AssignClientAuthority (connectionToClient);
+        RpcMovePirate(target.transform.position);
+		objNetId.RemoveClientAuthority (connectionToClient);
 		return true;
 	}
-
-    [Command]
-    void CmdMovePirate(Vector3 target)
-    {
-        RpcMovePirate(target);
-    }
 
     [ClientRpc]
     void RpcMovePirate(Vector3 target)
@@ -581,17 +547,13 @@ public class MoveManager : NetworkBehaviour {
 	// Place Merchant at target
 	public bool placeMerchant(Hex target)
     {
-
-        CmdPlaceMerchant(target.transform.position);
+		objNetId = this.GetComponent<NetworkIdentity> ();        
+		objNetId.AssignClientAuthority (connectionToClient);
+        RpcPlaceMerchant(target.transform.position);
+		objNetId.RemoveClientAuthority (connectionToClient);
 
 		return true;
 	}
-
-    [Command]
-    void CmdPlaceMerchant(Vector3 target)
-    {
-        RpcPlaceMerchant(target);
-    }
 
     [ClientRpc]
     void RpcPlaceMerchant(Vector3 target)
@@ -609,12 +571,12 @@ public class MoveManager : NetworkBehaviour {
 
 		Player current = GameManager.instance.getPlayer(GameManager.instance.getPlayerTurn());
 
-		//objNetId = this.GetComponent<NetworkIdentity> ();        
-		//objNetId.AssignClientAuthority (connectionToClient);  
+		objNetId = this.GetComponent<NetworkIdentity> ();        
+		objNetId.AssignClientAuthority (connectionToClient);  
 
-		CmdBuildSettlement(v.transform.position, current.getColor());
+		RpcBuildSettlement(v.transform.position, current.getColor());
 
-		//objNetId.RemoveClientAuthority (connectionToClient);
+		objNetId.RemoveClientAuthority (connectionToClient);
 
         // Update the victory points and add a port
         current.changeVictoryPoints(1);
@@ -634,7 +596,10 @@ public class MoveManager : NetworkBehaviour {
 		// Get the resources around the city
 		Player current = GameManager.instance.getPlayer(GameManager.instance.getPlayerTurn());
 
-		CmdBuildCity(v.transform.position, current.getColor(), true);
+		objNetId = this.GetComponent<NetworkIdentity> ();        
+		objNetId.AssignClientAuthority (connectionToClient);
+		RpcBuildCity(v.transform.position, current.getColor(), true);
+		objNetId.RemoveClientAuthority (connectionToClient);
 
         
 		foreach (Hex h in BoardState.instance.hexPoisition.Values)
@@ -665,7 +630,12 @@ public class MoveManager : NetworkBehaviour {
 			return false;
 		}
 
-        CmdBuildRoad(e.transform.position, color);
+		objNetId = this.GetComponent<NetworkIdentity> ();        
+		objNetId.AssignClientAuthority (connectionToClient);
+
+        RpcBuildRoad(e.transform.position, color);
+
+		objNetId.RemoveClientAuthority (connectionToClient);
 
 		return true;
 	}
@@ -673,12 +643,21 @@ public class MoveManager : NetworkBehaviour {
 	// Place an initial ship
 	public bool placeInitialShip (Edge e, Enums.Color color, List<GamePiece> pieces)
     {
+		Debug.Log ("Before ma");
+
 		if (!ma.canPlaceInitialShip (e, color))
         {
 			return false;
 		}
 
-        CmdBuildShip(e.transform.position, color);
+		Debug.Log ("After ma");
+
+		objNetId = this.GetComponent<NetworkIdentity> ();        
+		objNetId.AssignClientAuthority (connectionToClient);
+
+        RpcBuildShip(e.transform.position, color);
+
+		objNetId.RemoveClientAuthority (connectionToClient);
 
 		return true;
 	}

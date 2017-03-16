@@ -12,6 +12,8 @@ public class Player : NetworkBehaviour {
 
 	public MoveManager mm;
 
+	private MoveAuthorizer ma;
+
     [SyncVar]
     public int iD;
 
@@ -43,8 +45,8 @@ public class Player : NetworkBehaviour {
     private bool movedRoad;
     private bool aqueduct;
 
-	private bool placedFirstTown;
-	private bool placedFirstEdge;
+	public bool placedFirstTown;
+	public bool placedFirstEdge;
 
     private Dictionary<Vector3, GamePiece> spawnedPieces;
 
@@ -143,6 +145,8 @@ public class Player : NetworkBehaviour {
 		this.placedFirstTown = false;
 		this.placedFirstEdge = false;
 
+		this.ma = new MoveAuthorizer ();
+
 
         if (isLocalPlayer)
         {
@@ -196,10 +200,11 @@ public class Player : NetworkBehaviour {
 				}
 				Vertex v = pieceHit.GetComponent<Vertex>();
 
-				if (mm.placeInitialSettlement (v, this.pieces)) {
+				if (ma.canPlaceInitialTownPiece (v)) {
+					CmdPlaceInitialSettlement (v.transform.position);
 					placedFirstTown = true;
 				}
-				
+
 			} else if (!placedFirstEdge) {
 
 				if (!pieceHit.tag.Equals("Edge")) {
@@ -207,8 +212,8 @@ public class Player : NetworkBehaviour {
 				}
 				Edge e = pieceHit.GetComponent<Edge>();
 
-
-				if (mm.placeInitialRoad (e, this.myColor, this.pieces)) {
+				if (ma.canPlaceInitialRoad(e, this.myColor)) {
+					CmdPlaceInitialRoad (e.transform.position);
 					placedFirstEdge = true;
 				}
 			}
@@ -233,17 +238,22 @@ public class Player : NetworkBehaviour {
 				}
 				Vertex v = pieceHit.GetComponent<Vertex>();
 
-				if (mm.placeInitialCity (v, this.pieces)) {
+				if (ma.canPlaceInitialTownPiece (v)) {
+					CmdPlaceInitialCity (v.transform.position);
 					placedFirstTown = true;
 				}
 
 			} else if (!placedFirstEdge) {
+				Debug.Log ("Before Check");
 				if (!pieceHit.tag.Equals("Edge")) {
 					return;
 				}
+				Debug.Log ("After Check");
+
 				Edge e = pieceHit.GetComponent<Edge>();
 
-				if (mm.placeInitialRoad (e, this.myColor, this.pieces)) {
+				if (ma.canPlaceInitialRoad (e, this.myColor)) {
+					CmdPlaceInitialRoad (e.transform.position);
 					placedFirstEdge = true;
 				}
 			}
@@ -687,4 +697,24 @@ public class Player : NetworkBehaviour {
         //place City
         //place Road 
     }
+		
+	[Command]
+	public void CmdPlaceInitialSettlement(Vector3 location) {
+		mm.placeInitialSettlement (BoardState.instance.vertexPosition [location], this.pieces);
+	}
+
+	[Command]
+	public void CmdPlaceInitialCity(Vector3 location) {
+		mm.placeInitialCity (BoardState.instance.vertexPosition [location], this.pieces);
+	}
+
+	[Command]
+	public void CmdPlaceInitialRoad(Vector3 location) {
+		mm.placeInitialRoad (BoardState.instance.edgePosition [location], this.myColor, this.pieces);
+	}
+
+	[Command]
+	public void CmdPlaceInitialShip(Vector3 location) {
+		mm.placeInitialShip (BoardState.instance.edgePosition [location], this.myColor, this.pieces);
+	}
 }
