@@ -28,6 +28,11 @@ public abstract class GamePiece {
 		return this.myColor;
 	}
 
+	public void setColor(Enums.Color color)
+	{
+		this.myColor = color;
+	}
+
 	public Enums.PieceType getPieceType()
     {
 		return this.pieceType;

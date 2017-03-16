@@ -62,6 +62,9 @@ public class Player : NetworkBehaviour {
 		mm = GameObject.FindWithTag("MoveManager").GetComponent<MoveManager>();
 		mm.Init ();
 		this.myColor = (Enums.Color)iD;
+		foreach (GamePiece piece in pieces) {
+			piece.setColor (myColor);
+		}
 	}
 		
     public void getGm()
@@ -193,17 +196,21 @@ public class Player : NetworkBehaviour {
 				}
 				Vertex v = pieceHit.GetComponent<Vertex>();
 
-				mm.placeInitialSettlement (v, this.pieces);
-				placedFirstTown = true;
+				if (mm.placeInitialSettlement (v, this.pieces)) {
+					placedFirstTown = true;
+				}
 				
 			} else if (!placedFirstEdge) {
+
 				if (!pieceHit.tag.Equals("Edge")) {
 					return;
 				}
 				Edge e = pieceHit.GetComponent<Edge>();
 
-				mm.placeInitialRoad (e, this.myColor, this.pieces);
-				placedFirstEdge = true;
+
+				if (mm.placeInitialRoad (e, this.myColor, this.pieces)) {
+					placedFirstEdge = true;
+				}
 			}
 		}
 
@@ -226,8 +233,9 @@ public class Player : NetworkBehaviour {
 				}
 				Vertex v = pieceHit.GetComponent<Vertex>();
 
-				mm.placeInitialCity (v, this.pieces);
-				placedFirstTown = true;
+				if (mm.placeInitialCity (v, this.pieces)) {
+					placedFirstTown = true;
+				}
 
 			} else if (!placedFirstEdge) {
 				if (!pieceHit.tag.Equals("Edge")) {
@@ -235,8 +243,9 @@ public class Player : NetworkBehaviour {
 				}
 				Edge e = pieceHit.GetComponent<Edge>();
 
-				mm.placeInitialRoad (e, this.myColor, this.pieces);
-				placedFirstEdge = true;
+				if (mm.placeInitialRoad (e, this.myColor, this.pieces)) {
+					placedFirstEdge = true;
+				}
 			}
 		}
 

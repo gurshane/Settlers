@@ -12,6 +12,8 @@ public class MoveManager : NetworkBehaviour {
     MoveAuthorizer ma;
 	Graph graph;
 
+	private NetworkIdentity objNetId;
+
     void Start()
     {
         //bank = GetComponent<Bank>();
@@ -22,7 +24,6 @@ public class MoveManager : NetworkBehaviour {
 	public void Init() {
 		gameManager = GameObject.FindWithTag ("GameManager").GetComponent<GameManager> ();
 		prefabHolder = GameObject.FindWithTag ("PrefabHolder").GetComponent<PrefabHolder> ();
-
 	}
 
 
@@ -50,21 +51,7 @@ public class MoveManager : NetworkBehaviour {
     [Command]
 	void CmdMoveKnight(Vector3 source, Vector3 target, int level, Enums.Color color)
     {
-		GameObject knight;
-		switch (level)
-        {
-		case 1:
-			knight = Instantiate<GameObject> (prefabHolder.levelOneKnight, target, Quaternion.identity);
-			break;
-		case 2:
-			knight = Instantiate<GameObject> (prefabHolder.levelTwoKnight, target, Quaternion.identity);
-			break;
-		default:
-			knight = Instantiate<GameObject> (prefabHolder.levelThreeKnight, target, Quaternion.identity);
-			break;
-		}
-		knight.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
-        RpcMoveKnight(source, target, level, color);
+		RpcMoveKnight(source, target, level, color);
     }
 
     [ClientRpc]
@@ -73,19 +60,7 @@ public class MoveManager : NetworkBehaviour {
         Vertex sourcePiece = BoardState.instance.vertexPosition[source];
         Vertex targetPiece = BoardState.instance.vertexPosition[target];
 
-		GameObject knight;
-		switch (level)
-		{
-		case 1:
-			knight = Instantiate<GameObject> (prefabHolder.levelOneKnight, target, Quaternion.identity);
-			break;
-		case 2:
-			knight = Instantiate<GameObject> (prefabHolder.levelTwoKnight, target, Quaternion.identity);
-			break;
-		default:
-			knight = Instantiate<GameObject> (prefabHolder.levelThreeKnight, target, Quaternion.identity);
-			break;
-		}
+		GameObject knight = getKnightFromLevel (level, target);
 		knight.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
 		Destroy (BoardState.instance.spawnedObjects [source]);
 
@@ -160,40 +135,6 @@ public class MoveManager : NetworkBehaviour {
 	void CmdDisplaceKnight(Vector3 source, Vector3 target,
 		Vector3 displacedLocation, int sourceLevel, int targetLevel, bool gone, Enums.Color color)
 	{
-		GameObject sourceKnight;
-		switch (sourceLevel)
-        {
-		case 1:
-			sourceKnight = Instantiate<GameObject> (prefabHolder.levelOneKnight, target, Quaternion.identity);
-			break;
-		case 2:
-			sourceKnight = Instantiate<GameObject> (prefabHolder.levelTwoKnight, target, Quaternion.identity);
-			break;
-		default:
-			sourceKnight = Instantiate<GameObject> (prefabHolder.levelThreeKnight, target, Quaternion.identity);
-			break;
-		}
-		sourceKnight.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
-			
-		if (!gone)
-        {
-			GameObject targetKnight;
-			switch (targetLevel)
-			{
-			case 1:
-				targetKnight = Instantiate<GameObject> (prefabHolder.levelOneKnight, displacedLocation, Quaternion.identity);
-				break;
-			case 2:
-				targetKnight = Instantiate<GameObject> (prefabHolder.levelTwoKnight, displacedLocation, Quaternion.identity);
-				break;
-			default:
-				targetKnight = Instantiate<GameObject> (prefabHolder.levelThreeKnight, displacedLocation, Quaternion.identity);
-				break;
-			}
-			targetKnight.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
-
-		}
-			
 		RpcDisplaceKnight(source, target, displacedLocation, sourceLevel, targetLevel, gone, color);
     }
 
@@ -207,34 +148,11 @@ public class MoveManager : NetworkBehaviour {
         Knight sourceKnight = (Knight)sourcePiece.getOccupyingPiece();
         Knight targetKnight = (Knight)targetPiece.getOccupyingPiece();
 
-		GameObject sourceKnightObject;
-		switch (sourceLevel)
-		{
-		case 1:
-			sourceKnightObject = Instantiate<GameObject> (prefabHolder.levelOneKnight, target, Quaternion.identity);
-			break;
-		case 2:
-			sourceKnightObject = Instantiate<GameObject> (prefabHolder.levelTwoKnight, target, Quaternion.identity);
-			break;
-		default:
-			sourceKnightObject = Instantiate<GameObject> (prefabHolder.levelThreeKnight, target, Quaternion.identity);
-			break;
-		}
+		GameObject sourceKnightObject = getKnightFromLevel (sourceLevel, target);
 		sourceKnightObject.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
 
 		if (!gone) {
-			GameObject targetKnightObject;
-			switch (targetLevel) {
-			case 1:
-				targetKnightObject = Instantiate<GameObject> (prefabHolder.levelOneKnight, displacedLocation, Quaternion.identity);
-				break;
-			case 2:
-				targetKnightObject = Instantiate<GameObject> (prefabHolder.levelTwoKnight, displacedLocation, Quaternion.identity);
-				break;
-			default:
-				targetKnightObject = Instantiate<GameObject> (prefabHolder.levelThreeKnight, displacedLocation, Quaternion.identity);
-				break;
-			}
+			GameObject targetKnightObject = getKnightFromLevel (targetLevel, displacedLocation);
 			targetKnightObject.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
 			BoardState.instance.spawnedObjects.Add (displacedLocation, targetKnightObject);
 		}
@@ -279,17 +197,6 @@ public class MoveManager : NetworkBehaviour {
     [Command]
 	void CmdUpgradeKnight(int[] resources, int[] devChart, Vector3 v, int level, Enums.Color color)
 	{
-		GameObject newKnight;
-		switch (level)
-        {
-		case 1:
-			newKnight = Instantiate<GameObject> (prefabHolder.levelTwoKnight, v, Quaternion.identity);
-			break;
-		default:
-			newKnight = Instantiate<GameObject> (prefabHolder.levelThreeKnight, v, Quaternion.identity);
-			break;
-		}
-		newKnight.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
 		RpcUpgradeKnight(resources, devChart, v, level, color);
     }
 
@@ -298,16 +205,7 @@ public class MoveManager : NetworkBehaviour {
     {
 		Vertex source = BoardState.instance.vertexPosition[v];
 
-		GameObject newKnight;
-		switch (level)
-		{
-		case 1:
-			newKnight = Instantiate<GameObject> (prefabHolder.levelTwoKnight, v, Quaternion.identity);
-			break;
-		default:
-			newKnight = Instantiate<GameObject> (prefabHolder.levelThreeKnight, v, Quaternion.identity);
-			break;
-		}
+		GameObject newKnight = getKnightFromLevel (level + 1, v);
 		newKnight.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
 
 		// Upgrade the knight
@@ -386,8 +284,7 @@ public class MoveManager : NetworkBehaviour {
     [Command]
 	void CmdBuildSettlement(Vector3 location, Enums.Color color)
     {
-        GameObject newSettlement = Instantiate<GameObject>(prefabHolder.settlement, location, Quaternion.identity);
-		newSettlement.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
+		Debug.Log ("CMDBUILDSETTE");
 		RpcBuildSettlement(location, color);
     }
 
@@ -398,6 +295,7 @@ public class MoveManager : NetworkBehaviour {
 		GameObject newSettlement = Instantiate<GameObject>(prefabHolder.settlement, location, Quaternion.identity);
 		newSettlement.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
 
+		Debug.Log ("RPCBUILDSETT");
 		List<GamePiece> pieces = GameManager.instance.getPlayer(GameManager.instance.getPlayerTurn()).getGamePieces();// gameManager.getCurrentPlayer().getGamePieces();
 
         // Put a settlement on the board
@@ -437,13 +335,6 @@ public class MoveManager : NetworkBehaviour {
     [Command]
 	void CmdBuildCity(Vector3 location, Enums.Color color, bool initial)
     {
-        GameObject spawnedCity = Instantiate<GameObject>(prefabHolder.city, location, Quaternion.identity);
-		spawnedCity.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
-
-		if (!initial) {
-			Destroy (BoardState.instance.vertexPosition [location]);
-		}
-
 		RpcBuildCity(location, color, initial);
     }
 
@@ -481,8 +372,6 @@ public class MoveManager : NetworkBehaviour {
     [Command]
 	void CmdBuildCityWall(Vector3 location, Enums.Color color)
     {
-        GameObject spawnedCityWall = Instantiate<GameObject>(prefabHolder.cityWall, location, Quaternion.identity);
-		spawnedCityWall.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
 		RpcBuildCityWall(location, color);
 
     }
@@ -506,8 +395,6 @@ public class MoveManager : NetworkBehaviour {
     [Command]
 	void CmdBuildKnight(Vector3 location, Enums.Color color)
     {
-        GameObject spawnedKnight = Instantiate<GameObject>(prefabHolder.levelOneKnight, location, Quaternion.identity);
-		spawnedKnight.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
 		RpcBuildKnight(location, color);
     }
 
@@ -547,8 +434,6 @@ public class MoveManager : NetworkBehaviour {
     [Command]
 	void CmdBuildRoad(Vector3 location, Enums.Color color)
     {
-        GameObject spawnedRoad = Instantiate<GameObject>(prefabHolder.road, location, Quaternion.identity);
-		spawnedRoad.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
 		RpcBuildRoad(location, color);
     }
 
@@ -597,8 +482,6 @@ public class MoveManager : NetworkBehaviour {
     [Command]
 	void CmdBuildShip(Vector3 location, Enums.Color color)
     {
-        GameObject spawnedBoat = Instantiate<GameObject>(prefabHolder.boat, location, Quaternion.identity);
-		spawnedBoat.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
 		RpcBuildShip(location, color);
     }
 
@@ -724,11 +607,14 @@ public class MoveManager : NetworkBehaviour {
 			return false;
 		}
 
-		// Get the resources around the settlement
 		Player current = GameManager.instance.getPlayer(GameManager.instance.getPlayerTurn());
+
+		//objNetId = this.GetComponent<NetworkIdentity> ();        
+		//objNetId.AssignClientAuthority (connectionToClient);  
 
 		CmdBuildSettlement(v.transform.position, current.getColor());
 
+		//objNetId.RemoveClientAuthority (connectionToClient);
 
         // Update the victory points and add a port
         current.changeVictoryPoints(1);
@@ -796,6 +682,26 @@ public class MoveManager : NetworkBehaviour {
 
 		return true;
 	}
+
+	private GameObject getKnightFromLevel(int level, Vector3 location) {
+		GameObject knight;
+		switch (level) {
+		case 1:
+			knight = Instantiate<GameObject> (prefabHolder.levelOneKnight, location, Quaternion.identity);
+			break;
+		case 2:
+			knight = Instantiate<GameObject> (prefabHolder.levelTwoKnight, location, Quaternion.identity);
+			break;
+		case 3:
+			knight = Instantiate<GameObject> (prefabHolder.levelThreeKnight, location, Quaternion.identity);
+			break;
+		default:
+			knight = null;
+			break;
+		}
+		return knight;
+	}
+		
 
 	private UnityEngine.Color translateColor(Enums.Color color) {
 		
