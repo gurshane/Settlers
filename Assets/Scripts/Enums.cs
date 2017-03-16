@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Enums {
 
-	public enum Color { WHITE, ORANGE, RED, BLUE, NONE };
+	public enum Color { ORANGE, WHITE, RED, BLUE, NONE };
 
 	public enum ResourceType { ORE, LUMBER, WOOL, BRICK, GRAIN, NONE };
 

@@ -946,25 +946,11 @@ public class MoveAuthorizer
     }
 
     // Check if initial town-pieces can be placed on a vertex
-    public bool canPlaceInitialTownPiece(Vertex v, List<Hex> validHexes)
+    public bool canPlaceInitialTownPiece(Vertex v)
     {
-
-        bool valid = false;
-        foreach (Hex h in validHexes)
-        {
-            foreach (Vertex neighbour in h.getVertices())
-            {
-                if (Object.ReferenceEquals(neighbour, v))
-                {
-                    valid = true;
-                }
-            }
-        }
-
-        if (!valid)
-        {
-            return false;
-        }
+		if (!v.isOnMainland) {
+			return false;
+		}
 
         if (graph.freeVertex(v))
         {

@@ -10,6 +10,8 @@ public class Player : NetworkBehaviour {
 
     public GameManager gm;
 
+	public MoveManager mm;
+
     [SyncVar]
     public int iD;
 
@@ -41,15 +43,27 @@ public class Player : NetworkBehaviour {
     private bool movedRoad;
     private bool aqueduct;
 
+	private bool placedFirstTown;
+	private bool placedFirstEdge;
+
     private Dictionary<Vector3, GamePiece> spawnedPieces;
 
-    public void Init(int iD)//call this if server is loaded after player
+	[Command]
+    public void CmdInit(int iD)//call this if server is loaded after player
     {
         this.iD = iD;
+		this.myColor = (Enums.Color)iD;
         Debug.Log("Initiated Player: " + iD);
-        getGm();
+		Debug.Log ("MYCOLOR: " + this.myColor);
     }
 
+	public void Init() {
+		getGm();
+		mm = GameObject.FindWithTag("MoveManager").GetComponent<MoveManager>();
+		mm.Init ();
+		this.myColor = (Enums.Color)iD;
+	}
+		
     public void getGm()
     {
         Debug.Log("is Client: " + isClient);
@@ -58,20 +72,20 @@ public class Player : NetworkBehaviour {
         gm = GameObject.FindWithTag("GameManager").GetComponent<GameManager>();
         Debug.Log(gm);
         Debug.Log("networkclient" + NetworkClient.active);
-        if (NetworkClient.active)
+        /*if (NetworkClient.active)
         {
             gm.EventDiceRolled += DiceRolled;
             gm.EventBarbarianAttack += BarbarianAttacked;
             gm.EventNextPlayer += NextPlayerTurn;
             gm.EventFirstTurn += FirstTurn;
             gm.EventSecondTurn += SecondTurn;
-        }
+        }*/
     }
 
     public void OnLoad()//
     {
         getGm();
-        if (gm == null)//check if gameManager has been spawned yet
+		if (gm == null)//check if gameManager has been spawned yet
         {
             return;
         }
@@ -123,6 +137,8 @@ public class Player : NetworkBehaviour {
         this.cityWallsLeft = 3;
         this.movedRoad = false;
         this.aqueduct = false;
+		this.placedFirstTown = false;
+		this.placedFirstEdge = false;
 
 
         if (isLocalPlayer)
@@ -142,9 +158,92 @@ public class Player : NetworkBehaviour {
 			return;   
         }
 
+		Ray ray;
+		RaycastHit impact;
+		GameObject pieceHit = null;
+
 		if (Input.GetKeyDown (KeyCode.Space)) {
             Debug.Log("ended turn for " + iD);
+			placedFirstEdge = false;
+			placedFirstTown = false;
 			CmdEndTurn ();
+		}
+
+		if (Input.GetKeyDown (KeyCode.I)) {
+			Init ();
+		}
+
+		if (gm.getGamePhase () == Enums.GamePhase.SETUP_ONE) {
+
+			if (Input.GetButtonDown ("Fire1")) {
+				ray = Camera.main.ScreenPointToRay (Input.mousePosition);
+				if (Physics.Raycast (ray, out impact)) {
+					pieceHit = impact.collider.gameObject;
+				}
+			}
+
+			if (Object.ReferenceEquals(pieceHit, null)) {
+				return;
+			}
+				
+			if (!placedFirstTown) {
+
+				if (!pieceHit.tag.Equals("Vertex")) {
+					return;
+				}
+				Vertex v = pieceHit.GetComponent<Vertex>();
+
+				mm.placeInitialSettlement (v, this.pieces);
+				placedFirstTown = true;
+				
+			} else if (!placedFirstEdge) {
+				if (!pieceHit.tag.Equals("Edge")) {
+					return;
+				}
+				Edge e = pieceHit.GetComponent<Edge>();
+
+				mm.placeInitialRoad (e, this.myColor, this.pieces);
+				placedFirstEdge = true;
+			}
+		}
+
+		if (gm.getGamePhase () == Enums.GamePhase.SETUP_TWO) {
+			if (Input.GetButtonDown ("Fire1")) {
+				ray = Camera.main.ScreenPointToRay (Input.mousePosition);
+				if (Physics.Raycast (ray, out impact)) {
+					pieceHit = impact.collider.gameObject;
+				}
+			}
+
+			if (Object.ReferenceEquals(pieceHit, null)) {
+				return;
+			}
+
+			if (!placedFirstTown) {
+
+				if (!pieceHit.tag.Equals("Vertex")) {
+					return;
+				}
+				Vertex v = pieceHit.GetComponent<Vertex>();
+
+				mm.placeInitialCity (v, this.pieces);
+				placedFirstTown = true;
+
+			} else if (!placedFirstEdge) {
+				if (!pieceHit.tag.Equals("Edge")) {
+					return;
+				}
+				Edge e = pieceHit.GetComponent<Edge>();
+
+				mm.placeInitialRoad (e, this.myColor, this.pieces);
+				placedFirstEdge = true;
+			}
+		}
+
+		if (gm.getGamePhase () == Enums.GamePhase.PHASE_ONE) {
+		}
+
+		if (gm.getGamePhase () == Enums.GamePhase.PHASE_TWO) {
 		}
 
     }

@@ -12,9 +12,6 @@ public class GameManager : NetworkBehaviour {
 
     [SyncVar]
 	public int pointsToWin;
-
-    [SyncVar]
-    public Enums.Color colorToPick;
     
     [SyncVar]
     public int firstDie;
@@ -54,6 +51,7 @@ public class GameManager : NetworkBehaviour {
 	private const int numResources = 5;
 	private const int numDevChartType = 3;
 	private const int progressCardLimit = 4;
+	private NetworkIdentity objNetId;
 
     // Overall Game State
     private List<Player> players;
@@ -81,8 +79,8 @@ public class GameManager : NetworkBehaviour {
         ServerInitPlayers(objects);
         ClientInitPlayers(objects);
         Debug.Log("Players count: " + players.Count);
-        firstTurn();
-        secondTurn();
+        //firstTurn();
+        //secondTurn();
     }
 
     [Server]
@@ -92,7 +90,8 @@ public class GameManager : NetworkBehaviour {
         for (int i = 0; i < objects.Length; i++)
         {
             Player player = objects[i].GetComponent<Player>();
-            player.Init(i);
+            player.CmdInit(i);
+			player.Init ();
             players.Add (player);
             
         }
@@ -118,6 +117,7 @@ public class GameManager : NetworkBehaviour {
         }
         for (int i = 0; i<temp.Length; i++)
         {
+			temp [i].Init ();
             players.Add(temp[i]);
         }
     }
@@ -180,17 +180,35 @@ public class GameManager : NetworkBehaviour {
     {
         return this.playerTurn;
     }
-
-    [Server]
+		
     public void SetPlayerTurn()
     {
-        playerTurn++;
-        if (this.playerTurn >= players.Count)
-        {
-            playerTurn = 0;
-        }
+		objNetId = this.GetComponent<NetworkIdentity> ();        // get the object's network ID
+		objNetId.AssignClientAuthority (connectionToClient);    // assign authority to the player who is changing the color
+
+		if (this.gamePhase == Enums.GamePhase.SETUP_ONE) {
+			playerTurn++;
+			if (this.playerTurn >= players.Count) {
+				playerTurn = players.Count - 1;
+				gamePhase = Enums.GamePhase.SETUP_TWO;
+			}
+		} else if (this.gamePhase == Enums.GamePhase.SETUP_TWO) {
+			playerTurn--;
+			if (this.playerTurn < 0) {
+				playerTurn = 0;
+				gamePhase = Enums.GamePhase.PHASE_ONE;
+			}
+		} else {
+			playerTurn++;
+			if (this.playerTurn >= players.Count) {
+				playerTurn = 0;
+				gamePhase = Enums.GamePhase.PHASE_ONE;
+			}
+		}
+
+		objNetId.RemoveClientAuthority (connectionToClient); 
 		Debug.Log ("turn = " + playerTurn);
-        EventNextPlayer();
+        //EventNextPlayer();
     }
 
     public delegate void DiceRolledDelegate(int firstDie, int secondDie, int thirdDie);

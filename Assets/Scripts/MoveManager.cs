@@ -9,19 +9,23 @@ public class MoveManager : NetworkBehaviour {
     GameManager gameManager;
     PrefabHolder prefabHolder;
     Bank bank;
-    BoardState boardState;
     MoveAuthorizer ma;
 	Graph graph;
 
     void Start()
     {
-        gameManager = GetComponent<GameManager>();
         //bank = GetComponent<Bank>();
-        //boardState = GetComponent<BoardState>();
-        //prefabHolder = GetComponent<PrefabHolder>();
         ma = new MoveAuthorizer();
 		graph = new Graph ();
     }
+
+	public void Init() {
+		gameManager = GameObject.FindWithTag ("GameManager").GetComponent<GameManager> ();
+		prefabHolder = GameObject.FindWithTag ("PrefabHolder").GetComponent<PrefabHolder> ();
+
+	}
+
+
 
     // Move a knight from source to target
     public bool moveKnight(Vertex source, Vertex target, Enums.Color color)
@@ -36,7 +40,7 @@ public class MoveManager : NetworkBehaviour {
 		Knight k = (Knight)source.getOccupyingPiece ();
 		int level = k.getLevel ();
 
-        CmdMoveKnight(source.transform.position, target.transform.position, level);
+        CmdMoveKnight(source.transform.position, target.transform.position, level, color);
 
 		// Check if longest route needs to be updated
 
@@ -44,7 +48,7 @@ public class MoveManager : NetworkBehaviour {
 	}
 
     [Command]
-	void CmdMoveKnight(Vector3 source, Vector3 target, int level)
+	void CmdMoveKnight(Vector3 source, Vector3 target, int level, Enums.Color color)
     {
 		GameObject knight;
 		switch (level)
@@ -59,16 +63,31 @@ public class MoveManager : NetworkBehaviour {
 			knight = Instantiate<GameObject> (prefabHolder.levelThreeKnight, target, Quaternion.identity);
 			break;
 		}
-		NetworkServer.Spawn(knight);
-		NetworkServer.UnSpawn(boardState.spawnedObjects[source]);
-        RpcMoveKnight(source, target, knight);
+		knight.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
+        RpcMoveKnight(source, target, level, color);
     }
 
     [ClientRpc]
-	void RpcMoveKnight(Vector3 source, Vector3 target, GameObject knight)
+	void RpcMoveKnight(Vector3 source, Vector3 target, int level, Enums.Color color)
     {
-        Vertex sourcePiece = boardState.vertexPosition[source];
-        Vertex targetPiece = boardState.vertexPosition[target];
+        Vertex sourcePiece = BoardState.instance.vertexPosition[source];
+        Vertex targetPiece = BoardState.instance.vertexPosition[target];
+
+		GameObject knight;
+		switch (level)
+		{
+		case 1:
+			knight = Instantiate<GameObject> (prefabHolder.levelOneKnight, target, Quaternion.identity);
+			break;
+		case 2:
+			knight = Instantiate<GameObject> (prefabHolder.levelTwoKnight, target, Quaternion.identity);
+			break;
+		default:
+			knight = Instantiate<GameObject> (prefabHolder.levelThreeKnight, target, Quaternion.identity);
+			break;
+		}
+		knight.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
+		Destroy (BoardState.instance.spawnedObjects [source]);
 
         Knight sourceKnight = (Knight)sourcePiece.getOccupyingPiece();
 
@@ -78,8 +97,8 @@ public class MoveManager : NetworkBehaviour {
 
         // Deactivate the knight
         sourceKnight.deactivateKnight();
-		boardState.spawnedObjects.Add(target, knight);
-		boardState.spawnedObjects.Remove (source);
+		BoardState.instance.spawnedObjects.Add(target, knight);
+		BoardState.instance.spawnedObjects.Remove (source);
 
     }
 
@@ -100,14 +119,14 @@ public class MoveManager : NetworkBehaviour {
 		int targetLevel = kTarget.getLevel ();
 
 		Vertex displacedLocation = null;
-		foreach (Vertex v in boardState.vertexPosition.Values)
+		foreach (Vertex v in BoardState.instance.vertexPosition.Values)
         {
 			displacedLocation = v;
 			break;
 		}
 
 		bool gone = true;
-		foreach (Vertex v in boardState.vertexPosition.Values)
+		foreach (Vertex v in BoardState.instance.vertexPosition.Values)
         {
 			if (graph.areConnectedVertices (v, target, color))
             {
@@ -130,7 +149,7 @@ public class MoveManager : NetworkBehaviour {
 		}
 
 		CmdDisplaceKnight(source.transform.position, target.transform.position, 
-			displacedLocation.transform.position, sourceLevel, targetLevel, gone);
+			displacedLocation.transform.position, sourceLevel, targetLevel, gone, color);
 
 		// Check if longest route needs to be updated
 
@@ -139,7 +158,7 @@ public class MoveManager : NetworkBehaviour {
 
     [Command]
 	void CmdDisplaceKnight(Vector3 source, Vector3 target,
-		Vector3 displacedLocation, int sourceLevel, int targetLevel, bool gone)
+		Vector3 displacedLocation, int sourceLevel, int targetLevel, bool gone, Enums.Color color)
 	{
 		GameObject sourceKnight;
 		switch (sourceLevel)
@@ -154,41 +173,74 @@ public class MoveManager : NetworkBehaviour {
 			sourceKnight = Instantiate<GameObject> (prefabHolder.levelThreeKnight, target, Quaternion.identity);
 			break;
 		}
-
-		GameObject targetKnight;
-		switch (targetLevel)
-        {
-		case 1:
-			targetKnight = Instantiate<GameObject> (prefabHolder.levelOneKnight, displacedLocation, Quaternion.identity);
-			break;
-		case 2:
-			targetKnight = Instantiate<GameObject> (prefabHolder.levelTwoKnight, displacedLocation, Quaternion.identity);
-			break;
-		default:
-			targetKnight = Instantiate<GameObject> (prefabHolder.levelThreeKnight, displacedLocation, Quaternion.identity);
-			break;
-		}
-
+		sourceKnight.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
+			
 		if (!gone)
         {
-			NetworkServer.Spawn (targetKnight);
-		}
+			GameObject targetKnight;
+			switch (targetLevel)
+			{
+			case 1:
+				targetKnight = Instantiate<GameObject> (prefabHolder.levelOneKnight, displacedLocation, Quaternion.identity);
+				break;
+			case 2:
+				targetKnight = Instantiate<GameObject> (prefabHolder.levelTwoKnight, displacedLocation, Quaternion.identity);
+				break;
+			default:
+				targetKnight = Instantiate<GameObject> (prefabHolder.levelThreeKnight, displacedLocation, Quaternion.identity);
+				break;
+			}
+			targetKnight.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
 
-		NetworkServer.Spawn(sourceKnight);
-		NetworkServer.UnSpawn (boardState.spawnedObjects [source]);
-		NetworkServer.UnSpawn (boardState.spawnedObjects [target]);
-		RpcDisplaceKnight(source, target, displacedLocation, sourceKnight, targetKnight, gone);
+		}
+			
+		RpcDisplaceKnight(source, target, displacedLocation, sourceLevel, targetLevel, gone, color);
     }
 
     [ClientRpc]
-	void RpcDisplaceKnight(Vector3 source, Vector3 target, Vector3 displacedLocation, 
-		GameObject sourceKnightObject, GameObject targetKnightObject, bool gone)
+	void RpcDisplaceKnight(Vector3 source, Vector3 target, Vector3 displacedLocation,
+		int sourceLevel, int targetLevel, bool gone, Enums.Color color)
     {
-        Vertex sourcePiece = boardState.vertexPosition[source];
-        Vertex targetPiece = boardState.vertexPosition[target];
+        Vertex sourcePiece = BoardState.instance.vertexPosition[source];
+        Vertex targetPiece = BoardState.instance.vertexPosition[target];
 
         Knight sourceKnight = (Knight)sourcePiece.getOccupyingPiece();
         Knight targetKnight = (Knight)targetPiece.getOccupyingPiece();
+
+		GameObject sourceKnightObject;
+		switch (sourceLevel)
+		{
+		case 1:
+			sourceKnightObject = Instantiate<GameObject> (prefabHolder.levelOneKnight, target, Quaternion.identity);
+			break;
+		case 2:
+			sourceKnightObject = Instantiate<GameObject> (prefabHolder.levelTwoKnight, target, Quaternion.identity);
+			break;
+		default:
+			sourceKnightObject = Instantiate<GameObject> (prefabHolder.levelThreeKnight, target, Quaternion.identity);
+			break;
+		}
+		sourceKnightObject.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
+
+		if (!gone) {
+			GameObject targetKnightObject;
+			switch (targetLevel) {
+			case 1:
+				targetKnightObject = Instantiate<GameObject> (prefabHolder.levelOneKnight, displacedLocation, Quaternion.identity);
+				break;
+			case 2:
+				targetKnightObject = Instantiate<GameObject> (prefabHolder.levelTwoKnight, displacedLocation, Quaternion.identity);
+				break;
+			default:
+				targetKnightObject = Instantiate<GameObject> (prefabHolder.levelThreeKnight, displacedLocation, Quaternion.identity);
+				break;
+			}
+			targetKnightObject.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
+			BoardState.instance.spawnedObjects.Add (displacedLocation, targetKnightObject);
+		}
+
+		Destroy (BoardState.instance.spawnedObjects [source]);
+		Destroy (BoardState.instance.spawnedObjects [target]);
         
         // Move the knight
         sourcePiece.setOccupyingPiece(null);
@@ -201,14 +253,9 @@ public class MoveManager : NetworkBehaviour {
         // Deactivate the knight
         sourceKnight.deactivateKnight();
 
-		if (!gone)
-        {
-			boardState.spawnedObjects.Add (displacedLocation, targetKnightObject);
-		}
-
-		boardState.spawnedObjects.Remove(target);
-		boardState.spawnedObjects.Remove(source);
-		boardState.spawnedObjects.Add(target, sourceKnightObject);
+		BoardState.instance.spawnedObjects.Remove(target);
+		BoardState.instance.spawnedObjects.Remove(source);
+		BoardState.instance.spawnedObjects.Add(target, sourceKnightObject);
     }
 
 	// Upgrade a knight at vertex v
@@ -224,12 +271,13 @@ public class MoveManager : NetworkBehaviour {
 		Knight k = (Knight)v.getOccupyingPiece ();
 		int level = k.getLevel ();
 
-        CmdUpgradeKnight(resources, devChart, v.transform.position, level);
+		Enums.Color color = GameManager.instance.getPlayer(GameManager.instance.getPlayerTurn()).getColor();
+        CmdUpgradeKnight(resources, devChart, v.transform.position, level, color);
 		return true;
 	}
 
     [Command]
-	void CmdUpgradeKnight(int[] resources, int[] devChart, Vector3 v, int level)
+	void CmdUpgradeKnight(int[] resources, int[] devChart, Vector3 v, int level, Enums.Color color)
 	{
 		GameObject newKnight;
 		switch (level)
@@ -241,21 +289,33 @@ public class MoveManager : NetworkBehaviour {
 			newKnight = Instantiate<GameObject> (prefabHolder.levelThreeKnight, v, Quaternion.identity);
 			break;
 		}
-		NetworkServer.Spawn(newKnight);
-		RpcUpgradeKnight(resources, devChart, v, newKnight);
+		newKnight.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
+		RpcUpgradeKnight(resources, devChart, v, level, color);
     }
 
     [ClientRpc]
-	void RpcUpgradeKnight(int[] resources, int[] devChart, Vector3 v, GameObject newKnight)
+	void RpcUpgradeKnight(int[] resources, int[] devChart, Vector3 v, int level, Enums.Color color)
     {
-		Vertex source = boardState.vertexPosition[v];
+		Vertex source = BoardState.instance.vertexPosition[v];
+
+		GameObject newKnight;
+		switch (level)
+		{
+		case 1:
+			newKnight = Instantiate<GameObject> (prefabHolder.levelTwoKnight, v, Quaternion.identity);
+			break;
+		default:
+			newKnight = Instantiate<GameObject> (prefabHolder.levelThreeKnight, v, Quaternion.identity);
+			break;
+		}
+		newKnight.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
 
 		// Upgrade the knight
 		Knight knight = (Knight)source.getOccupyingPiece();
 
 		knight.upgrade ();
 
-		boardState.spawnedObjects.Add(v, newKnight);
+		BoardState.instance.spawnedObjects.Add(v, newKnight);
     }
 
 	// Activate a knight at vertex v
@@ -295,7 +355,7 @@ public class MoveManager : NetworkBehaviour {
 			return false;
 		}
 
-        CmdBuildSettlement(location.transform.position);
+        CmdBuildSettlement(location.transform.position, color);
 
 		Player current = GameManager.instance.getPlayer(GameManager.instance.getPlayerTurn());
 
@@ -324,17 +384,19 @@ public class MoveManager : NetworkBehaviour {
 	}
 
     [Command]
-    void CmdBuildSettlement(Vector3 location)
+	void CmdBuildSettlement(Vector3 location, Enums.Color color)
     {
         GameObject newSettlement = Instantiate<GameObject>(prefabHolder.settlement, location, Quaternion.identity);
-        NetworkServer.Spawn(newSettlement);
-		RpcBuildSettlement(location, newSettlement);
+		newSettlement.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
+		RpcBuildSettlement(location, color);
     }
 
     [ClientRpc]
-	void RpcBuildSettlement(Vector3 location, GameObject newSettlement)
+	void RpcBuildSettlement(Vector3 location, Enums.Color color)
     {
-        Vertex source = boardState.vertexPosition[location];
+        Vertex source = BoardState.instance.vertexPosition[location];
+		GameObject newSettlement = Instantiate<GameObject>(prefabHolder.settlement, location, Quaternion.identity);
+		newSettlement.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
 
 		List<GamePiece> pieces = GameManager.instance.getPlayer(GameManager.instance.getPlayerTurn()).getGamePieces();// gameManager.getCurrentPlayer().getGamePieces();
 
@@ -343,7 +405,7 @@ public class MoveManager : NetworkBehaviour {
 
         source.setOccupyingPiece(settlement);
         settlement.putOnBoard();
-		boardState.spawnedObjects.Add(location, newSettlement);
+		BoardState.instance.spawnedObjects.Add(location, newSettlement);
     }
 
 
@@ -357,7 +419,7 @@ public class MoveManager : NetworkBehaviour {
 			return false;
 		}
 
-        CmdBuildCity(location.transform.position);
+        CmdBuildCity(location.transform.position, color, false);
 
         // Add an appropriate amount of victory points
 		Player current = GameManager.instance.getPlayer(GameManager.instance.getPlayerTurn());
@@ -373,21 +435,31 @@ public class MoveManager : NetworkBehaviour {
 	}
 
     [Command]
-    void CmdBuildCity(Vector3 location)
+	void CmdBuildCity(Vector3 location, Enums.Color color, bool initial)
     {
         GameObject spawnedCity = Instantiate<GameObject>(prefabHolder.city, location, Quaternion.identity);
-        NetworkServer.Spawn(spawnedCity);
-		RpcBuildCity(location, spawnedCity);
+		spawnedCity.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
+
+		if (!initial) {
+			Destroy (BoardState.instance.vertexPosition [location]);
+		}
+
+		RpcBuildCity(location, color, initial);
     }
 
     [ClientRpc]
-	void RpcBuildCity(Vector3 location, GameObject spawnedCity)
+	void RpcBuildCity(Vector3 location, Enums.Color color, bool initial)
     {
         // Remove the current settlement
-        Vertex source = boardState.vertexPosition[location];
+        Vertex source = BoardState.instance.vertexPosition[location];
         GamePiece settlement = source.getOccupyingPiece();
-        
-        settlement.takeOffBoard();
+		GameObject spawnedCity = Instantiate<GameObject>(prefabHolder.city, location, Quaternion.identity);
+		spawnedCity.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
+
+		if (!initial) {
+			settlement.takeOffBoard ();
+			Destroy (BoardState.instance.vertexPosition [location]);
+		}
 
         // Build a city
 		List<GamePiece> pieces = GameManager.instance.getPlayer(GameManager.instance.getPlayerTurn()).getGamePieces();// gameManager.getCurrentPlayer().getGamePieces();
@@ -395,52 +467,56 @@ public class MoveManager : NetworkBehaviour {
 
         source.setOccupyingPiece(city);
         city.putOnBoard();
-		boardState.spawnedObjects.Add(location, spawnedCity);
+		BoardState.instance.spawnedObjects.Add(location, spawnedCity);
     }
 
 	// Check if a city wall can be built at a vertex
 	public bool buildCityWall(Vertex location, int[] resources,
 		int cityWalls, Enums.Color color)
     {
-        CmdBuildCityWall(location.transform.position);
+        CmdBuildCityWall(location.transform.position, color);
 		return true;
 	}
 
     [Command]
-    void CmdBuildCityWall(Vector3 location)
+	void CmdBuildCityWall(Vector3 location, Enums.Color color)
     {
         GameObject spawnedCityWall = Instantiate<GameObject>(prefabHolder.cityWall, location, Quaternion.identity);
-        NetworkServer.Spawn(spawnedCityWall);
-		RpcBuildCityWall(location, spawnedCityWall);
+		spawnedCityWall.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
+		RpcBuildCityWall(location, color);
 
     }
 
     [ClientRpc]
-	void RpcBuildCityWall(Vector3 location, GameObject spawnedCityWall)
+	void RpcBuildCityWall(Vector3 location, Enums.Color color)
     {
-		boardState.spawnedObjects.Add(location, spawnedCityWall);
+		GameObject spawnedCityWall = Instantiate<GameObject>(prefabHolder.cityWall, location, Quaternion.identity);
+		spawnedCityWall.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
+		BoardState.instance.spawnedObjects.Add(location, spawnedCityWall);
     }
 
 	// Build a knight at location
 	public bool buildKnight(Vertex location, int[] resources,
 		List<GamePiece> pieces, Enums.Color color)
     {
-        CmdBuildKnight(location.transform.position);
+        CmdBuildKnight(location.transform.position, color);
 		return true;
 	}
 
     [Command]
-    void CmdBuildKnight(Vector3 location)
+	void CmdBuildKnight(Vector3 location, Enums.Color color)
     {
         GameObject spawnedKnight = Instantiate<GameObject>(prefabHolder.levelOneKnight, location, Quaternion.identity);
-        NetworkServer.Spawn(spawnedKnight);
-		RpcBuildKnight(location, spawnedKnight);
+		spawnedKnight.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
+		RpcBuildKnight(location, color);
     }
 
     [ClientRpc]
-    void RpcBuildKnight(Vector3 location, GameObject spawnedKnight)
+	void RpcBuildKnight(Vector3 location, Enums.Color color)
     {
-		boardState.spawnedObjects.Add(location, spawnedKnight);
+		GameObject spawnedKnight = Instantiate<GameObject>(prefabHolder.levelOneKnight, location, Quaternion.identity);
+		spawnedKnight.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
+		BoardState.instance.spawnedObjects.Add(location, spawnedKnight);
     }
 
 	// Build a road at location
@@ -453,7 +529,7 @@ public class MoveManager : NetworkBehaviour {
 			return false;
 		}
 
-        CmdBuildRoad(location.transform.position);
+        CmdBuildRoad(location.transform.position, color);
 
 		Player current = GameManager.instance.getPlayer(GameManager.instance.getPlayerTurn());
 
@@ -469,17 +545,19 @@ public class MoveManager : NetworkBehaviour {
 	}
 
     [Command]
-    void CmdBuildRoad(Vector3 location)
+	void CmdBuildRoad(Vector3 location, Enums.Color color)
     {
         GameObject spawnedRoad = Instantiate<GameObject>(prefabHolder.road, location, Quaternion.identity);
-        NetworkServer.Spawn(spawnedRoad);
-		RpcBuildRoad(location, spawnedRoad);
+		spawnedRoad.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
+		RpcBuildRoad(location, color);
     }
 
     [ClientRpc]
-    void RpcBuildRoad(Vector3 location, GameObject spawnedRoad)
+	void RpcBuildRoad(Vector3 location, Enums.Color color)
     {
-        Edge edge = boardState.edgePosition[location];
+        Edge edge = BoardState.instance.edgePosition[location];
+		GameObject spawnedRoad = Instantiate<GameObject>(prefabHolder.road, location, Quaternion.identity);
+		spawnedRoad.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
 
         // Put a road on the given edge
 		List<GamePiece> pieces = GameManager.instance.getPlayer(GameManager.instance.getPlayerTurn()).getGamePieces();// gameManager.getCurrentPlayer().getGamePieces();
@@ -488,7 +566,7 @@ public class MoveManager : NetworkBehaviour {
         edge.setOccupyingPiece(road);
         road.putOnBoard();
         road.wasBuiltThisTurn();
-		boardState.spawnedObjects.Add(location, spawnedRoad);
+		BoardState.instance.spawnedObjects.Add(location, spawnedRoad);
     }
 
 	// Build a ship at location
@@ -501,7 +579,7 @@ public class MoveManager : NetworkBehaviour {
 			return false;
 		}
 
-        CmdBuildShip(location.transform.position);
+        CmdBuildShip(location.transform.position, color);
 
 		Player current = GameManager.instance.getPlayer(GameManager.instance.getPlayerTurn());
 
@@ -517,17 +595,19 @@ public class MoveManager : NetworkBehaviour {
 	}
 
     [Command]
-    void CmdBuildShip(Vector3 location)
+	void CmdBuildShip(Vector3 location, Enums.Color color)
     {
         GameObject spawnedBoat = Instantiate<GameObject>(prefabHolder.boat, location, Quaternion.identity);
-        NetworkServer.Spawn(spawnedBoat);
-		RpcBuildShip(location, spawnedBoat);
+		spawnedBoat.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
+		RpcBuildShip(location, color);
     }
 
     [ClientRpc]
-    void RpcBuildShip(Vector3 location, GameObject spawnedBoat)
+	void RpcBuildShip(Vector3 location, Enums.Color color)
     {
-        Edge edge = boardState.edgePosition[location];
+        Edge edge = BoardState.instance.edgePosition[location];
+		GameObject spawnedBoat = Instantiate<GameObject>(prefabHolder.boat, location, Quaternion.identity);
+		spawnedBoat.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
 
         // Put a road on the given edge
 		List<GamePiece> pieces = GameManager.instance.getPlayer(GameManager.instance.getPlayerTurn()).getGamePieces();// gameManager.getCurrentPlayer().getGamePieces();
@@ -536,11 +616,11 @@ public class MoveManager : NetworkBehaviour {
         edge.setOccupyingPiece(ship);
         ship.putOnBoard();
         ship.wasBuiltThisTurn();
-		boardState.spawnedObjects.Add(location, spawnedBoat);
+		BoardState.instance.spawnedObjects.Add(location, spawnedBoat);
     }
 
 	// Move a ship from source to target
-	public bool moveShip(Edge source, Edge target, Enums.Color color)
+	public bool moveShip(Edge source, Edge target)
     {
         CmdMoveShip(source.transform.position, target.transform.position);
 		return true;
@@ -637,17 +717,18 @@ public class MoveManager : NetworkBehaviour {
     }
 
 	// Place an initial settlement
-	public bool placeInitialSettlement (Vertex v, List<GamePiece> pieces, List<Hex> validHexes)
+	public bool placeInitialSettlement (Vertex v, List<GamePiece> pieces)
     {
-		if (!ma.canPlaceInitialTownPiece (v, validHexes))
+		if (!ma.canPlaceInitialTownPiece (v))
         {
 			return false;
 		}
 
-        CmdBuildSettlement(v.transform.position);
-
-        // Get the resources around the settlement
+		// Get the resources around the settlement
 		Player current = GameManager.instance.getPlayer(GameManager.instance.getPlayerTurn());
+
+		CmdBuildSettlement(v.transform.position, current.getColor());
+
 
         // Update the victory points and add a port
         current.changeVictoryPoints(1);
@@ -657,18 +738,20 @@ public class MoveManager : NetworkBehaviour {
     }
 
     // Place an initial city
-    public bool placeInitialCity (Vertex v, List<GamePiece> pieces, List<Hex> validHexes)
+    public bool placeInitialCity (Vertex v, List<GamePiece> pieces)
     {
-		if (!ma.canPlaceInitialTownPiece (v, validHexes))
+		if (!ma.canPlaceInitialTownPiece (v))
         {
 			return false;
 		}
 
-        CmdBuildCity(v.transform.position);
-
-        // Get the resources around the city
+		// Get the resources around the city
 		Player current = GameManager.instance.getPlayer(GameManager.instance.getPlayerTurn());
-        foreach (Hex h in validHexes)
+
+		CmdBuildCity(v.transform.position, current.getColor(), true);
+
+        
+		foreach (Hex h in BoardState.instance.hexPoisition.Values)
         {
             if (h.adjacentToVertex(v))
             {
@@ -696,7 +779,7 @@ public class MoveManager : NetworkBehaviour {
 			return false;
 		}
 
-        CmdBuildRoad(e.transform.position);
+        CmdBuildRoad(e.transform.position, color);
 
 		return true;
 	}
@@ -709,9 +792,26 @@ public class MoveManager : NetworkBehaviour {
 			return false;
 		}
 
-        CmdBuildShip(e.transform.position);
+        CmdBuildShip(e.transform.position, color);
 
 		return true;
+	}
+
+	private UnityEngine.Color translateColor(Enums.Color color) {
+		
+		switch (color)
+		{
+		case Enums.Color.RED:
+			return UnityEngine.Color.red;
+		case Enums.Color.BLUE:
+			return UnityEngine.Color.blue; 
+		case Enums.Color.ORANGE:
+			return UnityEngine.Color.green;
+		case Enums.Color.WHITE:
+			return UnityEngine.Color.white;
+		default:
+			return UnityEngine.Color.gray;
+		}
 	}
 
 	// Get a resource type from a port type

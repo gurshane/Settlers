@@ -524,7 +524,7 @@ public class Test : MonoBehaviour
         Debug.Log("canPlaceInitialTownPiece:\n");
         for (int i = 0; i < vertexCount; i++)
         {
-            if (ma.canPlaceInitialTownPiece(vertices[i], validHexes))
+            if (ma.canPlaceInitialTownPiece(vertices[i]))
             {
                 Debug.Log("Initial town piece can be placed on vertex " + i + "\n");
             }
