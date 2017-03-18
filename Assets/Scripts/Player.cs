@@ -45,7 +45,10 @@ public class Player : NetworkBehaviour {
     private bool movedRoad;
     private bool aqueduct;
 
+	[SyncVar]
 	public bool placedFirstTown;
+
+	[SyncVar]
 	public bool placedFirstEdge;
 
     private Dictionary<Vector3, GamePiece> spawnedPieces;
@@ -239,7 +242,7 @@ public class Player : NetworkBehaviour {
 				Vertex v = pieceHit.GetComponent<Vertex>();
 
 				if (ma.canPlaceInitialTownPiece (v)) {
-					CmdPlaceInitialCity (v.transform.position);
+					CmdPlaceInitialSettlement (v.transform.position);
 					placedFirstTown = true;
 				}
 
@@ -339,13 +342,14 @@ public class Player : NetworkBehaviour {
 
     public bool changeVictoryPoints(int num)
     {//decrease victory points
-        if (!isLocalPlayer)
-            return false;
+        //if (!isLocalPlayer)
+            //return false;
         if (this.victoryPoints + num < 0)
         {
             return false;
         }
-        CmdChangeVP(num);
+		this.victoryPoints += num;
+        //CmdChangeVP(num);
         return true;
     }
 
@@ -619,7 +623,7 @@ public class Player : NetworkBehaviour {
     [Command]
     public void CmdEndTurn()
     {
-        gm.SetPlayerTurn();
+		gm.SetPlayerTurn(this.isServer);
     }
 
 
@@ -700,21 +704,21 @@ public class Player : NetworkBehaviour {
 		
 	[Command]
 	public void CmdPlaceInitialSettlement(Vector3 location) {
-		mm.placeInitialSettlement (BoardState.instance.vertexPosition [location], this.pieces);
+		mm.placeInitialSettlement (BoardState.instance.vertexPosition [location], this.pieces, this.isServer);
 	}
 
 	[Command]
 	public void CmdPlaceInitialCity(Vector3 location) {
-		mm.placeInitialCity (BoardState.instance.vertexPosition [location], this.pieces);
+		mm.placeInitialCity (BoardState.instance.vertexPosition [location], this.pieces, this.isServer);
 	}
 
 	[Command]
 	public void CmdPlaceInitialRoad(Vector3 location) {
-		mm.placeInitialRoad (BoardState.instance.edgePosition [location], this.myColor, this.pieces);
+		mm.placeInitialRoad (BoardState.instance.edgePosition [location], this.myColor, this.pieces, this.isServer);
 	}
 
 	[Command]
 	public void CmdPlaceInitialShip(Vector3 location) {
-		mm.placeInitialShip (BoardState.instance.edgePosition [location], this.myColor, this.pieces);
+		mm.placeInitialShip (BoardState.instance.edgePosition [location], this.myColor, this.pieces, this.isServer);
 	}
 }

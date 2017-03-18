@@ -294,6 +294,11 @@ public class MoveManager : NetworkBehaviour {
         source.setOccupyingPiece(settlement);
         settlement.putOnBoard();
 		BoardState.instance.spawnedObjects.Add(location, newSettlement);
+
+		Player current = GameManager.instance.getPlayer(GameManager.instance.getPlayerTurn());
+		current.changeVictoryPoints(1);
+		updatePort(source);
+
     }
 
 
@@ -432,6 +437,8 @@ public class MoveManager : NetworkBehaviour {
         road.putOnBoard();
         road.wasBuiltThisTurn();
 		BoardState.instance.spawnedObjects.Add(location, spawnedRoad);
+
+		Player current = GameManager.instance.getPlayer(GameManager.instance.getPlayerTurn());
     }
 
 	// Build a ship at location
@@ -562,7 +569,7 @@ public class MoveManager : NetworkBehaviour {
     }
 
 	// Place an initial settlement
-	public bool placeInitialSettlement (Vertex v, List<GamePiece> pieces)
+	public bool placeInitialSettlement (Vertex v, List<GamePiece> pieces, bool server)
     {
 		if (!ma.canPlaceInitialTownPiece (v))
         {
@@ -571,22 +578,23 @@ public class MoveManager : NetworkBehaviour {
 
 		Player current = GameManager.instance.getPlayer(GameManager.instance.getPlayerTurn());
 
-		objNetId = this.GetComponent<NetworkIdentity> ();        
-		objNetId.AssignClientAuthority (connectionToClient);  
+		if (!server) {
+			objNetId = this.GetComponent<NetworkIdentity> ();        
+			objNetId.AssignClientAuthority (connectionToClient);  
+		}
 
 		RpcBuildSettlement(v.transform.position, current.getColor());
 
-		objNetId.RemoveClientAuthority (connectionToClient);
-
-        // Update the victory points and add a port
-        current.changeVictoryPoints(1);
-        updatePort(v);
+		if (!server) {
+			objNetId.RemoveClientAuthority (connectionToClient);
+		}
+			        
 
         return true;
     }
 
     // Place an initial city
-    public bool placeInitialCity (Vertex v, List<GamePiece> pieces)
+	public bool placeInitialCity (Vertex v, List<GamePiece> pieces, bool server)
     {
 		if (!ma.canPlaceInitialTownPiece (v))
         {
@@ -596,11 +604,14 @@ public class MoveManager : NetworkBehaviour {
 		// Get the resources around the city
 		Player current = GameManager.instance.getPlayer(GameManager.instance.getPlayerTurn());
 
-		objNetId = this.GetComponent<NetworkIdentity> ();        
-		objNetId.AssignClientAuthority (connectionToClient);
+		if (!server) {
+			objNetId = this.GetComponent<NetworkIdentity> ();        
+			objNetId.AssignClientAuthority (connectionToClient);  
+		}
 		RpcBuildCity(v.transform.position, current.getColor(), true);
-		objNetId.RemoveClientAuthority (connectionToClient);
-
+		if (!server) {
+			objNetId.RemoveClientAuthority (connectionToClient);
+		}
         
 		foreach (Hex h in BoardState.instance.hexPoisition.Values)
         {
@@ -623,25 +634,29 @@ public class MoveManager : NetworkBehaviour {
     }
 
 	// Place an initial road
-	public bool placeInitialRoad (Edge e, Enums.Color color, List<GamePiece> pieces)
+	public bool placeInitialRoad (Edge e, Enums.Color color, List<GamePiece> pieces, bool server)
     {
 		if (!ma.canPlaceInitialRoad (e, color))
         {
 			return false;
 		}
 
-		objNetId = this.GetComponent<NetworkIdentity> ();        
-		objNetId.AssignClientAuthority (connectionToClient);
+		if (!server) {
+			objNetId = this.GetComponent<NetworkIdentity> ();        
+			objNetId.AssignClientAuthority (connectionToClient);  
+		}
 
         RpcBuildRoad(e.transform.position, color);
 
-		objNetId.RemoveClientAuthority (connectionToClient);
+		if (!server) {
+			objNetId.RemoveClientAuthority (connectionToClient);
+		}
 
 		return true;
 	}
 	 
 	// Place an initial ship
-	public bool placeInitialShip (Edge e, Enums.Color color, List<GamePiece> pieces)
+	public bool placeInitialShip (Edge e, Enums.Color color, List<GamePiece> pieces, bool server)
     {
 		Debug.Log ("Before ma");
 
@@ -652,13 +667,16 @@ public class MoveManager : NetworkBehaviour {
 
 		Debug.Log ("After ma");
 
-		objNetId = this.GetComponent<NetworkIdentity> ();        
-		objNetId.AssignClientAuthority (connectionToClient);
+		if (!server) {
+			objNetId = this.GetComponent<NetworkIdentity> ();        
+			objNetId.AssignClientAuthority (connectionToClient);  
+		}
 
         RpcBuildShip(e.transform.position, color);
 
-		objNetId.RemoveClientAuthority (connectionToClient);
-
+		if (!server) {
+			objNetId.RemoveClientAuthority (connectionToClient);
+		}
 		return true;
 	}
 

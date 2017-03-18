@@ -181,10 +181,12 @@ public class GameManager : NetworkBehaviour {
         return this.playerTurn;
     }
 		
-    public void SetPlayerTurn()
+	public void SetPlayerTurn(bool server)
     {
-		objNetId = this.GetComponent<NetworkIdentity> ();        // get the object's network ID
-		objNetId.AssignClientAuthority (connectionToClient);    // assign authority to the player who is changing the color
+		if (!server) {
+			objNetId = this.GetComponent<NetworkIdentity> ();        // get the object's network ID
+			objNetId.AssignClientAuthority (connectionToClient);    // assign authority to the player who is changing the color
+		}
 
 		if (this.gamePhase == Enums.GamePhase.SETUP_ONE) {
 			playerTurn++;
@@ -206,7 +208,9 @@ public class GameManager : NetworkBehaviour {
 			}
 		}
 
-		objNetId.RemoveClientAuthority (connectionToClient); 
+		if (!server) {
+			objNetId.RemoveClientAuthority (connectionToClient); 
+		}
 		Debug.Log ("turn = " + playerTurn);
         //EventNextPlayer();
     }
