@@ -73,9 +73,7 @@ public class GameManager : NetworkBehaviour {
             return;
         }
         Debug.Log("Objects length is: " + objects.Length + " _playerNumber is: " + GameObject.FindObjectOfType<LobbyManager>()._playerNumber + "...continuing");
-        Debug.Log("Started Init");
         players = new List<Player>();
-        Debug.Log("network connection: " + Network.connections.Length);
         ServerInitPlayers(objects);
         ClientInitPlayers(objects);
         Debug.Log("Players count: " + players.Count);
@@ -104,7 +102,6 @@ public class GameManager : NetworkBehaviour {
         {
             return;
         }
-        Debug.Log("Started ClientInitPlayers");
         Debug.Log("Number of objects tagged Player: " + objects.Length);//why only 1 player object found?
         //client connections delay issues, how to delay until all connections present?
         //why isnt syncvar properly working on player objects for iD number?????    
@@ -180,14 +177,15 @@ public class GameManager : NetworkBehaviour {
     {
         return this.playerTurn;
     }
-		
+	
+    // Move to next turn based on game phase
 	public void SetPlayerTurn(bool server)
     {
-		if (!server) {
-			objNetId = this.GetComponent<NetworkIdentity> ();        // get the object's network ID
-			objNetId.AssignClientAuthority (connectionToClient);    // assign authority to the player who is changing the color
-		}
 
+        // Assign client authority
+        assignAuthority(server);
+	
+        // Increment gamephase
 		if (this.gamePhase == Enums.GamePhase.SETUP_ONE) {
 			playerTurn++;
 			if (this.playerTurn >= players.Count) {
@@ -208,10 +206,8 @@ public class GameManager : NetworkBehaviour {
 			}
 		}
 
-		if (!server) {
-			objNetId.RemoveClientAuthority (connectionToClient); 
-		}
-		Debug.Log ("turn = " + playerTurn);
+        removeAuthority(server);
+		
         //EventNextPlayer();
     }
 
@@ -836,6 +832,19 @@ public class GameManager : NetworkBehaviour {
         //    return false;
         //}
         return true;
+    }
+
+    private void assignAuthority(bool server) {
+        if (!server) {
+			objNetId = this.GetComponent<NetworkIdentity> ();     
+			objNetId.AssignClientAuthority (connectionToClient);   
+		}
+    }
+
+    private void removeAuthority(bool server) {
+        if (!server) {
+			objNetId.RemoveClientAuthority (connectionToClient); 
+		}
     }
     
 }

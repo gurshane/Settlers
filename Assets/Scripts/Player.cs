@@ -62,6 +62,7 @@ public class Player : NetworkBehaviour {
 		Debug.Log ("MYCOLOR: " + this.myColor);
     }
 
+    // Final initialization step, assign colors, game manager, movemanager
 	public void Init() {
 		getGm();
 		mm = GameObject.FindWithTag("MoveManager").GetComponent<MoveManager>();
@@ -106,6 +107,7 @@ public class Player : NetworkBehaviour {
 
         spawnedPieces = new Dictionary<Vector3, GamePiece>();
 
+        // Create pieces
         pieces = new List<GamePiece>();
         for (int i = 0; i < 5; i++)
         {
@@ -172,19 +174,22 @@ public class Player : NetworkBehaviour {
 		RaycastHit impact;
 		GameObject pieceHit = null;
 
+        // Space means end turn
 		if (Input.GetKeyDown (KeyCode.Space)) {
-            Debug.Log("ended turn for " + iD);
 			placedFirstEdge = false;
 			placedFirstTown = false;
 			CmdEndTurn ();
 		}
 
+        // I = initialize if its necessary to do it again
 		if (Input.GetKeyDown (KeyCode.I)) {
 			Init ();
 		}
 
+        // If game phase is phase one
 		if (gm.getGamePhase () == Enums.GamePhase.SETUP_ONE) {
 
+            // Get a mouse click
 			if (Input.GetButtonDown ("Fire1")) {
 				ray = Camera.main.ScreenPointToRay (Input.mousePosition);
 				if (Physics.Raycast (ray, out impact)) {
@@ -196,6 +201,7 @@ public class Player : NetworkBehaviour {
 				return;
 			}
 				
+            // Must place first settlement if it hasn't been placed yet
 			if (!placedFirstTown) {
 
 				if (!pieceHit.tag.Equals("Vertex")) {
@@ -208,6 +214,7 @@ public class Player : NetworkBehaviour {
 					placedFirstTown = true;
 				}
 
+            // Otherwise place first road
 			} else if (!placedFirstEdge) {
 
 				if (!pieceHit.tag.Equals("Edge")) {
@@ -222,7 +229,10 @@ public class Player : NetworkBehaviour {
 			}
 		}
 
+        // Game phase 2
 		if (gm.getGamePhase () == Enums.GamePhase.SETUP_TWO) {
+
+            // Get mouse click
 			if (Input.GetButtonDown ("Fire1")) {
 				ray = Camera.main.ScreenPointToRay (Input.mousePosition);
 				if (Physics.Raycast (ray, out impact)) {
@@ -234,6 +244,7 @@ public class Player : NetworkBehaviour {
 				return;
 			}
 
+            // Must place city if not done yet
 			if (!placedFirstTown) {
 
 				if (!pieceHit.tag.Equals("Vertex")) {
@@ -242,10 +253,11 @@ public class Player : NetworkBehaviour {
 				Vertex v = pieceHit.GetComponent<Vertex>();
 
 				if (ma.canPlaceInitialTownPiece (v)) {
-					CmdPlaceInitialSettlement (v.transform.position);
+					CmdPlaceInitialCity (v.transform.position);
 					placedFirstTown = true;
 				}
 
+            // Otherwise place second road
 			} else if (!placedFirstEdge) {
 				Debug.Log ("Before Check");
 				if (!pieceHit.tag.Equals("Edge")) {
@@ -262,9 +274,11 @@ public class Player : NetworkBehaviour {
 			}
 		}
 
+        // Main game phase one
 		if (gm.getGamePhase () == Enums.GamePhase.PHASE_ONE) {
 		}
 
+        // Main game phase two
 		if (gm.getGamePhase () == Enums.GamePhase.PHASE_TWO) {
 		}
 
@@ -702,6 +716,7 @@ public class Player : NetworkBehaviour {
         //place Road 
     }
 		
+    // Commands to move manager
 	[Command]
 	public void CmdPlaceInitialSettlement(Vector3 location) {
 		mm.placeInitialSettlement (BoardState.instance.vertexPosition [location], this.pieces, this.isServer);
