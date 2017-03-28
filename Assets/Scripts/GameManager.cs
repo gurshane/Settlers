@@ -55,10 +55,6 @@ public class GameManager : NetworkBehaviour {
 
     // Overall Game State
     private List<Player> players;
-
-    /*TradeManager tradeManager;
-    Bank bank;
-    MoveManager moveManager;*/
     Graph graph;
     
     static public GameManager instance = null;
@@ -109,7 +105,7 @@ public class GameManager : NetworkBehaviour {
         for (int i = 0; i < objects.Length; i++)
         {
             Player player = objects[i].GetComponent<Player>();
-            player.getGm();
+            //player.getGm();
             temp[player.getID()] = player;//error because -1 
         }
         for (int i = 0; i<temp.Length; i++)

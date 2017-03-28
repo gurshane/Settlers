@@ -16,4 +16,11 @@ public class PrefabHolder : MonoBehaviour {
 
     public List<Material> materials;
 
+    static public PrefabHolder instance = null;
+
+	void Awake()
+    {
+        instance = this;
+    }
+
 }

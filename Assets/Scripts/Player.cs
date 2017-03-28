@@ -8,10 +8,6 @@ public class Player : NetworkBehaviour {
 
     public GameObject myHud;
 
-    public GameManager gm;
-
-	public MoveManager mm;
-
 	private MoveAuthorizer ma;
 
     [SyncVar]
@@ -35,11 +31,11 @@ public class Player : NetworkBehaviour {
     private List<GamePiece> pieces;
     private List<ProgressCardName> progressCards;
 
-    private int[] resources;
-    private int[] commodities;
-    private int[] devFlipChart;
-    private int[] resourceRatios;
-    private int[] commodityRatios;
+    public int[] resources;
+    public int[] commodities;
+    public int[] devFlipChart;
+    public int[] resourceRatios;
+    public int[] commodityRatios;
     
     private int cityWallsLeft;
     private bool movedRoad;
@@ -58,48 +54,44 @@ public class Player : NetworkBehaviour {
     {
         this.iD = iD;
 		this.myColor = (Enums.Color)iD;
-        Debug.Log("Initiated Player: " + iD);
-		Debug.Log ("MYCOLOR: " + this.myColor);
     }
 
     // Final initialization step, assign colors, game manager, movemanager
 	public void Init() {
-		getGm();
-		mm = GameObject.FindWithTag("MoveManager").GetComponent<MoveManager>();
-		mm.Init ();
+		//getGameManager.instance();
 		this.myColor = (Enums.Color)iD;
 		foreach (GamePiece piece in pieces) {
 			piece.setColor (myColor);
 		}
 	}
 		
-    public void getGm()
+    /*public void getGameManager.instance()
     {
         Debug.Log("is Client: " + isClient);
         Debug.Log("Is Server: " + isServer);
         Debug.Log(iD + "iD isLocal: " + isLocalPlayer);
-        gm = GameObject.FindWithTag("GameManager").GetComponent<GameManager>();
-        Debug.Log(gm);
+        GameManager.instance = GameObject.FindWithTag("GameManager").GetComponent<GameManager>();
+        Debug.Log(GameManager.instance);
         Debug.Log("networkclient" + NetworkClient.active);
-        /*if (NetworkClient.active)
+        if (NetworkClient.active)
         {
-            gm.EventDiceRolled += DiceRolled;
-            gm.EventBarbarianAttack += BarbarianAttacked;
-            gm.EventNextPlayer += NextPlayerTurn;
-            gm.EventFirstTurn += FirstTurn;
-            gm.EventSecondTurn += SecondTurn;
-        }*/
-    }
+            GameManager.instance.EventDiceRolled += DiceRolled;
+            GameManager.instance.EventBarbarianAttack += BarbarianAttacked;
+            GameManager.instance.EventNextPlayer += NextPlayerTurn;
+            GameManager.instance.EventFirstTurn += FirstTurn;
+            GameManager.instance.EventSecondTurn += SecondTurn;
+        }
+    }*/
 
     public void OnLoad()//
     {
-        getGm();
-		if (gm == null)//check if gameManager has been spawned yet
+        //getGameManager.instance();
+		if (GameManager.instance == null)//check if gameManager has been spawned yet
         {
             return;
         }
         
-        gm.Init();
+        GameManager.instance.Init();
     }
 
     void Start()
@@ -165,7 +157,7 @@ public class Player : NetworkBehaviour {
 
     public void Update()
     {
-		if(!isLocalPlayer || gm.getPlayerTurn() != iD)
+		if(!isLocalPlayer || GameManager.instance.getPlayerTurn() != iD)
         {
 			return;   
         }
@@ -187,7 +179,7 @@ public class Player : NetworkBehaviour {
 		}
 
         // If game phase is phase one
-		if (gm.getGamePhase () == Enums.GamePhase.SETUP_ONE) {
+		if (GameManager.instance.getGamePhase () == Enums.GamePhase.SETUP_ONE) {
 
             // Get a mouse click
 			if (Input.GetButtonDown ("Fire1")) {
@@ -230,7 +222,7 @@ public class Player : NetworkBehaviour {
 		}
 
         // Game phase 2
-		if (gm.getGamePhase () == Enums.GamePhase.SETUP_TWO) {
+		if (GameManager.instance.getGamePhase () == Enums.GamePhase.SETUP_TWO) {
 
             // Get mouse click
 			if (Input.GetButtonDown ("Fire1")) {
@@ -275,11 +267,11 @@ public class Player : NetworkBehaviour {
 		}
 
         // Main game phase one
-		if (gm.getGamePhase () == Enums.GamePhase.PHASE_ONE) {
+		if (GameManager.instance.getGamePhase () == Enums.GamePhase.PHASE_ONE) {
 		}
 
         // Main game phase two
-		if (gm.getGamePhase () == Enums.GamePhase.PHASE_TWO) {
+		if (GameManager.instance.getGamePhase () == Enums.GamePhase.PHASE_TWO) {
 		}
 
     }
@@ -629,7 +621,7 @@ public class Player : NetworkBehaviour {
     public void CmdStartTurn()
     {
         Status status = Status.ACTIVE;
-        gm.StartTurn();
+        GameManager.instance.StartTurn();
     }
 
 
@@ -637,7 +629,7 @@ public class Player : NetworkBehaviour {
     [Command]
     public void CmdEndTurn()
     {
-		gm.SetPlayerTurn(this.isServer);
+		GameManager.instance.SetPlayerTurn(this.isServer);
     }
 
 
@@ -666,7 +658,7 @@ public class Player : NetworkBehaviour {
     [Command]
     public void CmdDiceRoll()
     {
-        gm.DiceRolled();
+        GameManager.instance.DiceRolled();
     }
 
     public void DiceRolled(int first, int second, int third)
@@ -681,11 +673,11 @@ public class Player : NetworkBehaviour {
 
     public void NextPlayerTurn()
     {
-        if (!isLocalPlayer || gm.getPlayerTurn() != iD)
+        if (!isLocalPlayer || GameManager.instance.getPlayerTurn() != iD)
         {
             return;
         }
-        Debug.Log("nextplayerturn" + gm.getPlayerTurn());
+        Debug.Log("nextplayerturn" + GameManager.instance.getPlayerTurn());
         CmdStartTurn();
     }
 
@@ -696,7 +688,7 @@ public class Player : NetworkBehaviour {
 
     public void FirstTurn()
     {
-        if (!isLocalPlayer || gm.getPlayerTurn() != iD)
+        if (!isLocalPlayer || GameManager.instance.getPlayerTurn() != iD)
         {
             return;
         }
@@ -707,7 +699,7 @@ public class Player : NetworkBehaviour {
 
     public void SecondTurn()
     {
-        if (!isLocalPlayer || gm.getPlayerTurn() != iD)
+        if (!isLocalPlayer || GameManager.instance.getPlayerTurn() != iD)
         {
             return;
         }
@@ -719,21 +711,21 @@ public class Player : NetworkBehaviour {
     // Commands to move manager
 	[Command]
 	public void CmdPlaceInitialSettlement(Vector3 location) {
-		mm.placeInitialSettlement (BoardState.instance.vertexPosition [location], this.pieces, this.isServer);
+		MoveManager.instance.placeInitialSettlement (BoardState.instance.vertexPosition [location], this.pieces, this.isServer);
 	}
 
 	[Command]
 	public void CmdPlaceInitialCity(Vector3 location) {
-		mm.placeInitialCity (BoardState.instance.vertexPosition [location], this.pieces, this.isServer);
+		MoveManager.instance.placeInitialCity (BoardState.instance.vertexPosition [location], this.pieces, this.isServer);
 	}
 
 	[Command]
 	public void CmdPlaceInitialRoad(Vector3 location) {
-		mm.placeInitialRoad (BoardState.instance.edgePosition [location], this.myColor, this.pieces, this.isServer);
+		MoveManager.instance.placeInitialRoad (BoardState.instance.edgePosition [location], this.myColor, this.pieces, this.isServer);
 	}
 
 	[Command]
 	public void CmdPlaceInitialShip(Vector3 location) {
-		mm.placeInitialShip (BoardState.instance.edgePosition [location], this.myColor, this.pieces, this.isServer);
+		MoveManager.instance.placeInitialShip (BoardState.instance.edgePosition [location], this.myColor, this.pieces, this.isServer);
 	}
 }

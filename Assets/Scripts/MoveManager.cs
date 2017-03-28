@@ -6,25 +6,21 @@ using UnityEngine.Networking;
 
 public class MoveManager : NetworkBehaviour {
     
-    GameManager gameManager;
-    PrefabHolder prefabHolder;
-    Bank bank;
     MoveAuthorizer ma;
 	Graph graph;
 	private NetworkIdentity objNetId;
+	static public MoveManager instance = null;
+
+	void Awake()
+    {
+        instance = this;
+    }
 
     void Start()
     {
         ma = new MoveAuthorizer();
 		graph = new Graph ();
     }
-
-	// Initialize move manager
-	public void Init() {
-		bank = GameObject.FindWithTag ("Bank").GetComponent<Bank> ();
-		gameManager = GameObject.FindWithTag ("GameManager").GetComponent<GameManager> ();
-		prefabHolder = GameObject.FindWithTag ("PrefabHolder").GetComponent<PrefabHolder> ();
-	}
 
     // Move a knight from source to target
 	public bool moveKnight(Vertex source, Vertex target, Enums.Color color, bool server)
@@ -246,7 +242,7 @@ public class MoveManager : NetworkBehaviour {
 	void RpcBuildSettlement(Vector3 location, Enums.Color color)
     {
        	Vertex source = BoardState.instance.vertexPosition[location];
-		GameObject newSettlement = Instantiate<GameObject>(prefabHolder.settlement, location, Quaternion.identity);
+		GameObject newSettlement = Instantiate<GameObject>(PrefabHolder.instance.settlement, location, Quaternion.identity);
 		newSettlement.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
 		BoardState.instance.spawnedObjects.Add(location, newSettlement);
 
@@ -265,16 +261,16 @@ public class MoveManager : NetworkBehaviour {
 
         // Spend the correct resources
         current.changeResource(Enums.ResourceType.BRICK, -1);
-        bank.depositResource(Enums.ResourceType.BRICK, 1);
+        Bank.instance.depositResource(Enums.ResourceType.BRICK, 1);
 
         current.changeResource(Enums.ResourceType.GRAIN, -1);
-        bank.depositResource(Enums.ResourceType.GRAIN, 1);
+        Bank.instance.depositResource(Enums.ResourceType.GRAIN, 1);
 
         current.changeResource(Enums.ResourceType.WOOL, -1);
-        bank.depositResource(Enums.ResourceType.WOOL, 1);
+        Bank.instance.depositResource(Enums.ResourceType.WOOL, 1);
 
         current.changeResource(Enums.ResourceType.LUMBER, -1);
-        bank.depositResource(Enums.ResourceType.LUMBER, 1);
+        Bank.instance.depositResource(Enums.ResourceType.LUMBER, 1);
 
         // Check if there is a port
         updatePort (source);
@@ -306,7 +302,7 @@ public class MoveManager : NetworkBehaviour {
         // Remove the current settlement
         Vertex source = BoardState.instance.vertexPosition[location];
         GamePiece settlement = source.getOccupyingPiece();
-		GameObject spawnedCity = Instantiate<GameObject>(prefabHolder.city, location, Quaternion.identity);
+		GameObject spawnedCity = Instantiate<GameObject>(PrefabHolder.instance.city, location, Quaternion.identity);
 		spawnedCity.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
 
 		Destroy (BoardState.instance.vertexPosition [location]);
@@ -330,10 +326,10 @@ public class MoveManager : NetworkBehaviour {
 
         // Spend the resources
         current.changeResource(Enums.ResourceType.GRAIN, -2);
-        bank.depositResource(Enums.ResourceType.GRAIN, 2);
+        Bank.instance.depositResource(Enums.ResourceType.GRAIN, 2);
 
         current.changeResource(Enums.ResourceType.ORE, -3);
-        bank.depositResource(Enums.ResourceType.ORE, 3);
+        Bank.instance.depositResource(Enums.ResourceType.ORE, 3);
     }
 
 	// Check if a city wall can be built at a vertex
@@ -350,7 +346,7 @@ public class MoveManager : NetworkBehaviour {
     [ClientRpc]
 	void RpcBuildCityWall(Vector3 location, Enums.Color color)
     {
-		GameObject spawnedCityWall = Instantiate<GameObject>(prefabHolder.cityWall, location, Quaternion.identity);
+		GameObject spawnedCityWall = Instantiate<GameObject>(PrefabHolder.instance.cityWall, location, Quaternion.identity);
 		spawnedCityWall.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
 		BoardState.instance.spawnedObjects.Add(location, spawnedCityWall);
     }
@@ -368,7 +364,7 @@ public class MoveManager : NetworkBehaviour {
     [ClientRpc]
 	void RpcBuildKnight(Vector3 location, Enums.Color color)
     {
-		GameObject spawnedKnight = Instantiate<GameObject>(prefabHolder.levelOneKnight, location, Quaternion.identity);
+		GameObject spawnedKnight = Instantiate<GameObject>(PrefabHolder.instance.levelOneKnight, location, Quaternion.identity);
 		spawnedKnight.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
 		BoardState.instance.spawnedObjects.Add(location, spawnedKnight);
     }
@@ -394,7 +390,7 @@ public class MoveManager : NetworkBehaviour {
 	void RpcBuildRoad(Vector3 location, Enums.Color color)
     {
         Edge edge = BoardState.instance.edgePosition[location];
-		GameObject spawnedRoad = Instantiate<GameObject>(prefabHolder.road, location, Quaternion.identity);
+		GameObject spawnedRoad = Instantiate<GameObject>(PrefabHolder.instance.road, location, Quaternion.identity);
 		spawnedRoad.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
 		BoardState.instance.spawnedObjects.Add(location, spawnedRoad);
 
@@ -409,10 +405,10 @@ public class MoveManager : NetworkBehaviour {
 
 		// Spend the resources
         current.changeResource(Enums.ResourceType.BRICK, -1);
-        bank.depositResource(Enums.ResourceType.BRICK, 1);
+        Bank.instance.depositResource(Enums.ResourceType.BRICK, 1);
 
         current.changeResource(Enums.ResourceType.LUMBER, -1);
-        bank.depositResource(Enums.ResourceType.LUMBER, 1);
+        Bank.instance.depositResource(Enums.ResourceType.LUMBER, 1);
 
         //Update longest route
     }
@@ -439,7 +435,7 @@ public class MoveManager : NetworkBehaviour {
 	void RpcBuildShip(Vector3 location, Enums.Color color)
     {
         Edge edge = BoardState.instance.edgePosition[location];
-		GameObject spawnedBoat = Instantiate<GameObject>(prefabHolder.boat, location, Quaternion.identity);
+		GameObject spawnedBoat = Instantiate<GameObject>(PrefabHolder.instance.boat, location, Quaternion.identity);
 		spawnedBoat.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
 		BoardState.instance.spawnedObjects.Add(location, spawnedBoat);
 
@@ -454,10 +450,10 @@ public class MoveManager : NetworkBehaviour {
 
 		// Spend the resources
         current.changeResource(Enums.ResourceType.WOOL, -1);
-        bank.depositResource(Enums.ResourceType.WOOL, 1);
+        Bank.instance.depositResource(Enums.ResourceType.WOOL, 1);
 
         current.changeResource(Enums.ResourceType.LUMBER, -1);
-        bank.depositResource(Enums.ResourceType.LUMBER, 1);
+        Bank.instance.depositResource(Enums.ResourceType.LUMBER, 1);
 
         //Update longest route
     }
@@ -557,7 +553,7 @@ public class MoveManager : NetworkBehaviour {
 	void RpcPlaceInitialSettlement(Vector3 location, Enums.Color color)
     {
         Vertex source = BoardState.instance.vertexPosition[location];
-		GameObject newSettlement = Instantiate<GameObject>(prefabHolder.settlement, location, Quaternion.identity);
+		GameObject newSettlement = Instantiate<GameObject>(PrefabHolder.instance.settlement, location, Quaternion.identity);
 		newSettlement.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
 		BoardState.instance.spawnedObjects.Add(location, newSettlement);
 
@@ -593,7 +589,7 @@ public class MoveManager : NetworkBehaviour {
 	void RpcPlaceInitialCity(Vector3 location, Enums.Color color)
     {
         Vertex source = BoardState.instance.vertexPosition[location];
-		GameObject spawnedCity = Instantiate<GameObject>(prefabHolder.city, location, Quaternion.identity);
+		GameObject spawnedCity = Instantiate<GameObject>(PrefabHolder.instance.city, location, Quaternion.identity);
 		spawnedCity.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
 		BoardState.instance.spawnedObjects.Add(location, spawnedCity);
 
@@ -614,7 +610,7 @@ public class MoveManager : NetworkBehaviour {
                 if (res != Enums.ResourceType.NONE)
                 {
                     current.changeResource(res, 1);
-                    bank.withdrawResource(res, 1);
+                    Bank.instance.withdrawResource(res, 1);
                 }
             }
         }
@@ -642,7 +638,7 @@ public class MoveManager : NetworkBehaviour {
 	void RpcPlaceInitialRoad(Vector3 location, Enums.Color color)
     {
         Edge edge = BoardState.instance.edgePosition[location];
-		GameObject spawnedRoad = Instantiate<GameObject>(prefabHolder.road, location, Quaternion.identity);
+		GameObject spawnedRoad = Instantiate<GameObject>(PrefabHolder.instance.road, location, Quaternion.identity);
 		spawnedRoad.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
 		BoardState.instance.spawnedObjects.Add(location, spawnedRoad);
 
@@ -674,7 +670,7 @@ public class MoveManager : NetworkBehaviour {
 	void RpcPlaceInitialShip(Vector3 location, Enums.Color color)
     {
         Edge edge = BoardState.instance.edgePosition[location];
-		GameObject spawnedBoat = Instantiate<GameObject>(prefabHolder.boat, location, Quaternion.identity);
+		GameObject spawnedBoat = Instantiate<GameObject>(PrefabHolder.instance.boat, location, Quaternion.identity);
 		spawnedBoat.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
 		BoardState.instance.spawnedObjects.Add(location, spawnedBoat);
 
@@ -694,13 +690,13 @@ public class MoveManager : NetworkBehaviour {
 		GameObject knight;
 		switch (level) {
 		case 1:
-			knight = Instantiate<GameObject> (prefabHolder.levelOneKnight, location, Quaternion.identity);
+			knight = Instantiate<GameObject> (PrefabHolder.instance.levelOneKnight, location, Quaternion.identity);
 			break;
 		case 2:
-			knight = Instantiate<GameObject> (prefabHolder.levelTwoKnight, location, Quaternion.identity);
+			knight = Instantiate<GameObject> (PrefabHolder.instance.levelTwoKnight, location, Quaternion.identity);
 			break;
 		case 3:
-			knight = Instantiate<GameObject> (prefabHolder.levelThreeKnight, location, Quaternion.identity);
+			knight = Instantiate<GameObject> (PrefabHolder.instance.levelThreeKnight, location, Quaternion.identity);
 			break;
 		default:
 			knight = null;

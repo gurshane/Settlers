@@ -8,10 +8,17 @@ public class Bank : NetworkBehaviour {
 	public int[] resources;
     public int[] commodities;
 
-	private List<Enums.ProgressCardName> tradeCards;
-	private List<Enums.ProgressCardName> politicsCards;
-	private List<Enums.ProgressCardName> scienceCards;
+	public List<Enums.ProgressCardName> tradeCards;
+	public List<Enums.ProgressCardName> politicsCards;
+	public List<Enums.ProgressCardName> scienceCards;
+	private NetworkIdentity objNetId;
 
+    static public Bank instance = null;
+
+	void Awake()
+    {
+        instance = this;
+    }
 
     void Start()
     {
@@ -86,16 +93,6 @@ public class Bank : NetworkBehaviour {
         tradeCards.Add(Enums.ProgressCardName.RESOURCEMONOPOLY);
         tradeCards.Add(Enums.ProgressCardName.TRADEMONOPOLY);
         tradeCards.Add(Enums.ProgressCardName.TRADEMONOPOLY);
-
-        scienceCards.Sort(delegate (Enums.ProgressCardName a, Enums.ProgressCardName b) {
-            return (Random.Range(-10.0f, 10.0f).CompareTo(Random.Range(-10.0f, 10.0f)));
-        });
-        politicsCards.Sort(delegate (Enums.ProgressCardName a, Enums.ProgressCardName b) {
-            return (Random.Range(-10.0f, 10.0f).CompareTo(Random.Range(-10.0f, 10.0f)));
-        });
-        tradeCards.Sort(delegate (Enums.ProgressCardName a, Enums.ProgressCardName b) {
-            return (Random.Range(-10.0f, 10.0f).CompareTo(Random.Range(-10.0f, 10.0f)));
-        });
     }
 
     public int getResourceAmount(Enums.ResourceType res)
@@ -217,49 +214,29 @@ public class Bank : NetworkBehaviour {
     }
 
 	// Draw and return a progress card from the requested pile
-	public Enums.ProgressCardName withdrawProgressCard(Enums.DevChartType progressType)
+	public void withdrawProgressCard(Enums.DevChartType progressType)
     {
-		Enums.ProgressCardName ret;
-
+        Enums.ProgressCardName prog;
 		if (progressType == Enums.DevChartType.TRADE)
         {
-			ret = tradeCards [0];
+			int rand = Random.Range(0, tradeCards.Count);
+            prog = tradeCards[rand];
+            tradeCards.RemoveAt(rand);
 		}
         else if (progressType == Enums.DevChartType.POLITICS)
         {
-			ret = politicsCards [0];
+			int rand = Random.Range(0, politicsCards.Count);
+            prog = politicsCards[rand];
+            politicsCards.RemoveAt(rand);
 		}
         else
         {
-			ret = scienceCards [0];
+			int rand = Random.Range(0, scienceCards.Count);
+            prog = scienceCards[rand];
+            scienceCards.RemoveAt(rand);
 		}
-
-        CmdDrawProgressCard(progressType);
-
-        return ret;
-    }
-
-    [Command]
-    void CmdDrawProgressCard(Enums.DevChartType progressType)
-    {
-        RpcDrawProgressCard(progressType);
-    }
-
-    [ClientRpc]
-    void RpcDrawProgressCard(Enums.DevChartType progressType)
-    {
-        if (progressType == Enums.DevChartType.TRADE)
-        {
-            tradeCards.RemoveAt(0);
-        }
-        else if (progressType == Enums.DevChartType.POLITICS)
-        {
-            politicsCards.RemoveAt(0);
-        }
-        else
-        {
-            scienceCards.RemoveAt(0);
-        }
+        Player current = GameManager.instance.getCurrentPlayer();
+        current.addProgressCard(prog);
     }
 		
 	// Make sure a given trade is valid
@@ -331,24 +308,6 @@ public class Bank : NetworkBehaviour {
 		Player trader = trade.getPlayerOffering();
 		int tradeId = trader.getID ();
 		int gold = trade.getGoldOffered ();
-			
-		CmdTradeWithBank (resOffered, resWanted, comOffered, comWanted, tradeId, gold);
-        return true;
-    }
-
-	[Command]
-	public void CmdTradeWithBank (int[] resOffered, int[] resWanted,
-		int[] comOffered, int[]comWanted, int tradeId, int gold) 
-	{
-		RpcTradeWithBank (resOffered, resWanted, comOffered, comWanted, tradeId, gold);
-    }
-
-	[ClientRpc]
-	public void RpcTradeWithBank (int[] resOffered, int[] resWanted,
-		int[] comOffered, int[]comWanted, int tradeId, int gold) 
-	{
-
-		Player trader = GameManager.instance.getPlayer (tradeId);
 
 		// Update all relevent fields
 		for (int i = 0; i < resOffered.Length; i++)
@@ -372,5 +331,7 @@ public class Bank : NetworkBehaviour {
 			withdrawCommodity((Enums.CommodityType)i, comWanted[i]);
 		}
 		trader.changeGoldCount(gold);
-	}
+			
+        return true;
+    }
 }
