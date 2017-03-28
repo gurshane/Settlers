@@ -8,7 +8,6 @@ public class City : GamePiece {
 
     public City() : base(Enums.PieceType.CITY)
     {
-
         this.metropolis = false;
     }
 

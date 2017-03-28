@@ -58,34 +58,14 @@ public class Player : NetworkBehaviour {
 
     // Final initialization step, assign colors, game manager, movemanager
 	public void Init() {
-		//getGameManager.instance();
 		this.myColor = (Enums.Color)iD;
 		foreach (GamePiece piece in pieces) {
 			piece.setColor (myColor);
 		}
 	}
-		
-    /*public void getGameManager.instance()
-    {
-        Debug.Log("is Client: " + isClient);
-        Debug.Log("Is Server: " + isServer);
-        Debug.Log(iD + "iD isLocal: " + isLocalPlayer);
-        GameManager.instance = GameObject.FindWithTag("GameManager").GetComponent<GameManager>();
-        Debug.Log(GameManager.instance);
-        Debug.Log("networkclient" + NetworkClient.active);
-        if (NetworkClient.active)
-        {
-            GameManager.instance.EventDiceRolled += DiceRolled;
-            GameManager.instance.EventBarbarianAttack += BarbarianAttacked;
-            GameManager.instance.EventNextPlayer += NextPlayerTurn;
-            GameManager.instance.EventFirstTurn += FirstTurn;
-            GameManager.instance.EventSecondTurn += SecondTurn;
-        }
-    }*/
 
     public void OnLoad()//
     {
-        //getGameManager.instance();
 		if (GameManager.instance == null)//check if gameManager has been spawned yet
         {
             return;
@@ -268,6 +248,9 @@ public class Player : NetworkBehaviour {
 
         // Main game phase one
 		if (GameManager.instance.getGamePhase () == Enums.GamePhase.PHASE_ONE) {
+            if (Input.GetKeyDown (KeyCode.K)) {
+			    CmdDiceRoll ();
+		    }
 		}
 
         // Main game phase two
@@ -617,21 +600,10 @@ public class Player : NetworkBehaviour {
     }
 
     [Command]
-    public void CmdStartTurn()
-    {
-        Status status = Status.ACTIVE;
-        GameManager.instance.StartTurn();
-    }
-
-
-
-    [Command]
     public void CmdEndTurn()
     {
 		GameManager.instance.SetPlayerTurn(this.isServer);
     }
-
-
 
     [ClientRpc]
     public void RpcDiceRoll(int iD)
@@ -670,41 +642,9 @@ public class Player : NetworkBehaviour {
         Debug.Log("Dicerolled " + first + " " + second + " " + third);
     }
 
-    public void NextPlayerTurn()
-    {
-        if (!isLocalPlayer || GameManager.instance.getPlayerTurn() != iD)
-        {
-            return;
-        }
-        Debug.Log("nextplayerturn" + GameManager.instance.getPlayerTurn());
-        CmdStartTurn();
-    }
-
     public void BarbarianAttacked(bool win, int[] winners)
     {
         Debug.Log("Winners");
-    }
-
-    public void FirstTurn()
-    {
-        if (!isLocalPlayer || GameManager.instance.getPlayerTurn() != iD)
-        {
-            return;
-        }
-        Debug.Log("Player first turn for " + iD);
-        //place Piece
-        //place Road
-    }
-
-    public void SecondTurn()
-    {
-        if (!isLocalPlayer || GameManager.instance.getPlayerTurn() != iD)
-        {
-            return;
-        }
-        Debug.Log("Player second turn for " + iD);
-        //place City
-        //place Road 
     }
 		
     // Commands to move manager

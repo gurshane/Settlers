@@ -146,29 +146,6 @@ public class GameManager : NetworkBehaviour {
         Init();
     }
 
-    [Server]
-    public void firstTurn()
-    {
-        for (int i = 0; i<players.Count; i++)
-        {
-            playerTurn = i;
-            EventFirstTurn();
-        }
-    }
-
-    [Server]
-    public void secondTurn()
-    {
-        for (int i = players.Count - 1; i >= 0; i--)
-        {
-            playerTurn = i;
-            EventSecondTurn();
-        }
-        EventNextPlayer();
-    }
-
-
-
     public int getPlayerTurn()
     {
         return this.playerTurn;
@@ -203,35 +180,21 @@ public class GameManager : NetworkBehaviour {
 		}
 
         removeAuthority(server);
-		
-        //EventNextPlayer();
     }
 
-    public delegate void DiceRolledDelegate(int firstDie, int secondDie, int thirdDie);
-
-    [SyncEvent]
-    public event DiceRolledDelegate EventDiceRolled; //event that syncs to all clients
-
-    [Server]
-    public void StartTurn()//control flow function
-    {
-        for (int i = 0; i < players.Count; i++)
-        {
-            players[i].RpcDiceRoll(playerTurn);
-        }
-        resolveDice();
-    }
-
-    [Server]
     public void DiceRolled()
     {
         firstDie = UnityEngine.Random.Range(1, 7);
         secondDie = UnityEngine.Random.Range(1, 7);
-        int thirdDie = UnityEngine.Random.Range(0, 4);//eventDie 
-        eventDie = (Enums.EventDie)System.Enum.Parse(typeof(Enums.EventDie), thirdDie.ToString());
-        EventDiceRolled(firstDie, secondDie, thirdDie);//call the event on all client objects
+        int thirdDie = UnityEngine.Random.Range(0, 2);//eventDie
+        if (thirdDie == 1) {
+            eventDie = Enums.EventDie.BARBARIAN;
+        } else {
+            thirdDie = UnityEngine.Random.Range(1, 4);
+            eventDie = (Enums.EventDie)thirdDie;
+        }
+        resolveDice();
     }
-
 
     public int getNumberResources() {
 		return numResources;
@@ -252,12 +215,6 @@ public class GameManager : NetworkBehaviour {
 	public int getPointsToWin() {
 		return pointsToWin;
 	}
-
-    // Begin Game
-
-    // End Game
-
-    
 
     public Enums.GamePhase getGamePhase() {
 		return gamePhase;
@@ -283,9 +240,9 @@ public class GameManager : NetworkBehaviour {
 		return longestRouteController;
 	}
 
-	/*public Hex getPirateLocation() {
-		return pirateLocationD
-	}*/
+	public Hex getPirateLocation() {
+		return pirateLocation;
+	}
 
 	public Hex getRobberLocation() {
 		return robberLocation;
@@ -298,16 +255,6 @@ public class GameManager : NetworkBehaviour {
 	public void barbarianAttackedThisGame() {
 		barbarianHasAttacked = true;
 	}
-
-	public delegate void FirstTurnDelegate();
-
-	[SyncEvent]
-	public event FirstTurnDelegate EventFirstTurn;
-
-	public delegate void SecondTurnDelegate();
-
-	[SyncEvent]
-	public event SecondTurnDelegate EventSecondTurn;
 
     // return true upon success, false upon failure
     // give the given player a metropolis on the chosen city
@@ -423,7 +370,6 @@ public class GameManager : NetworkBehaviour {
    
 
     // Resolve a dice roll
-    [Server]
     private void resolveDice()
     {
 
@@ -445,7 +391,6 @@ public class GameManager : NetworkBehaviour {
     }
 
     // Resolve a seven if it is rolled
-    [Server]
     private void resolveSeven()
     {
 
@@ -469,8 +414,6 @@ public class GameManager : NetworkBehaviour {
         //vertices adjacent to robber
     }
 
-
-    [Server]
     private void resolveBarbarian()
     {
         barbarianPos++;
@@ -542,121 +485,126 @@ public class GameManager : NetworkBehaviour {
     [SyncEvent]
     public event NextPlayerDelegate EventNextPlayer;
 
-
     // Distribute the appropriate resources to all players
     private void distribute()
     {
-        //graph.vertexReset(vertex1);
-        //int num = firstDie + secondDie;
+        Vertex resetLocation = null;
+		foreach (Vertex v in BoardState.instance.vertexPosition.Values)
+        {
+			resetLocation = v;
+			break;
+		}
+        graph.vertexReset(resetLocation);
+        int num = firstDie + secondDie;
 
-        //// Make sure there are enough resources and commodities in the bank
-        //Dictionary<Enums.ResourceType, bool> enoughRes = new Dictionary<Enums.ResourceType, bool>();
-        //Dictionary<Enums.CommodityType, bool> enoughComs = new Dictionary<Enums.CommodityType, bool>();
+        // Make sure there are enough resources and commodities in the bank
+        Dictionary<Enums.ResourceType, bool> enoughRes = new Dictionary<Enums.ResourceType, bool>();
+        Dictionary<Enums.CommodityType, bool> enoughComs = new Dictionary<Enums.CommodityType, bool>();
 
-        //for (int i = 0; i < numResources; i++)
-        //{
-        //    enoughRes.Add((Enums.ResourceType)i, checkResources((Enums.ResourceType)i, num));
-        //}
-        //for (int i = 0; i < numCommodities; i++)
-        //{
-        //    enoughComs.Add((Enums.CommodityType)i, checkCommodities((Enums.CommodityType)i, num));
-        //}
+        for (int i = 0; i < numResources; i++)
+        {
+            enoughRes.Add((Enums.ResourceType)i, checkResources((Enums.ResourceType)i, num));
+        }
+        for (int i = 0; i < numCommodities; i++)
+        {
+            enoughComs.Add((Enums.CommodityType)i, checkCommodities((Enums.CommodityType)i, num));
+        }
 
-        //foreach (Hex h in boardState.hexPoisition.Values)
-        //{
+        foreach (Hex h in BoardState.instance.hexPoisition.Values)
+        {
 
-        //    // If a hex isn't the right number, or doesn't produce cards, continue
-        //    if (h.getHexNumber() != num)
-        //    {
-        //        continue;
-        //    }
+            // If a hex isn't the right number, or doesn't produce cards, continue
+            if (h.getHexNumber() != num)
+            {
+                continue;
+            }
 
-        //    if (Object.ReferenceEquals(h, robberLocation))
-        //    {
-        //        continue;
-        //    }
-        //    Enums.HexType hType = h.getHexType();
+            if (Object.ReferenceEquals(h, robberLocation))
+            {
+                continue;
+            }
+            Enums.HexType hType = h.getHexType();
 
-        //    // Check if a hex produces gold
-        //    bool gold = false;
-        //    if (hType == Enums.HexType.GOLD)
-        //    {
-        //        gold = true;
-        //    }
+            // Check if a hex produces gold
+            bool gold = false;
+            if (hType == Enums.HexType.GOLD)
+            {
+                gold = true;
+            }
 
-        //    Enums.ResourceType res = getResourceFromHex(hType);
-        //    Enums.CommodityType com = getCommodityFromHex(hType);
-        //    if (res == Enums.ResourceType.NONE)
-        //    {
-        //        continue;
-        //    }
+            Enums.ResourceType res = getResourceFromHex(hType);
+            Enums.CommodityType com = getCommodityFromHex(hType);
+            if (res == Enums.ResourceType.NONE)
+            {
+                continue;
+            }
 
-        //    // Distribute all the resources
-        //    foreach (Vertex v in h.getVertices())
-        //    {
-        //        if (v.getVisited() != 0)
-        //        {
-        //            continue;
-        //        }
-        //        v.setVisited();
+            // Distribute all the resources
+            foreach (Vertex v in h.getVertices())
+            {
+                if (v.getVisited() != 0)
+                {
+                    continue;
+                }
+                v.setVisited();
 
-        //        GamePiece current = v.getOccupyingPiece();
-        //        if (Object.ReferenceEquals(current, null))
-        //        {
-        //            continue;
-        //        }
+                GamePiece current = v.getOccupyingPiece();
+                if (Object.ReferenceEquals(current, null))
+                {
+                    continue;
+                }
 
-        //        // Distribue resources for settlements
-        //        if (current.getPieceType() == Enums.PieceType.SETTLEMENT)
-        //        {
-        //            Enums.Color ownerColor = current.getColor();
-        //            Player p = getPlayer(ownerColor);
-        //            if (res != Enums.ResourceType.NONE && enoughRes[res])
-        //            {
-        //                bank.withdrawResource(res, 1);
-        //                p.changeResource(res, 1);
-        //            }
-        //            else if (gold)
-        //            {
-        //                p.changeGoldCount(2);
-        //            }
-        //        }
+                // Distribue resources for settlements
+                if (current.getPieceType() == Enums.PieceType.SETTLEMENT)
+                {
+                    Enums.Color ownerColor = current.getColor();
+                    Player p = getPlayer(ownerColor);
+                    if (res != Enums.ResourceType.NONE && enoughRes[res])
+                    {
+                        Bank.instance.withdrawResource(res, 1, p.isServer);
+                        p.changeResource(res, 1);
+                    }
+                    else if (gold)
+                    {
+                        p.changeGoldCount(2);
+                    }
+                }
 
-        //        // Distribute resources and commodities for cities
-        //        if (current.getPieceType() == Enums.PieceType.CITY)
-        //        {
-        //            Enums.Color ownerColor = current.getColor();
-        //            Player p = getPlayer(ownerColor);
-        //            if (com != Enums.CommodityType.NONE)
-        //            {
-        //                if (enoughRes[res])
-        //                {
-        //                    bank.withdrawResource(res, 1);
-        //                    p.changeResource(res, 1);
-        //                }
-        //                if (enoughComs[com])
-        //                {
-        //                    bank.withdrawCommodity(com, 1);
-        //                    p.changeCommodity(com, 1);
-        //                }
-        //            }
-        //            else if (res == Enums.ResourceType.BRICK && enoughRes[res])
-        //            {
-        //                bank.withdrawResource(res, 2);
-        //                p.changeResource(res, 2);
-        //            }
-        //            else if (res == Enums.ResourceType.GRAIN && enoughRes[res])
-        //            {
-        //                bank.withdrawResource(res, 2);
-        //                p.changeResource(res, 2);
-        //            }
-        //            else if (gold)
-        //            {
-        //                p.changeGoldCount(2);
-        //            }
-        //        }
-        //    }
-        //}
+                // Distribute resources and commodities for cities
+                if (current.getPieceType() == Enums.PieceType.CITY)
+                {
+                    Enums.Color ownerColor = current.getColor();
+                    Player p = getPlayer(ownerColor);
+                    if (com != Enums.CommodityType.NONE)
+                    {
+                        if (enoughRes[res])
+                        {
+                            Bank.instance.withdrawResource(res, 1, p.isServer);
+                            p.changeResource(res, 1);
+                        }
+                        if (enoughComs[com])
+                        {
+                            Bank.instance.withdrawCommodity(com, 1, p.isServer);
+                            p.changeCommodity(com, 1);
+                        }
+                    }
+                    else if (res == Enums.ResourceType.BRICK && enoughRes[res])
+                    {
+                        Bank.instance.withdrawResource(res, 2, p.isServer);
+                        p.changeResource(res, 2);
+                    }
+                    else if (res == Enums.ResourceType.GRAIN && enoughRes[res])
+                    {
+                        Bank.instance.withdrawResource(res, 2, p.isServer);
+                        p.changeResource(res, 2);
+                    }
+                    else if (gold)
+                    {
+                        p.changeGoldCount(2);
+                    }
+                }
+            }
+        }
         //Distribute aqueduct cards
     }
 
@@ -701,132 +649,144 @@ public class GameManager : NetworkBehaviour {
     // Make sure there are enough resources in the bank for a given dice roll
     private bool checkResources(Enums.ResourceType res, int n)
     {
-        //graph.vertexReset(vertex1);
-        //int total = 0;
+        Vertex resetLocation = null;
+		foreach (Vertex v in BoardState.instance.vertexPosition.Values)
+        {
+			resetLocation = v;
+			break;
+		}
+        graph.vertexReset(resetLocation);
+        int total = 0;
 
-        //foreach (Hex h in hexes)
-        //{
+        foreach (Hex h in BoardState.instance.hexPoisition.Values)
+        {
 
-        //    // If a hex isn't the right type or number, continue
-        //    if (h.getHexNumber() != n)
-        //    {
-        //        continue;
-        //    }
+            // If a hex isn't the right type or number, continue
+            if (h.getHexNumber() != n)
+            {
+                continue;
+            }
 
-        //    Enums.HexType hType = h.getHexType();
-        //    if (getResourceFromHex(hType) != res)
-        //    {
-        //        continue;
-        //    }
+            Enums.HexType hType = h.getHexType();
+            if (getResourceFromHex(hType) != res)
+            {
+                continue;
+            }
 
-        //    // Get all the resources accumulated by all players
-        //    foreach (Vertex v in h.getVertices())
-        //    {
-        //        if (v.getVisited() != 0)
-        //        {
-        //            continue;
-        //        }
-        //        v.setVisited();
+            // Get all the resources accumulated by all players
+            foreach (Vertex v in h.getVertices())
+            {
+                if (v.getVisited() != 0)
+                {
+                    continue;
+                }
+                v.setVisited();
 
-        //        GamePiece current = v.getOccupyingPiece();
-        //        if (Object.ReferenceEquals(current, null))
-        //        {
-        //            continue;
-        //        }
-        //        if (current.getPieceType() == Enums.PieceType.SETTLEMENT)
-        //        {
-        //            total++;
-        //        }
-        //        if (current.getPieceType() == Enums.PieceType.CITY)
-        //        {
-        //            if (res == Enums.ResourceType.BRICK)
-        //            {
-        //                total += 2;
-        //            }
-        //            else if (res == Enums.ResourceType.GRAIN)
-        //            {
-        //                total += 2;
-        //            }
-        //            else if (res != Enums.ResourceType.NONE)
-        //            {
-        //                total++;
-        //            }
-        //        }
-        //    }
-        //}
+                GamePiece current = v.getOccupyingPiece();
+                if (Object.ReferenceEquals(current, null))
+                {
+                    continue;
+                }
+                if (current.getPieceType() == Enums.PieceType.SETTLEMENT)
+                {
+                    total++;
+                }
+                if (current.getPieceType() == Enums.PieceType.CITY)
+                {
+                    if (res == Enums.ResourceType.BRICK)
+                    {
+                        total += 2;
+                    }
+                    else if (res == Enums.ResourceType.GRAIN)
+                    {
+                        total += 2;
+                    }
+                    else if (res != Enums.ResourceType.NONE)
+                    {
+                        total++;
+                    }
+                }
+            }
+        }
 
-        //// Check the amount against the bank
-        //int bankAmount = bank.getResourceAmount(res);
-        //if (bankAmount >= total)
-        //{
-        //    return true;
-        //}
-        //else
-        //{
-        //    return false;
-        //}
+        // Check the amount against the bank
+        int bankAmount = Bank.instance.getResourceAmount(res);
+        if (bankAmount >= total)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
         return true;
     }
 
     // Make sure there are enough commodities in the bank for a given dice roll
     private bool checkCommodities(Enums.CommodityType com, int n)
     {
-        //graph.vertexReset(vertex1);
-        //int total = 0;
+        Vertex resetLocation = null;
+		foreach (Vertex v in BoardState.instance.vertexPosition.Values)
+        {
+			resetLocation = v;
+			break;
+		}
+        graph.vertexReset(resetLocation);
+        int total = 0;
 
-        //foreach (Hex h in hexes)
-        //{
+        foreach (Hex h in BoardState.instance.hexPoisition.Values)
+        {
 
-        //    // If a hex isn't the right type or number, continue
-        //    if (h.getHexNumber() != n)
-        //    {
-        //        continue;
-        //    }
+            // If a hex isn't the right type or number, continue
+            if (h.getHexNumber() != n)
+            {
+                continue;
+            }
 
-        //    Enums.HexType hType = h.getHexType();
-        //    if (getCommodityFromHex(hType) != com)
-        //    {
-        //        continue;
-        //    }
+            Enums.HexType hType = h.getHexType();
+            if (getCommodityFromHex(hType) != com)
+            {
+                continue;
+            }
 
-        //    // Get all the commodities accumulated by all players
-        //    foreach (Vertex v in h.getVertices())
-        //    {
-        //        if (v.getVisited() != 0)
-        //        {
-        //            continue;
-        //        }
-        //        v.setVisited();
+            // Get all the commodities accumulated by all players
+            foreach (Vertex v in h.getVertices())
+            {
+                if (v.getVisited() != 0)
+                {
+                    continue;
+                }
+                v.setVisited();
 
-        //        GamePiece current = v.getOccupyingPiece();
-        //        if (Object.ReferenceEquals(current, null))
-        //        {
-        //            continue;
-        //        }
-        //        if (current.getPieceType() == Enums.PieceType.CITY)
-        //        {
-        //            switch (com)
-        //            {
-        //                case Enums.CommodityType.NONE:
-        //                    break;
-        //                default:
-        //                    total++;
-        //                    break;
-        //            }
-        //        }
-        //    }
-        //}
+                GamePiece current = v.getOccupyingPiece();
+                if (Object.ReferenceEquals(current, null))
+                {
+                    continue;
+                }
+                if (current.getPieceType() == Enums.PieceType.CITY)
+                {
+                    switch (com)
+                    {
+                        case Enums.CommodityType.NONE:
+                            break;
+                        default:
+                            total++;
+                            break;
+                    }
+                }
+            }
+        }
 
-        //// Check the amount against the bank
-        //int bankAmount = bank.getCommodityAmount(com);
-        //if (bankAmount >= total)
-        //{
-        //    return true;
-        //}
-        //else
-        //{
-        //    return false;
-        //}
+        // Check the amount against the bank
+        int bankAmount = Bank.instance.getCommodityAmount(com);
+        if (bankAmount >= total)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
         return true;
     }
 
