@@ -354,8 +354,7 @@ public class Player : NetworkBehaviour {
         {
             return false;
         }
-		this.victoryPoints += num;
-        //CmdChangeVP(num);
+        CmdChangeVP(num);
         return true;
     }
 

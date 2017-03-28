@@ -235,6 +235,25 @@ public class MoveManager : NetworkBehaviour {
         RpcBuildSettlement(location.transform.position, color);
 		removeAuthority(server);
 
+		Player current = GameManager.instance.getCurrentPlayer();
+
+		// Add an appropriate amount of victory points
+        current.changeVictoryPoints(1);
+        current.changeVictoryPoints(location.getChits());
+
+        // Spend the correct resources
+        current.changeResource(Enums.ResourceType.BRICK, -1);
+        Bank.instance.depositResource(Enums.ResourceType.BRICK, 1, current.isServer);
+
+        current.changeResource(Enums.ResourceType.GRAIN, -1);
+        Bank.instance.depositResource(Enums.ResourceType.GRAIN, 1, current.isServer);
+
+        current.changeResource(Enums.ResourceType.WOOL, -1);
+        Bank.instance.depositResource(Enums.ResourceType.WOOL, 1, current.isServer);
+
+        current.changeResource(Enums.ResourceType.LUMBER, -1);
+        Bank.instance.depositResource(Enums.ResourceType.LUMBER, 1, current.isServer);
+
 		return true;
 	}
 
@@ -254,23 +273,6 @@ public class MoveManager : NetworkBehaviour {
 
         source.setOccupyingPiece(settlement);
         settlement.putOnBoard();
-
-		// Add an appropriate amount of victory points
-        current.changeVictoryPoints(1);
-        current.changeVictoryPoints(source.getChits());
-
-        // Spend the correct resources
-        current.changeResource(Enums.ResourceType.BRICK, -1);
-        Bank.instance.depositResource(Enums.ResourceType.BRICK, 1);
-
-        current.changeResource(Enums.ResourceType.GRAIN, -1);
-        Bank.instance.depositResource(Enums.ResourceType.GRAIN, 1);
-
-        current.changeResource(Enums.ResourceType.WOOL, -1);
-        Bank.instance.depositResource(Enums.ResourceType.WOOL, 1);
-
-        current.changeResource(Enums.ResourceType.LUMBER, -1);
-        Bank.instance.depositResource(Enums.ResourceType.LUMBER, 1);
 
         // Check if there is a port
         updatePort (source);
@@ -293,6 +295,18 @@ public class MoveManager : NetworkBehaviour {
         RpcBuildCity(location.transform.position, color);
 		removeAuthority(server);
 
+		Player current = GameManager.instance.getCurrentPlayer();
+
+		// Add an appropriate amount of victory points
+        current.changeVictoryPoints(1);
+
+        // Spend the resources
+        current.changeResource(Enums.ResourceType.GRAIN, -2);
+        Bank.instance.depositResource(Enums.ResourceType.GRAIN, 2, current.isServer);
+
+        current.changeResource(Enums.ResourceType.ORE, -3);
+        Bank.instance.depositResource(Enums.ResourceType.ORE, 3, current.isServer);
+
         return true;
 	}
 
@@ -313,23 +327,12 @@ public class MoveManager : NetworkBehaviour {
 		// Remove settlement at location
 		settlement.takeOffBoard ();
 
-        // Build a city
 		Player current = GameManager.instance.getCurrentPlayer();
 		List<GamePiece> pieces = current.getGamePieces();
         City city = City.getFreeCity(pieces);
 
         source.setOccupyingPiece(city);
         city.putOnBoard();
-
-		// Add an appropriate amount of victory points
-        current.changeVictoryPoints(1);
-
-        // Spend the resources
-        current.changeResource(Enums.ResourceType.GRAIN, -2);
-        Bank.instance.depositResource(Enums.ResourceType.GRAIN, 2);
-
-        current.changeResource(Enums.ResourceType.ORE, -3);
-        Bank.instance.depositResource(Enums.ResourceType.ORE, 3);
     }
 
 	// Check if a city wall can be built at a vertex
@@ -383,6 +386,15 @@ public class MoveManager : NetworkBehaviour {
         RpcBuildRoad(location.transform.position, color);
 		removeAuthority(server);
 
+		Player current = GameManager.instance.getCurrentPlayer();
+
+		// Spend the resources
+        current.changeResource(Enums.ResourceType.BRICK, -1);
+        Bank.instance.depositResource(Enums.ResourceType.BRICK, 1, current.isServer);
+
+        current.changeResource(Enums.ResourceType.LUMBER, -1);
+        Bank.instance.depositResource(Enums.ResourceType.LUMBER, 1, current.isServer);
+
         return true;
 	}
 
@@ -403,13 +415,6 @@ public class MoveManager : NetworkBehaviour {
         road.putOnBoard();
         road.wasBuiltThisTurn();
 
-		// Spend the resources
-        current.changeResource(Enums.ResourceType.BRICK, -1);
-        Bank.instance.depositResource(Enums.ResourceType.BRICK, 1);
-
-        current.changeResource(Enums.ResourceType.LUMBER, -1);
-        Bank.instance.depositResource(Enums.ResourceType.LUMBER, 1);
-
         //Update longest route
     }
 
@@ -426,6 +431,15 @@ public class MoveManager : NetworkBehaviour {
 		assignAuthority(server);
         RpcBuildShip(location.transform.position, color);
 		removeAuthority(server);
+
+		Player current = GameManager.instance.getCurrentPlayer();
+
+		// Spend the resources
+        current.changeResource(Enums.ResourceType.WOOL, -1);
+        Bank.instance.depositResource(Enums.ResourceType.WOOL, 1, current.isServer);
+
+        current.changeResource(Enums.ResourceType.LUMBER, -1);
+        Bank.instance.depositResource(Enums.ResourceType.LUMBER, 1, current.isServer);
 
         return true;
 	}
@@ -447,13 +461,6 @@ public class MoveManager : NetworkBehaviour {
         edge.setOccupyingPiece(ship);
         ship.putOnBoard();
         ship.wasBuiltThisTurn();
-
-		// Spend the resources
-        current.changeResource(Enums.ResourceType.WOOL, -1);
-        Bank.instance.depositResource(Enums.ResourceType.WOOL, 1);
-
-        current.changeResource(Enums.ResourceType.LUMBER, -1);
-        Bank.instance.depositResource(Enums.ResourceType.LUMBER, 1);
 
         //Update longest route
     }
@@ -546,6 +553,8 @@ public class MoveManager : NetworkBehaviour {
 		assignAuthority(server);
 		RpcPlaceInitialSettlement(v.transform.position, current.getColor());
 		removeAuthority(server);
+
+		current.changeVictoryPoints(1);
         return true;
     }
 
@@ -566,7 +575,6 @@ public class MoveManager : NetworkBehaviour {
         source.setOccupyingPiece(settlement);
         settlement.putOnBoard();
 
-		current.changeVictoryPoints(1);
 		updatePort(source);
     }
 
@@ -581,6 +589,25 @@ public class MoveManager : NetworkBehaviour {
 		assignAuthority(server);
 		RpcPlaceInitialCity(v.transform.position, GameManager.instance.getCurrentPlayer().getColor());
 		removeAuthority(server);
+
+		Player current = GameManager.instance.getCurrentPlayer();
+
+		// Give starting resources to current player
+		foreach (Hex h in BoardState.instance.hexPoisition.Values)
+        {
+            if (h.adjacentToVertex(v))
+            {
+                Enums.ResourceType res = GameManager.instance.getResourceFromHex(h.getHexType());
+                if (res != Enums.ResourceType.NONE)
+                {
+                    current.changeResource(res, 1);
+                    Bank.instance.withdrawResource(res, 1, current.isServer);
+                }
+            }
+        }
+
+		// Update the victory points and add a port 
+        current.changeVictoryPoints(2);
         
         return true;
     }
@@ -601,22 +628,6 @@ public class MoveManager : NetworkBehaviour {
         source.setOccupyingPiece(city);
         city.putOnBoard();
 
-		// Give starting resources to current player
-		foreach (Hex h in BoardState.instance.hexPoisition.Values)
-        {
-            if (h.adjacentToVertex(source))
-            {
-                Enums.ResourceType res = GameManager.instance.getResourceFromHex(h.getHexType());
-                if (res != Enums.ResourceType.NONE)
-                {
-                    current.changeResource(res, 1);
-                    Bank.instance.withdrawResource(res, 1);
-                }
-            }
-        }
-
-		// Update the victory points and add a port 
-        current.changeVictoryPoints(2);
         updatePort(source);
     }
 

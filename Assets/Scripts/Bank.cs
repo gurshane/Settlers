@@ -105,21 +105,18 @@ public class Bank : NetworkBehaviour {
 		return commodities [(int)com];
 	}
 
-	public bool withdrawResource(Enums.ResourceType res, int amount)
+	public bool withdrawResource(Enums.ResourceType res, int amount, bool server)
     {
 		if (resources [(int)res] < amount)
         {
 			return false;
 		}
-        CmdDecrementResources(res, amount);
+
+        assignAuthority(server);
+        RpcDecrementResources(res, amount);
+        removeAuthority(server);
 		return true;
 	}
-
-    [Command]
-    void CmdDecrementResources(Enums.ResourceType res, int amount)
-    {
-        RpcDecrementResources(res, amount);
-    }
 
     [ClientRpc]
     void RpcDecrementResources(Enums.ResourceType res, int amount)
@@ -127,21 +124,18 @@ public class Bank : NetworkBehaviour {
         resources[(int)res] -= amount;
     }
 
-	public bool withdrawCommodity(Enums.CommodityType com, int amount)
+	public bool withdrawCommodity(Enums.CommodityType com, int amount, bool server)
     {
 		if (commodities [(int)com] < amount)
         {
 			return false;
 		}
-        CmdDecrementCommodities(com, amount);
+
+        assignAuthority(server);
+        RpcDecrementCommodities(com, amount);
+        removeAuthority(server);
 		return true;
 	}
-
-    [Command]
-    void CmdDecrementCommodities(Enums.CommodityType com, int amount)
-    {
-        RpcDecrementCommodities(com, amount);
-    }
 
     [ClientRpc]
     void RpcDecrementCommodities(Enums.CommodityType com, int amount)
@@ -149,16 +143,12 @@ public class Bank : NetworkBehaviour {
         commodities[(int)com] -= amount;
     }
 
-    public void depositResource(Enums.ResourceType res, int amount)
+    public void depositResource(Enums.ResourceType res, int amount, bool server)
     {
-        CmdIncreaseResources(res, amount);
-	}
-
-    [Command]
-    void CmdIncreaseResources(Enums.ResourceType res, int amount)
-    {
+        assignAuthority(server);
         RpcIncreaseResources(res, amount);
-    }
+        removeAuthority(server);
+	}
 
     [ClientRpc]
     void RpcIncreaseResources(Enums.ResourceType res, int amount)
@@ -166,16 +156,12 @@ public class Bank : NetworkBehaviour {
         resources[(int)res] += amount;
     }
 
-	public void depositCommodity(Enums.CommodityType com, int amount)
+	public void depositCommodity(Enums.CommodityType com, int amount, bool server)
     {
-        CmdIncreaseCommodities(com, amount);
-	}
-
-    [Command]
-    void CmdIncreaseCommodities(Enums.CommodityType com, int amount)
-    {
+        assignAuthority(server);
         RpcIncreaseCommodities(com, amount);
-    }
+        removeAuthority(server);
+	}
 
     [ClientRpc]
     void RpcIncreaseCommodities(Enums.CommodityType com, int amount)
@@ -185,16 +171,12 @@ public class Bank : NetworkBehaviour {
 
 	// Put the given progress card on the bottom of a progress card pile
 	public void depositProgressCard(Enums.DevChartType progressType, 
-		Enums.ProgressCardName progressCard)
+		Enums.ProgressCardName progressCard, bool server)
     {
-        CmdAddProgressCard(progressType, progressCard);
-	}
-
-    [Command]
-    void CmdAddProgressCard(Enums.DevChartType progressType, Enums.ProgressCardName progressCard)
-    {
+        assignAuthority(server);
         RpcAddProgressCard(progressType, progressCard);
-    }
+        removeAuthority(server);
+	}
 
     [ClientRpc]
     void RpcAddProgressCard(Enums.DevChartType progressType, Enums.ProgressCardName progressCard)
@@ -313,25 +295,38 @@ public class Bank : NetworkBehaviour {
 		for (int i = 0; i < resOffered.Length; i++)
 		{
 			trader.changeResource((Enums.ResourceType)i, resOffered[i]);
-			depositResource((Enums.ResourceType)i, resOffered[i]);
+			depositResource((Enums.ResourceType)i, resOffered[i], trader.isServer);
 		}
 		for (int i = 0; i < comOffered.Length; i++)
 		{
 			trader.changeCommodity((Enums.CommodityType)i, comOffered[i]);
-			depositCommodity((Enums.CommodityType)i, comOffered[i]);
+			depositCommodity((Enums.CommodityType)i, comOffered[i], trader.isServer);
 		}
 		for (int i = 0; i < resWanted.Length; i++)
 		{
 			trader.changeResource((Enums.ResourceType)i, resWanted[i]);
-			withdrawResource((Enums.ResourceType)i, resWanted[i]);
+			withdrawResource((Enums.ResourceType)i, resWanted[i], trader.isServer);
 		}
 		for (int i = 0; i < comWanted.Length; i++)
 		{
 			trader.changeCommodity((Enums.CommodityType)i, comWanted[i]);
-			withdrawCommodity((Enums.CommodityType)i, comWanted[i]);
+			withdrawCommodity((Enums.CommodityType)i, comWanted[i], trader.isServer);
 		}
 		trader.changeGoldCount(gold);
 			
         return true;
+    }
+
+    private void assignAuthority(bool server) {
+        if (!server) {
+			objNetId = this.GetComponent<NetworkIdentity> ();     
+			objNetId.AssignClientAuthority (connectionToClient);   
+		}
+    }
+
+    private void removeAuthority(bool server) {
+        if (!server) {
+			objNetId.RemoveClientAuthority (connectionToClient); 
+		}
     }
 }
