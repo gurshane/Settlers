@@ -59,7 +59,6 @@ public class GameManager : NetworkBehaviour {
     
     static public GameManager instance = null;
 
-
     public void Init() //initializer
     {
         GameObject[] objects = GameObject.FindGameObjectsWithTag("Player");
@@ -142,6 +141,7 @@ public class GameManager : NetworkBehaviour {
         metropolises.Add(Enums.DevChartType.SCIENCE, null);
 
         barbarianHasAttacked = false;
+        graph = new Graph();
 
         Init();
     }
@@ -175,15 +175,16 @@ public class GameManager : NetworkBehaviour {
 			playerTurn++;
 			if (this.playerTurn >= players.Count) {
 				playerTurn = 0;
-				gamePhase = Enums.GamePhase.PHASE_ONE;
 			}
+            gamePhase = Enums.GamePhase.PHASE_ONE;
 		}
 
         removeAuthority(server);
     }
 
-    public void DiceRolled()
+    public void DiceRolled(bool server)
     {
+        assignAuthority(server);
         firstDie = UnityEngine.Random.Range(1, 7);
         secondDie = UnityEngine.Random.Range(1, 7);
         int thirdDie = UnityEngine.Random.Range(0, 2);//eventDie
@@ -193,6 +194,7 @@ public class GameManager : NetworkBehaviour {
             thirdDie = UnityEngine.Random.Range(1, 4);
             eventDie = (Enums.EventDie)thirdDie;
         }
+        removeAuthority(server);
         resolveDice();
     }
 
@@ -488,13 +490,6 @@ public class GameManager : NetworkBehaviour {
     // Distribute the appropriate resources to all players
     private void distribute()
     {
-        Vertex resetLocation = null;
-		foreach (Vertex v in BoardState.instance.vertexPosition.Values)
-        {
-			resetLocation = v;
-			break;
-		}
-        graph.vertexReset(resetLocation);
         int num = firstDie + secondDie;
 
         // Make sure there are enough resources and commodities in the bank
@@ -512,7 +507,6 @@ public class GameManager : NetworkBehaviour {
 
         foreach (Hex h in BoardState.instance.hexPoisition.Values)
         {
-
             // If a hex isn't the right number, or doesn't produce cards, continue
             if (h.getHexNumber() != num)
             {
@@ -542,12 +536,6 @@ public class GameManager : NetworkBehaviour {
             // Distribute all the resources
             foreach (Vertex v in h.getVertices())
             {
-                if (v.getVisited() != 0)
-                {
-                    continue;
-                }
-                v.setVisited();
-
                 GamePiece current = v.getOccupyingPiece();
                 if (Object.ReferenceEquals(current, null))
                 {
@@ -557,6 +545,7 @@ public class GameManager : NetworkBehaviour {
                 // Distribue resources for settlements
                 if (current.getPieceType() == Enums.PieceType.SETTLEMENT)
                 {
+                    Debug.Log("Hex type: " + h.getHexType() + ", enough: " + enoughRes[res]);
                     Enums.Color ownerColor = current.getColor();
                     Player p = getPlayer(ownerColor);
                     if (res != Enums.ResourceType.NONE && enoughRes[res])
@@ -649,13 +638,6 @@ public class GameManager : NetworkBehaviour {
     // Make sure there are enough resources in the bank for a given dice roll
     private bool checkResources(Enums.ResourceType res, int n)
     {
-        Vertex resetLocation = null;
-		foreach (Vertex v in BoardState.instance.vertexPosition.Values)
-        {
-			resetLocation = v;
-			break;
-		}
-        graph.vertexReset(resetLocation);
         int total = 0;
 
         foreach (Hex h in BoardState.instance.hexPoisition.Values)
@@ -676,12 +658,6 @@ public class GameManager : NetworkBehaviour {
             // Get all the resources accumulated by all players
             foreach (Vertex v in h.getVertices())
             {
-                if (v.getVisited() != 0)
-                {
-                    continue;
-                }
-                v.setVisited();
-
                 GamePiece current = v.getOccupyingPiece();
                 if (Object.ReferenceEquals(current, null))
                 {
@@ -725,13 +701,6 @@ public class GameManager : NetworkBehaviour {
     // Make sure there are enough commodities in the bank for a given dice roll
     private bool checkCommodities(Enums.CommodityType com, int n)
     {
-        Vertex resetLocation = null;
-		foreach (Vertex v in BoardState.instance.vertexPosition.Values)
-        {
-			resetLocation = v;
-			break;
-		}
-        graph.vertexReset(resetLocation);
         int total = 0;
 
         foreach (Hex h in BoardState.instance.hexPoisition.Values)
@@ -752,12 +721,6 @@ public class GameManager : NetworkBehaviour {
             // Get all the commodities accumulated by all players
             foreach (Vertex v in h.getVertices())
             {
-                if (v.getVisited() != 0)
-                {
-                    continue;
-                }
-                v.setVisited();
-
                 GamePiece current = v.getOccupyingPiece();
                 if (Object.ReferenceEquals(current, null))
                 {

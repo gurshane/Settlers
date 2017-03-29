@@ -629,7 +629,7 @@ public class Player : NetworkBehaviour {
     [Command]
     public void CmdDiceRoll()
     {
-        GameManager.instance.DiceRolled();
+        GameManager.instance.DiceRolled(isServer);
     }
 
     public void DiceRolled(int first, int second, int third)
