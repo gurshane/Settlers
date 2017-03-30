@@ -54,7 +54,7 @@ public class GameManager : NetworkBehaviour {
 	private NetworkIdentity objNetId;
 
     // Overall Game State
-    private List<Player> players;
+    public List<Player> players;
     Graph graph;
     
     static public GameManager instance = null;
@@ -62,18 +62,10 @@ public class GameManager : NetworkBehaviour {
     public void Init() //initializer
     {
         GameObject[] objects = GameObject.FindGameObjectsWithTag("Player");
-        if (objects.Length != GameObject.FindObjectOfType<LobbyManager>()._playerNumber)
-        {
-            Debug.Log("Objects length is: " + objects.Length + " _playerNumber is: " + GameObject.FindObjectOfType<LobbyManager>()._playerNumber + "...returning");
-            return;
-        }
         Debug.Log("Objects length is: " + objects.Length + " _playerNumber is: " + GameObject.FindObjectOfType<LobbyManager>()._playerNumber + "...continuing");
         players = new List<Player>();
         ServerInitPlayers(objects);
         ClientInitPlayers(objects);
-        Debug.Log("Players count: " + players.Count);
-        //firstTurn();
-        //secondTurn();
     }
 
     [Server]

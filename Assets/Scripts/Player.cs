@@ -66,11 +66,6 @@ public class Player : NetworkBehaviour {
 
     public void OnLoad()//
     {
-		if (GameManager.instance == null)//check if gameManager has been spawned yet
-        {
-            return;
-        }
-        
         GameManager.instance.Init();
     }
 
@@ -132,7 +127,6 @@ public class Player : NetworkBehaviour {
             Instantiate(myHud);
         }
         OnLoad();
-
     }
 
     public void Update()
