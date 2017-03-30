@@ -5,28 +5,30 @@ using UnityEngine.UI;
 
 
 /// <summary>
-/// User interface displaying panel showing what turn it is, and what pieces to place
+/// User interface displaying panel showing what the current game state is and what can
+/// be done in that state
 /// </summary>
-public class UITurnsPanel : UIElement {
+public class UIGameStateBanner : UIElement {
 
-	/// The text component attached to this instance saying whether it is the first turn
+	/// The text component attached to this instance saying what the current state
+	/// allows for
 	/// </summary>
 	[SerializeField]
-	private Text _TurnText;
+	private Text _HeaderText;
 
 	/// <summary>
 	/// The text component attached to this instance, saying what piece to place
 	/// </summary>
 	[SerializeField]
-	private Text _PlacementText;
+	private Text _SubText;
 
 
 	// Use this for initialization
 	void Start () {
 		
 		// Get the text components to be modified during updates
-		_TurnText = transform.GetChild (0).GetComponent<Text>();
-		_PlacementText = transform.GetChild (1).GetComponent<Text>();
+		_HeaderText = transform.GetChild (0).GetComponent<Text>();
+		_SubText = transform.GetChild (1).GetComponent<Text>();
 	}
 
 	/// <summary>
@@ -43,6 +45,24 @@ public class UITurnsPanel : UIElement {
 
 	}
 
+
+	/// <summary>
+	/// Sets the header text to parameter value
+	/// </summary>
+	/// <param name="p_String">P string.</param>
+	public void setHeaderText(string p_String)
+	{
+		_HeaderText.text = p_String;
+	}
+
+	/// <summary>
+	/// Sets the sub text value to parameter value
+	/// </summary>
+	/// <param name="p_String">P string.</param>
+	public void setSubText(string p_String)
+	{
+		_SubText.text = p_String;
+	}
 
 	/// <summary>
 	/// Updates the first turn text based on whether it is the First Turn or not

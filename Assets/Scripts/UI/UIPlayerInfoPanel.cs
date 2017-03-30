@@ -74,16 +74,16 @@ public class UIPlayerInfoPanel : UIElement {
 		_VictoryPoints.text = "" + p_Player.getVictoryCounts ();
 
 
-
 		// Get Player's devChart
 		int[] devChart = p_Player.getDevFlipChart ();
 
 		// Loop through devChart array, and update the corresponding Images on the UI.
 		for (int x = 0; x < devChart.Length; x++) 
 		{
+			float floatVal = (float)devChart [x];
 			// Divide by 4 because fillAmount ranges from 0 to 1
 			// There are 4 stages of development, not including the 0th stage.
-			_DevChartImages [x].fillAmount = devChart[x]/4;
+			_DevChartImages [x].fillAmount = floatVal/4f;
 		}
 	}
 
