@@ -8,6 +8,7 @@ using UnityEngine.UI;
 /// </summary>
 public class UIDiceRollPanel : UIElement {
 
+
 	/// <summary>
 	/// Text displaying FirstDie's value
 	/// </summary>
@@ -34,8 +35,8 @@ public class UIDiceRollPanel : UIElement {
 
 	// Use this for initialization
 	void Start () {
-		
 	}
+			
 
 
 	/// <summary>
@@ -66,6 +67,7 @@ public class UIDiceRollPanel : UIElement {
 		// If this player is the one who's turn it is:
 		_DiceRollButton.gameObject.SetActive(true);
 	}
+		
 
 	/// <summary>
 	/// Convert the specified p_EventDieEnum into a string

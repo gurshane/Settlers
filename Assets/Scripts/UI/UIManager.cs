@@ -16,6 +16,8 @@ public class UIManager : NetworkBehaviour {
 	[SerializeField]
 	private GameManager _GameManager;
 
+	private UIMoveManager _UIMoveManager;
+
 	#region Player instance and Attributes
 
 	/// <summary>
@@ -48,6 +50,12 @@ public class UIManager : NetworkBehaviour {
 	#region UI Panels
 
 	/// <summary>
+	/// The smart panel, located on screen right. Houses several buttons needed for gameplay
+	/// </summary>
+	[SerializeField]
+	private Transform _SmartPanel;
+
+	/// <summary>
 	/// Player Specific : Panel containing player commodities UI elements
 	/// </summary>
 	[SerializeField]
@@ -71,8 +79,12 @@ public class UIManager : NetworkBehaviour {
 	[SerializeField]
 	private UIElement _MyPlayerPanel;
 
+	/// <summary>
+	/// The panel displaying what the current game state is, and what the player can do
+	/// with whichever game state enum they are in at the moment
+	/// </summary>
 	[SerializeField]
-	private UIElement _TurnsPanel;
+	private UIElement _GameStateBannerPanel;
 
 	/// <summary>
 	/// Panel containing Barbarian slider
@@ -114,9 +126,17 @@ public class UIManager : NetworkBehaviour {
 
 
 	// Use this for initialization
-	void Start () {
+	void Awake () {
         
+		_SmartPanel.gameObject.SetActive (true);
+		_UIMoveManager = GetComponent<UIMoveManager> ();
+
+
         _CurrentPlayer = GameObject.Find(Network.player.ipAddress).GetComponent<Player>();
+
+		// Set UIMoveManager's Current Player to this instance's current player attribute
+		_UIMoveManager.setCurrentPlayer (_CurrentPlayer);
+
 		_PlayerHighlighter = _CurrentPlayer.GetComponent<HighLighter> ();
 
         if (_CurrentPlayer.gameObject.GetComponent<NetworkIdentity>().isLocalPlayer)
@@ -142,7 +162,17 @@ public class UIManager : NetworkBehaviour {
         }
     }
 
+	#region Dice Roll Panel Methods
 
+	/// <summary>
+	/// Calls necessary methods to roll dice in game
+	/// </summary>
+	public void rollDice()
+	{
+		_CurrentPlayer.CmdDiceRoll ();
+	}
+
+	#endregion
 
 
     #region Update Methods
@@ -195,7 +225,7 @@ public class UIManager : NetworkBehaviour {
 	/// </summary>
 	public void updateTurnsPanel()
 	{
-		_TurnsPanel.uiUpdate (_CurrentPlayer);
+		_GameStateBannerPanel.uiUpdate (_CurrentPlayer);
 
 		// If it is second turn, set MaritimeTradePanel active to true
 		//if (_PlayerHighlighter.secondTurn == true) _MaritimeTradePanel.gameObject.SetActive (true);
@@ -205,9 +235,16 @@ public class UIManager : NetworkBehaviour {
 	/// <summary>
 	/// Updates the player info panels to be displayed on the UI
 	/// </summary>
-	/*
+
 	public void updatePlayerInfoPanels ()
 	{
+
+		Transform panel = _PlayerInfosPanel.GetChild (0);
+		UIPlayerInfoPanel infoPanel = panel.GetComponent<UIPlayerInfoPanel> ();
+
+		infoPanel.uiUpdate (_CurrentPlayer);
+
+		/*
 		// Keep track of index to assign a player to a PlayerInfoPanel
 		int pIndex = 0;
 
@@ -229,9 +266,9 @@ public class UIManager : NetworkBehaviour {
 			panel.GetComponent<UIPlayerInfoPanel> ().uiUpdate (_P);
 
 			pIndex++;
-		}
+		}*/
 	}
-
+	/*
 	/// <summary>
 	/// Assigns each available Player to each available PlayerInfoPanel
 	/// </summary>
@@ -293,13 +330,6 @@ public class UIManager : NetworkBehaviour {
 	}
 		
 
-	/// <summary>
-	/// Calls the Highlighter method to roll the dice and change first, second, (third) dice values for a turn
-	/// </summary>
-	public void rollDice()
-	{
-		//_PlayerHighlighter.rollDice ();
-	}
 
 	#endregion
 		
@@ -352,6 +382,15 @@ public class UIManager : NetworkBehaviour {
 
 
 	#region Setters
+
+	/// <summary>
+	/// Gets the game manager attribute of this instance
+	/// </summary>
+	/// <returns>The game manager.</returns>
+	public GameManager getGameManager()
+	{
+		return _GameManager;
+	}
 
 	/// <summary>
 	/// Sets the current player attribute of this UIManager instance to the parameter
@@ -446,6 +485,8 @@ public class UIManager : NetworkBehaviour {
                 updateMyPlayerPanel();
 				updateDiceRollPanel ();
 				updateTurnsPanel();
+
+				updatePlayerInfoPanels ();
             }
         }
 	
