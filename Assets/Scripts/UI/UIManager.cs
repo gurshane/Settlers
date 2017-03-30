@@ -169,7 +169,7 @@ public class UIManager : NetworkBehaviour {
 	/// </summary>
 	public void rollDice()
 	{
-		_GameManager.DiceRolled ();
+		_CurrentPlayer.CmdDiceRoll ();
 	}
 
 	#endregion
