@@ -436,6 +436,26 @@ public class Player : NetworkBehaviour {
         return this.status; 
     }
 
+    public Enums.MoveType getMoveType()
+    {
+        return this.moveType; 
+    }
+
+    public void setMoveType(Enums.MoveType mType)
+    {
+        this.moveType = mType; 
+    }
+
+    public Enums.Special getSpecial()
+    {
+        return this.special; 
+    }
+
+    public void setSpecial(Enums.Special spec)
+    {
+        this.special = spec; 
+    }
+
     public void setStatus(Status newStatus)
     {
         this.status = newStatus;
