@@ -189,7 +189,7 @@ public class Player : NetworkBehaviour {
 
 				if (ma.canPlaceInitialRoad(e, this.myColor)) {
 					CmdPlaceInitialRoad (e.transform.position);
-                    moveType = Enums.MoveType.NONE;
+                    moveType = Enums.MoveType.PLACE_INITIAL_CITY;
 				}
 			} else if (moveType == Enums.MoveType.PLACE_INITIAL_SHIP) {
 
@@ -200,7 +200,7 @@ public class Player : NetworkBehaviour {
 
 				if (ma.canPlaceInitialShip(e, this.myColor)) {
 					CmdPlaceInitialShip (e.transform.position);
-                    moveType = Enums.MoveType.NONE;
+                    moveType = Enums.MoveType.PLACE_INITIAL_CITY;
 				}
 			}
 		}
