@@ -17,6 +17,9 @@ public class Hex : BoardPiece {
     [SyncVar]
 	public int hexNumber;
 
+    [SyncVar]
+    public char hexLetter;
+
     public Hex(Enums.TerrainType terrain, Enums.HexType hexType) : base(terrain)
     {
         this.vertices = new List<Vertex>();
