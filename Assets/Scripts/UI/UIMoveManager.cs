@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using Enums;
 
 /// <summary>
 /// Class handling behviour with regards to displaying which MoveManager panel
@@ -61,6 +62,27 @@ public class UIMoveManager : MonoBehaviour {
 	{
 	}
 
+	/// <summary>
+	/// Handles the initial phase panel display. Hiding when it is not SETUP gamephase
+	/// Displaying when it is
+	/// </summary>
+	public void handleInitialPhasePanelDisplay()
+	{
+		bool check1 = (GameManager.instance.getGamePhase() == Enums.GamePhase.SETUP_ONE);
+		bool check2 = (GameManager.instance.getGamePhase() == Enums.GamePhase.SETUP_TWO);
+		bool check3 = false;
+			
+		if ((check1 || check2) && check3) {
+			_InitialPhasePanel.gameObject.SetActive (true);
+		} 
+		else 
+		{
+			_InitialPhasePanel.gameObject.SetActive (false);
+		}
+
+
+	}
+
 	#region Initial Turns Methods
 	/// <summary>
 	/// Calls necessary methods to place player's initial settlement
@@ -78,45 +100,21 @@ public class UIMoveManager : MonoBehaviour {
 	/// <param name="p_RouteNumber">P route number.</param>
 	public void uiPlaceInitialRoad(int p_RouteNumber)
 	{
-		switch (p_RouteNumber) 
-		{
-		case 1:
-			_Banner.setHeaderText ("FIRST TURN");
+			_Banner.setHeaderText ("YOUR TURN");
 			_Banner.setSubText ("Place Initial Road");
 			// Update Move ENUM Here
-			break;
-		case 2:
-			_Banner.setHeaderText ("SECOND TURN");
-			_Banner.setSubText ("Place Second Road");
-			// Update Move ENUM here
-			break;
-		default:
-			break;
-		}
-
 	}
 
 	/// <summary>
 	/// Calls necessary methods to place player's ship. (either initial, or second road)
 	/// </summary>
 	/// <param name="p_RouteNumber">P route number.</param>
-	public void uiPlaceInitialShip(int p_RouteNumber)
+	public void uiPlaceInitialShip()
 	{
-		switch (p_RouteNumber) 
-		{
-		case 1:
-			_Banner.setHeaderText ("FIRST TURN");
+		
+			_Banner.setHeaderText ("YOUR TURN");
 			_Banner.setSubText ("Place Initial Ship");
 			// Update Move ENUM Here
-			break;
-		case 2:
-			_Banner.setHeaderText ("SECOND TURN");
-			_Banner.setSubText ("Place Second Ship");
-			// Update Move ENUM here
-			break;
-		default:
-			break;
-		}
 	}
 
 	/// <summary>
@@ -259,6 +257,7 @@ public class UIMoveManager : MonoBehaviour {
 
 	// Update is called once per frame
 	void Update () {
-		
+
+		handleInitialPhasePanelDisplay ();
 	}
 }
