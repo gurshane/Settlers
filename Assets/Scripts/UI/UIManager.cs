@@ -158,7 +158,7 @@ public class UIManager : NetworkBehaviour {
 
 
 			// Set the Dice Roll panel to false at start. Only shows during second turn
-			_DiceRollPanel.gameObject.SetActive(false);
+			_DiceRollPanel.gameObject.SetActive(true);
         }
     }
 
@@ -170,6 +170,22 @@ public class UIManager : NetworkBehaviour {
 	public void rollDice()
 	{
 		_CurrentPlayer.CmdDiceRoll ();
+	}
+
+	public void showDiceRollPanel()
+	{
+		bool check1 = GameManager.instance.getPlayerTurn () == _CurrentPlayer.getID ();
+		bool check2 = GameManager.instance.getGamePhase () == GamePhase.PHASE_ONE;
+		UIDiceRollPanel diceButton = _DiceRollPanel.GetComponent<UIDiceRollPanel> ();
+
+		if (check1 && check2) {
+			diceButton.showRollButton(true);
+		} 
+
+		else 
+		{
+			diceButton.showRollButton(false);
+		}
 	}
 
 	#endregion
@@ -213,11 +229,9 @@ public class UIManager : NetworkBehaviour {
 	/// </summary>
 	public void updateDiceRollPanel()
 	{
+		
 		_DiceRollPanel.GetComponent<UIElement> ().uiUpdate(_CurrentPlayer);
 
-
-		// If it is second turn, set DiceRoll Panel active to true
-		//if (_PlayerHighlighter.secondTurn == true) _DiceRollPanel.gameObject.SetActive (true);
 	}
 
 	/// <summary>
@@ -487,6 +501,8 @@ public class UIManager : NetworkBehaviour {
 				updateTurnsPanel();
 
 				updatePlayerInfoPanels ();
+
+				showDiceRollPanel ();
             }
         }
 	
