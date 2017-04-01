@@ -142,7 +142,6 @@ public class Player : NetworkBehaviour {
 
         // Space means end turn
 		if (Input.GetKeyDown (KeyCode.Space)) {
-			moveType = Enums.MoveType.NONE;
 			CmdEndTurn ();
 		}
 
