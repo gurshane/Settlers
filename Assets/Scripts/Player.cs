@@ -41,11 +41,11 @@ public class Player : NetworkBehaviour {
     private bool movedRoad;
     private bool aqueduct;
 
-	[SyncVar]
-	public bool placedFirstTown;
+    [SyncVar]
+    public Enums.Special special;
 
-	[SyncVar]
-	public bool placedFirstEdge;
+    [SyncVar]
+    public Enums.MoveType moveType;
 
     private Dictionary<Vector3, GamePiece> spawnedPieces;
 
@@ -114,8 +114,8 @@ public class Player : NetworkBehaviour {
         this.cityWallsLeft = 3;
         this.movedRoad = false;
         this.aqueduct = false;
-		this.placedFirstTown = false;
-		this.placedFirstEdge = false;
+        this.moveType = Enums.MoveType.PLACE_INITIAL_SETTLEMENT;
+        this.special = Enums.Special.NONE;
 
 		this.ma = new MoveAuthorizer ();
 
@@ -142,8 +142,7 @@ public class Player : NetworkBehaviour {
 
         // Space means end turn
 		if (Input.GetKeyDown (KeyCode.Space)) {
-			placedFirstEdge = false;
-			placedFirstTown = false;
+			moveType = Enums.MoveType.NONE;
 			CmdEndTurn ();
 		}
 
@@ -168,7 +167,7 @@ public class Player : NetworkBehaviour {
 			}
 				
             // Must place first settlement if it hasn't been placed yet
-			if (!placedFirstTown) {
+			if (moveType == Enums.MoveType.PLACE_INITIAL_SETTLEMENT) {
 
 				if (!pieceHit.tag.Equals("Vertex")) {
 					return;
@@ -177,11 +176,11 @@ public class Player : NetworkBehaviour {
 
 				if (ma.canPlaceInitialTownPiece (v)) {
 					CmdPlaceInitialSettlement (v.transform.position);
-					placedFirstTown = true;
+                    moveType = Enums.MoveType.NONE;
 				}
 
             // Otherwise place first road
-			} else if (!placedFirstEdge) {
+			} else if (moveType == Enums.MoveType.PLACE_INITIAL_ROAD) {
 
 				if (!pieceHit.tag.Equals("Edge")) {
 					return;
@@ -190,7 +189,18 @@ public class Player : NetworkBehaviour {
 
 				if (ma.canPlaceInitialRoad(e, this.myColor)) {
 					CmdPlaceInitialRoad (e.transform.position);
-					placedFirstEdge = true;
+                    moveType = Enums.MoveType.NONE;
+				}
+			} else if (moveType == Enums.MoveType.PLACE_INITIAL_SHIP) {
+
+				if (!pieceHit.tag.Equals("Edge")) {
+					return;
+				}
+				Edge e = pieceHit.GetComponent<Edge>();
+
+				if (ma.canPlaceInitialShip(e, this.myColor)) {
+					CmdPlaceInitialShip (e.transform.position);
+                    moveType = Enums.MoveType.NONE;
 				}
 			}
 		}
@@ -210,8 +220,8 @@ public class Player : NetworkBehaviour {
 				return;
 			}
 
-            // Must place city if not done yet
-			if (!placedFirstTown) {
+            // Must place first settlement if it hasn't been placed yet
+			if (moveType == Enums.MoveType.PLACE_INITIAL_CITY) {
 
 				if (!pieceHit.tag.Equals("Vertex")) {
 					return;
@@ -220,22 +230,31 @@ public class Player : NetworkBehaviour {
 
 				if (ma.canPlaceInitialTownPiece (v)) {
 					CmdPlaceInitialCity (v.transform.position);
-					placedFirstTown = true;
+                    moveType = Enums.MoveType.NONE;
 				}
 
-            // Otherwise place second road
-			} else if (!placedFirstEdge) {
-				Debug.Log ("Before Check");
+            // Otherwise place first road
+			} else if (moveType == Enums.MoveType.PLACE_INITIAL_ROAD) {
+
 				if (!pieceHit.tag.Equals("Edge")) {
 					return;
 				}
-				Debug.Log ("After Check");
-
 				Edge e = pieceHit.GetComponent<Edge>();
 
-				if (ma.canPlaceInitialRoad (e, this.myColor)) {
+				if (ma.canPlaceInitialRoad(e, this.myColor)) {
 					CmdPlaceInitialRoad (e.transform.position);
-					placedFirstEdge = true;
+                    moveType = Enums.MoveType.NONE;
+				}
+			} else if (moveType == Enums.MoveType.PLACE_INITIAL_SHIP) {
+
+				if (!pieceHit.tag.Equals("Edge")) {
+					return;
+				}
+				Edge e = pieceHit.GetComponent<Edge>();
+
+				if (ma.canPlaceInitialShip(e, this.myColor)) {
+					CmdPlaceInitialShip (e.transform.position);
+                    moveType = Enums.MoveType.NONE;
 				}
 			}
 		}
@@ -249,8 +268,45 @@ public class Player : NetworkBehaviour {
 
         // Main game phase two
 		if (GameManager.instance.getGamePhase () == Enums.GamePhase.PHASE_TWO) {
-		}
+            // Get mouse click
+			if (Input.GetButtonDown ("Fire1")) {
+				ray = Camera.main.ScreenPointToRay (Input.mousePosition);
+				if (Physics.Raycast (ray, out impact)) {
+					pieceHit = impact.collider.gameObject;
+				}
+			}
 
+			if (Object.ReferenceEquals(pieceHit, null)) {
+				return;
+			}
+
+            // Must place first settlement if it hasn't been placed yet
+			if (moveType == Enums.MoveType.BUILD_SETTLEMENT) {
+
+				if (!pieceHit.tag.Equals("Vertex")) {
+					return;
+				}
+				Vertex v = pieceHit.GetComponent<Vertex>();
+
+				if (ma.canBuildSettlement (v, this.resources, this.pieces, this.myColor)) {
+					CmdBuildSettlement (v.transform.position);
+                    moveType = Enums.MoveType.NONE;
+				}
+
+            // Otherwise place first road
+			} else if (moveType == Enums.MoveType.BUILD_ROAD) {
+
+				if (!pieceHit.tag.Equals("Edge")) {
+					return;
+				}
+				Edge e = pieceHit.GetComponent<Edge>();
+
+				if (ma.canBuildRoad(e, this.resources, this.pieces, this.myColor)) {
+					CmdBuildRoad (e.transform.position);
+                    moveType = Enums.MoveType.NONE;
+				}
+			} 
+        }
     }
     
     public int getID()
@@ -660,5 +716,15 @@ public class Player : NetworkBehaviour {
 	[Command]
 	public void CmdPlaceInitialShip(Vector3 location) {
 		MoveManager.instance.placeInitialShip (BoardState.instance.edgePosition [location], this.myColor, this.pieces, this.isServer);
+	}
+
+    [Command]
+	public void CmdBuildSettlement(Vector3 location) {
+		MoveManager.instance.buidSettlement (BoardState.instance.vertexPosition [location], this.resources, this.pieces, this.myColor, this.isServer);
+	}
+
+	[Command]
+	public void CmdBuildRoad(Vector3 location) {
+		MoveManager.instance.buildRoad (BoardState.instance.edgePosition [location], this.resources, this.pieces, this.myColor, this.isServer);
 	}
 }
