@@ -264,7 +264,8 @@ public class MoveManager : NetworkBehaviour {
     {
        	Vertex source = BoardState.instance.vertexPosition[location];
 		GameObject newSettlement = Instantiate<GameObject>(PrefabHolder.instance.settlement, location, Quaternion.identity);
-		newSettlement.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
+        fixPieceRotationAndPosition(newSettlement);
+        newSettlement.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
 		BoardState.instance.spawnedObjects.Add(location, newSettlement);
 
 		Player current = GameManager.instance.getCurrentPlayer();
@@ -320,7 +321,8 @@ public class MoveManager : NetworkBehaviour {
         Vertex source = BoardState.instance.vertexPosition[location];
         GamePiece settlement = source.getOccupyingPiece();
 		GameObject spawnedCity = Instantiate<GameObject>(PrefabHolder.instance.city, location, Quaternion.identity);
-		spawnedCity.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
+        fixPieceRotationAndPosition(spawnedCity);
+        spawnedCity.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
 
 		Destroy (BoardState.instance.vertexPosition [location]);
 		BoardState.instance.spawnedObjects.Remove(location);
@@ -353,7 +355,8 @@ public class MoveManager : NetworkBehaviour {
 	void RpcBuildCityWall(Vector3 location, Enums.Color color)
     {
 		GameObject spawnedCityWall = Instantiate<GameObject>(PrefabHolder.instance.cityWall, location, Quaternion.identity);
-		spawnedCityWall.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
+        fixPieceRotationAndPosition(spawnedCityWall);
+        spawnedCityWall.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
 		BoardState.instance.spawnedObjects.Add(location, spawnedCityWall);
     }
 
@@ -371,7 +374,8 @@ public class MoveManager : NetworkBehaviour {
 	void RpcBuildKnight(Vector3 location, Enums.Color color)
     {
 		GameObject spawnedKnight = Instantiate<GameObject>(PrefabHolder.instance.levelOneKnight, location, Quaternion.identity);
-		spawnedKnight.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
+        fixPieceRotationAndPosition(spawnedKnight);
+        spawnedKnight.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
 		BoardState.instance.spawnedObjects.Add(location, spawnedKnight);
     }
 
@@ -407,7 +411,8 @@ public class MoveManager : NetworkBehaviour {
     {
         Edge edge = BoardState.instance.edgePosition[location];
 		GameObject spawnedRoad = Instantiate<GameObject>(PrefabHolder.instance.road, location, Quaternion.identity);
-		spawnedRoad.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
+        fixPieceRotationAndPosition(spawnedRoad);
+        spawnedRoad.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
 		BoardState.instance.spawnedObjects.Add(location, spawnedRoad);
 
         // Put a road on the given edge
@@ -455,7 +460,8 @@ public class MoveManager : NetworkBehaviour {
     {
         Edge edge = BoardState.instance.edgePosition[location];
 		GameObject spawnedBoat = Instantiate<GameObject>(PrefabHolder.instance.boat, location, Quaternion.identity);
-		spawnedBoat.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
+        fixPieceRotationAndPosition(spawnedBoat);
+        spawnedBoat.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
 		BoardState.instance.spawnedObjects.Add(location, spawnedBoat);
 
         // Put a road on the given edge
@@ -570,7 +576,8 @@ public class MoveManager : NetworkBehaviour {
     {
         Vertex source = BoardState.instance.vertexPosition[location];
 		GameObject newSettlement = Instantiate<GameObject>(PrefabHolder.instance.settlement, location, Quaternion.identity);
-		newSettlement.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
+        fixPieceRotationAndPosition(newSettlement);
+        newSettlement.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
 		BoardState.instance.spawnedObjects.Add(location, newSettlement);
 
 		Player current = GameManager.instance.getCurrentPlayer();
@@ -625,7 +632,8 @@ public class MoveManager : NetworkBehaviour {
     {
         Vertex source = BoardState.instance.vertexPosition[location];
 		GameObject spawnedCity = Instantiate<GameObject>(PrefabHolder.instance.city, location, Quaternion.identity);
-		spawnedCity.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
+        fixPieceRotationAndPosition(spawnedCity);
+        spawnedCity.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
 		BoardState.instance.spawnedObjects.Add(location, spawnedCity);
 
         // Build a city
@@ -658,7 +666,8 @@ public class MoveManager : NetworkBehaviour {
     {
         Edge edge = BoardState.instance.edgePosition[location];
 		GameObject spawnedRoad = Instantiate<GameObject>(PrefabHolder.instance.road, location, Quaternion.identity);
-		spawnedRoad.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
+        fixPieceRotationAndPosition(spawnedRoad);
+        spawnedRoad.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
 		BoardState.instance.spawnedObjects.Add(location, spawnedRoad);
 
         // Put a road on the given edge
@@ -670,6 +679,7 @@ public class MoveManager : NetworkBehaviour {
         road.putOnBoard();
         road.wasBuiltThisTurn();
     }
+
 	 
 	// Place an initial ship
 	public bool placeInitialShip (Edge e, Enums.Color color, List<GamePiece> pieces, bool server)
@@ -690,7 +700,8 @@ public class MoveManager : NetworkBehaviour {
     {
         Edge edge = BoardState.instance.edgePosition[location];
 		GameObject spawnedBoat = Instantiate<GameObject>(PrefabHolder.instance.boat, location, Quaternion.identity);
-		spawnedBoat.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
+        fixPieceRotationAndPosition(spawnedBoat);
+        spawnedBoat.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
 		BoardState.instance.spawnedObjects.Add(location, spawnedBoat);
 
         // Put a road on the given edge
@@ -721,7 +732,8 @@ public class MoveManager : NetworkBehaviour {
 			knight = null;
 			break;
 		}
-		return knight;
+        fixPieceRotationAndPosition(knight);
+        return knight;
 	}
 		
 
@@ -803,5 +815,11 @@ public class MoveManager : NetworkBehaviour {
         if (!server) {
 			objNetId.RemoveClientAuthority (connectionToClient); 
 		}
+    }
+    
+    void fixPieceRotationAndPosition(GameObject go)
+    {
+        go.transform.position = go.transform.position + (new Vector3(0f, 10f, 0f));
+        go.transform.Rotate(-90f, 0f, 0f);
     }
 }
