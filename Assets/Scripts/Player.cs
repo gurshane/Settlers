@@ -140,16 +140,6 @@ public class Player : NetworkBehaviour {
 		RaycastHit impact;
 		GameObject pieceHit = null;
 
-        // Space means end turn
-		if (Input.GetKeyDown (KeyCode.Space)) {
-			CmdEndTurn ();
-		}
-
-        // I = initialize if its necessary to do it again
-		if (Input.GetKeyDown (KeyCode.I)) {
-			Init ();
-		}
-
         // If game phase is phase one
 		if (GameManager.instance.getGamePhase () == Enums.GamePhase.SETUP_ONE) {
 
@@ -260,9 +250,6 @@ public class Player : NetworkBehaviour {
 
         // Main game phase one
 		if (GameManager.instance.getGamePhase () == Enums.GamePhase.PHASE_ONE) {
-            if (Input.GetKeyDown (KeyCode.K)) {
-			    CmdDiceRoll ();
-		    }
 		}
 
         // Main game phase two
@@ -671,6 +658,7 @@ public class Player : NetworkBehaviour {
     [Command]
     public void CmdEndTurn()
     {
+        if (GameManager.instance.getPlayerTurn() != iD) { return; }
 		GameManager.instance.SetPlayerTurn(this.isServer);
     }
 
