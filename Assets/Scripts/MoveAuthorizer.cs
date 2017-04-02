@@ -775,6 +775,9 @@ public class MoveAuthorizer
                 nextToWater = true;
             }
         }
+        if (target.getTerrainType() == Enums.TerrainType.WATER) {
+            nextToWater = true;
+        }
         if (!nextToWater)
         {
             return false;
@@ -1023,6 +1026,9 @@ public class MoveAuthorizer
             {
                 nextToWater = true;
             }
+        }
+        if (e.getTerrainType() == Enums.TerrainType.WATER) {
+            nextToWater = true;
         }
         if (!nextToWater)
         {
