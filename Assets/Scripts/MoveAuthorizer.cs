@@ -109,7 +109,7 @@ public class MoveAuthorizer
 
     // Check if a knight can be upgraded
     public bool canUpgradeKnight(int[] resources, int[] devChart,
-        Vertex v, List<GamePiece> pieces)
+        Vertex v, List<GamePiece> pieces, Enums.Color color)
     {
 
         // Make sure there are enough resources
@@ -129,6 +129,9 @@ public class MoveAuthorizer
         GamePiece sourcePiece = v.getOccupyingPiece();
         if (Object.ReferenceEquals(sourcePiece, null))
         {
+            return false;
+        }
+        if (sourcePiece.getColor() != color) {
             return false;
         }
         if (sourcePiece.getPieceType() != Enums.PieceType.KNIGHT)
@@ -185,7 +188,7 @@ public class MoveAuthorizer
     }
 
     // Check if a knight can be activated
-    public bool canActivateKnight(int[] resources, Vertex v)
+    public bool canActivateKnight(int[] resources, Vertex v, Enums.Color color)
     {
 
         // Make sure there is a grain available
@@ -198,6 +201,9 @@ public class MoveAuthorizer
         GamePiece sourcePiece = v.getOccupyingPiece();
         if (Object.ReferenceEquals(sourcePiece, null))
         {
+            return false;
+        }
+        if (sourcePiece.getColor() != color) {
             return false;
         }
         if (sourcePiece.getPieceType() != Enums.PieceType.KNIGHT)
@@ -860,13 +866,16 @@ public class MoveAuthorizer
     }
 
     // Check if a knight can chase the robber
-    public bool canChaseRobber(Vertex source)
+    public bool canChaseRobber(Vertex source, Enums.Color color)
     {
         GamePiece sourcePiece = source.getOccupyingPiece();
 
         // Make sure the vertex has an available knight
         if (Object.ReferenceEquals(sourcePiece, null))
         {
+            return false;
+        }
+        if (sourcePiece.getColor() != color) {
             return false;
         }
         if (sourcePiece.getPieceType() != Enums.PieceType.KNIGHT)

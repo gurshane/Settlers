@@ -164,19 +164,18 @@ public class MoveManager : NetworkBehaviour {
     }
 
 	// Upgrade a knight at vertex v
-	public bool upgradeKnight(int[] resources, int[] devChart, Vertex v, List<GamePiece> pieces, bool server)
+	public bool upgradeKnight(int[] resources, int[] devChart, Vertex v, List<GamePiece> pieces,
+			Enums.Color color, bool server)
     {
 
 		// Check if the knight can be upgraded
-		if (!ma.canUpgradeKnight (resources, devChart, v, pieces))
+		if (!ma.canUpgradeKnight (resources, devChart, v, pieces, color))
         {
 			return false;
 		}
 
 		Knight k = (Knight)v.getOccupyingPiece ();
 		int level = k.getLevel ();
-
-		Enums.Color color = GameManager.instance.getCurrentPlayer().getColor();
 
 		assignAuthority(server);
         RpcUpgradeKnight(resources, devChart, v.transform.position, level, color);

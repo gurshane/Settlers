@@ -362,7 +362,7 @@ public class Test : MonoBehaviour
         Debug.Log("canUpgradeKnight:\n");
         for (int i = 0; i < vertexCount; i++)
         {
-            if (ma.canUpgradeKnight(fullRes, fullDev, vertices[i], pieces))
+            if (ma.canUpgradeKnight(fullRes, fullDev, vertices[i], pieces, Enums.Color.WHITE))
             {
                 Debug.Log("Knight at vertex " + i + " can be upgraded\n");
             }
@@ -373,7 +373,7 @@ public class Test : MonoBehaviour
         Debug.Log("canActivateKnight:\n");
         for (int i = 0; i < vertexCount; i++)
         {
-            if (ma.canActivateKnight(fullRes, vertices[i]))
+            if (ma.canActivateKnight(fullRes, vertices[i], Enums.Color.WHITE))
             {
                 Debug.Log("Knight at vertex " + i + " can be activated\n");
             }
@@ -480,7 +480,7 @@ public class Test : MonoBehaviour
         Debug.Log("canChaseRobber:\n");
         for (int i = 0; i < vertexCount; i++)
         {
-            if (ma.canChaseRobber(vertices[i]))
+            if (ma.canChaseRobber(vertices[i], Enums.Color.WHITE))
             {
                 Debug.Log("Can chase robber from vertex " + i + "\n");
             }
