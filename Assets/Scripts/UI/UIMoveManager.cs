@@ -69,13 +69,13 @@ public class UIMoveManager : MonoBehaviour {
 	/// </summary>
 	public void handleInitialPhasePanelDisplay()
 	{
-		bool check1 = (GameManager.instance.getGamePhase() == Enums.GamePhase.SETUP_ONE);
-		bool check2 = (GameManager.instance.getGamePhase() == Enums.GamePhase.SETUP_TWO);
-		bool check3 = _CurrentPlayer.getMoveType() == MoveType.NONE;
-		bool check4 = _CurrentPlayer.getMoveType() == MoveType.PLACE_INITIAL_SHIP;
-		bool check5 = _CurrentPlayer.getMoveType() == MoveType.PLACE_INITIAL_ROAD;
+		bool setupOne = (GameManager.instance.getGamePhase() == Enums.GamePhase.SETUP_ONE);
+		bool setupTwo = (GameManager.instance.getGamePhase() == Enums.GamePhase.SETUP_TWO);
+		bool moveTypeNone = _CurrentPlayer.getMoveType() == MoveType.NONE;
+		bool moveTypeInitialShip = _CurrentPlayer.getMoveType() == MoveType.PLACE_INITIAL_SHIP;
+		bool moveTypeInitialRoad = _CurrentPlayer.getMoveType() == MoveType.PLACE_INITIAL_ROAD;
 			
-		if ((check1 || check2) && (check3 || check4 || check5)) 
+		if ((setupOne || setupTwo) && (moveTypeNone || moveTypeInitialShip || moveTypeInitialRoad)) 
 		{
 			_InitialPhasePanel.gameObject.SetActive (true);
 		} 
@@ -87,6 +87,10 @@ public class UIMoveManager : MonoBehaviour {
 
 	}
 
+	/// <summary>
+	/// Updates the banner text based on GameManager gamePhase attribute
+	/// and Player's moveType attribute
+	/// </summary>
 	private void handleBannerText()
 	{
 		_Banner.setHeaderText (convert(GameManager.instance.getGamePhase()));
@@ -94,16 +98,6 @@ public class UIMoveManager : MonoBehaviour {
 	}
 
 	#region Initial Turns Methods
-	/*
-	/// <summary>
-	/// Calls necessary methods to place player's initial settlement
-	/// </summary>
-	public void uiPlaceInitialSettlement()
-	{
-		_Banner.setHeaderText ("FIRST TURN");
-		_Banner.setSubText ("Place Initial Settlement");
-
-	}*/
 		
 	/// <summary>
 	/// Calls necessary methods to place players road. (either initial, or second road) 
@@ -112,7 +106,6 @@ public class UIMoveManager : MonoBehaviour {
 	public void uiPlaceInitialRoad()
 	{
 		moveTypeChange (MoveType.PLACE_INITIAL_ROAD);
-			// Update Move ENUM Here
 	}
 
 	/// <summary>
@@ -372,6 +365,12 @@ public class UIMoveManager : MonoBehaviour {
 	private void moveTypeChange(Enums.MoveType mt) {
 		if (_CurrentPlayer.getMoveType () != MoveType.SPECIAL) {
 			_CurrentPlayer.setMoveType (mt);
+
+			// Remove all existing highlighted vertices/edges
+			//_UIManager.updateHighlight (false);
+
+			// If BuildableNodes toggle is true, highlight a new set of vertices/edges
+			//_UIManager.updateHighlight (true);
 		}
 	}
 			
