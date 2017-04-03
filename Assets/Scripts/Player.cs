@@ -49,6 +49,10 @@ public class Player : NetworkBehaviour {
 
     private Dictionary<Vector3, GamePiece> spawnedPieces;
 
+    //For moves
+    private Vertex v1 = null;
+    private Edge e1 = null;
+
 	[Command]
     public void CmdInit(int iD)//call this if server is loaded after player
     {
@@ -134,6 +138,14 @@ public class Player : NetworkBehaviour {
 		if(!isLocalPlayer || GameManager.instance.getPlayerTurn() != iD)
         {
 			return;   
+        }
+
+        if (moveType != MoveType.MOVE_KNIGHT && moveType != MoveType.DISPLACE_KNIGHT) {
+            v1 = null;
+        }
+
+        if (moveType != MoveType.MOVE_SHIP) {
+            e1 = null;
         }
 
 		Ray ray;
@@ -291,7 +303,114 @@ public class Player : NetworkBehaviour {
 					CmdBuildRoad (e.transform.position);
                     moveType = Enums.MoveType.NONE;
 				}
-			} 
+			} else if (moveType == Enums.MoveType.MOVE_KNIGHT) {
+
+				if (!pieceHit.tag.Equals("Vertex")) {
+					return;
+				}
+                Vertex v = pieceHit.GetComponent<Vertex>();
+
+                if (v1 == null) {
+                    v1 = v;
+                } else {
+                    if (ma.canKnightMove(v1, v, this.myColor)) {
+                        CmdMoveKnight (v.transform.position);
+                        moveType = Enums.MoveType.NONE;
+                    }
+                }
+			} else if (moveType == Enums.MoveType.DISPLACE_KNIGHT) {
+
+				if (!pieceHit.tag.Equals("Vertex")) {
+					return;
+				}
+                Vertex v = pieceHit.GetComponent<Vertex>();
+
+                if (v1 == null) {
+                    v1 = v;
+                } else {
+                    if (ma.canKnightDisplace(v1, v, this.myColor)) {
+                        CmdDisplaceKnight (v.transform.position);
+                        moveType = Enums.MoveType.NONE;
+                    }
+                }
+			} else if (moveType == Enums.MoveType.UPGRADE_KNIGHT) {
+
+				if (!pieceHit.tag.Equals("Vertex")) {
+					return;
+				}
+				Vertex v = pieceHit.GetComponent<Vertex>();
+
+				if (ma.canUpgradeKnight (this.resources, this.devFlipChart, v, this.pieces, this.myColor)) {
+					CmdBuildSettlement (v.transform.position);
+                    moveType = Enums.MoveType.NONE;
+				}
+			} else if (moveType == Enums.MoveType.ACTIVATE_KNIGHT) {
+
+				if (!pieceHit.tag.Equals("Vertex")) {
+					return;
+				}
+				Vertex v = pieceHit.GetComponent<Vertex>();
+
+				if (ma.canActivateKnight (this.resources, v, this.myColor)) {
+					CmdActivateKnight (v.transform.position);
+                    moveType = Enums.MoveType.NONE;
+				}
+			} else if (moveType == Enums.MoveType.BUILD_CITY) {
+
+				if (!pieceHit.tag.Equals("Vertex")) {
+					return;
+				}
+				Vertex v = pieceHit.GetComponent<Vertex>();
+
+				if (ma.canBuildCity (v, this.resources, this.pieces, this.myColor)) {
+					CmdBuildCity (v.transform.position);
+                    moveType = Enums.MoveType.NONE;
+				}
+			} else if (moveType == Enums.MoveType.BUILD_CITY_WALL) {
+
+				if (!pieceHit.tag.Equals("Vertex")) {
+					return;
+				}
+				Vertex v = pieceHit.GetComponent<Vertex>();
+
+				if (ma.canBuildCityWall (v, this.resources, this.cityWallsLeft, this.myColor)) {
+					CmdBuildCityWall (v.transform.position);
+                    moveType = Enums.MoveType.NONE;
+				}
+			} else if (moveType == Enums.MoveType.BUILD_KNIGHT) {
+
+				if (!pieceHit.tag.Equals("Vertex")) {
+					return;
+				}
+				Vertex v = pieceHit.GetComponent<Vertex>();
+
+				if (ma.canBuildKnight (v, this.resources, this.pieces, this.myColor)) {
+					CmdBuildKnight (v.transform.position);
+                    moveType = Enums.MoveType.NONE;
+				}
+			} else if (moveType == Enums.MoveType.BUILD_SHIP) {
+
+				if (!pieceHit.tag.Equals("Edge")) {
+					return;
+				}
+				Edge e = pieceHit.GetComponent<Edge>();
+
+				if (ma.canBuildShip(e, this.resources, this.pieces, this.myColor)) {
+					CmdBuildShip (e.transform.position);
+                    moveType = Enums.MoveType.NONE;
+				}
+			} else if (moveType == Enums.MoveType.CHASE_ROBBER) {
+
+				if (!pieceHit.tag.Equals("Vertex")) {
+					return;
+				}
+				Vertex v = pieceHit.GetComponent<Vertex>();
+
+				if (ma.canChaseRobber (v, this.myColor)) {
+					CmdChaseRobber (v.transform.position);
+                    moveType = Enums.MoveType.NONE;
+				}
+			}
         }
     }
     
@@ -427,7 +546,8 @@ public class Player : NetworkBehaviour {
         return this.moveType; 
     }
 
-    public void setMoveType(Enums.MoveType mType)
+    [Command]
+    public void CmdSetMoveType(Enums.MoveType mType)
     {
         this.moveType = mType; 
     }
@@ -437,7 +557,8 @@ public class Player : NetworkBehaviour {
         return this.special; 
     }
 
-    public void setSpecial(Enums.Special spec)
+    [Command]
+    public void CmdSetSpecial(Enums.Special spec)
     {
         this.special = spec; 
     }
@@ -734,4 +855,59 @@ public class Player : NetworkBehaviour {
 	public void CmdBuildRoad(Vector3 location) {
 		MoveManager.instance.buildRoad (BoardState.instance.edgePosition [location], this.resources, this.pieces, this.myColor, this.isServer);
 	}
+
+    [Command]
+	public void CmdMoveKnight(Vector3 location) {
+		MoveManager.instance.moveKnight(v1, BoardState.instance.vertexPosition [location], this.myColor, this.isServer);
+	}
+
+    [Command]
+	public void CmdDisplaceKnight(Vector3 location) {
+		MoveManager.instance.displaceKnight(v1, BoardState.instance.vertexPosition [location], this.myColor, this.isServer);
+	}
+
+    [Command]
+	public void CmdUpgradeKnight(Vector3 location) {
+		MoveManager.instance.upgradeKnight(this.resources, this.devFlipChart, BoardState.instance.vertexPosition [location], this.pieces, this.myColor, this.isServer);
+	}
+
+    [Command]
+	public void CmdActivateKnight(Vector3 location) {
+		MoveManager.instance.activateKnight(this.resources, BoardState.instance.vertexPosition [location], this.myColor, this.isServer);
+	}
+
+    [Command]
+    public void CmdUpgradeDevelopmentChart(Enums.DevChartType dev) {
+        MoveManager.instance.upgradeDevChart(dev, this.commodities, this.pieces, this.devFlipChart, this.isServer);
+    }
+
+    [Command]
+	public void CmdBuildCity(Vector3 location) {
+		MoveManager.instance.buildCity (BoardState.instance.vertexPosition [location], this.resources, this.pieces, this.myColor, this.isServer);
+	}
+
+    [Command]
+	public void CmdBuildCityWall(Vector3 location) {
+		MoveManager.instance.buildCityWall (BoardState.instance.vertexPosition [location], this.resources, this.cityWallsLeft, this.myColor, this.isServer);
+	}
+
+    [Command]
+	public void CmdBuildKnight(Vector3 location) {
+		MoveManager.instance.buildKnight (BoardState.instance.vertexPosition [location], this.resources, this.pieces, this.myColor, this.isServer);
+	}
+
+    [Command]
+	public void CmdBuildShip(Vector3 location) {
+		MoveManager.instance.buildShip (BoardState.instance.edgePosition [location], this.resources, this.pieces, this.myColor, this.isServer);
+	}
+
+    [Command]
+	public void CmdMoveShip(Vector3 location) {
+		MoveManager.instance.moveShip (e1, BoardState.instance.edgePosition [location], this.myColor, this.isServer);
+	}
+
+    [Command]
+    public void CmdChaseRobber(Vector3 location) {
+		MoveManager.instance.chaseRobber (BoardState.instance.vertexPosition [location], this.myColor, this.isServer);        
+    }
 }

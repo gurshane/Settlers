@@ -9,7 +9,7 @@ public class BoardState : NetworkBehaviour
 
     public Dictionary<Vector3, Vertex> vertexPosition;
     public Dictionary<Vector3, Edge> edgePosition;
-    public Dictionary<Vector3, Hex> hexPoisition;
+    public Dictionary<Vector3, Hex> hexPosition;
 
     public Dictionary<Vector3, GameObject> spawnedObjects;
 
@@ -25,7 +25,7 @@ public class BoardState : NetworkBehaviour
         doOnce = true;
         vertexPosition = new Dictionary<Vector3, Vertex>();
         edgePosition = new Dictionary<Vector3, Edge>();
-        hexPoisition = new Dictionary<Vector3, Hex>();
+        hexPosition = new Dictionary<Vector3, Hex>();
         spawnedObjects = new Dictionary<Vector3, GameObject>();
         
     }
@@ -49,12 +49,12 @@ public class BoardState : NetworkBehaviour
                 edgePosition.Add(edge.transform.position, edge.GetComponent<Edge>());
             }
         }
-        if(hexPoisition.Count < 19)
+        if(hexPosition.Count < 19)
         {
-            hexPoisition.Clear();
+            hexPosition.Clear();
             foreach (GameObject hex in GameObject.FindGameObjectsWithTag("MainHex"))
             {
-                hexPoisition.Add(hex.transform.position, hex.GetComponent<Hex>());
+                hexPosition.Add(hex.transform.position, hex.GetComponent<Hex>());
             }
         }
             
