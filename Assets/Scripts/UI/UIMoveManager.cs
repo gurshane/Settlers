@@ -364,13 +364,7 @@ public class UIMoveManager : MonoBehaviour {
 
 	private void moveTypeChange(Enums.MoveType mt) {
 		if (_CurrentPlayer.getMoveType () != MoveType.SPECIAL) {
-			_CurrentPlayer.setMoveType (mt);
-
-			// Remove all existing highlighted vertices/edges
-			//_UIManager.updateHighlight (false);
-
-			// If BuildableNodes toggle is true, highlight a new set of vertices/edges
-			//_UIManager.updateHighlight (true);
+			_CurrentPlayer.CmdSetMoveType (mt);
 		}
 	}
 			
