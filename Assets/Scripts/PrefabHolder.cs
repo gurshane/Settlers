@@ -13,6 +13,8 @@ public class PrefabHolder : MonoBehaviour {
     public GameObject road;
     public GameObject metropolis;
     public GameObject boat;
+    public GameObject pirate;
+    public GameObject robber;
 
     public List<Material> materials;
 
