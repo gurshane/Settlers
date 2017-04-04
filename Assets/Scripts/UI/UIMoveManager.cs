@@ -191,6 +191,16 @@ public class UIMoveManager : MonoBehaviour {
 	/// <summary>
 	/// Calls necessary methods so player can move knight
 	/// </summary>
+	public void uiBuildKnight()
+	{
+
+		moveTypeChange(MoveType.BUILD_KNIGHT);
+	}
+
+
+	/// <summary>
+	/// Calls necessary methods so player can move knight
+	/// </summary>
 	public void uiMoveKnight()
 	{
 
@@ -227,6 +237,18 @@ public class UIMoveManager : MonoBehaviour {
 	public void uiChaseRobber()
 	{
 		moveTypeChange(MoveType.CHASE_ROBBER);
+	}
+
+	#endregion
+
+
+	#region Development Chart Methods
+	/// <summary>
+	/// Calls necessary methods so player can upgrade development chart
+	/// </summary>
+	public void uiUpgradeDevelopmentChart()
+	{
+		moveTypeChange(MoveType.UPGRADE_DEVELOPMENT_CHART);
 	}
 
 	#endregion
@@ -354,6 +376,9 @@ public class UIMoveManager : MonoBehaviour {
 			break;
 		case Enums.MoveType.UPGRADE_KNIGHT:
 			rString = "Upgrade Knight";
+			break;
+		case Enums.MoveType.UPGRADE_DEVELOPMENT_CHART:
+			rString = "Upgrade Development Chart";
 			break;
 		default:
 			break;
