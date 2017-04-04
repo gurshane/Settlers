@@ -344,15 +344,20 @@ public class MoveManager : NetworkBehaviour {
 		List<GamePiece> pieces, Enums.Color color, bool server)
     {
 
+		Debug.Log("hello1");
 		if (!ma.canBuildCity (location, resources, pieces, color))
         {
 			return false;
 		}
 
+		Debug.Log("hello2");
+
 		assignAuthority(server);
         RpcBuildCity(location.transform.position, color);
 
 		Player current = GameManager.instance.getCurrentPlayer();
+
+		current.changeVictoryPoints(1);
 
 		// Add an appropriate amount of victory points
         current.changeVictoryPoints(1);

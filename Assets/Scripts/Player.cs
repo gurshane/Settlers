@@ -357,10 +357,13 @@ public class Player : NetworkBehaviour {
 				}
 			} else if (moveType == Enums.MoveType.BUILD_CITY) {
 
+                Debug.Log("hello4");
+
 				if (!pieceHit.tag.Equals("Vertex")) {
 					return;
 				}
 				Vertex v = pieceHit.GetComponent<Vertex>();
+                Debug.Log("hello5");
 
 				if (ma.canBuildCity (v, this.resources, this.pieces, this.myColor)) {
 					CmdBuildCity (v.transform.position);
@@ -883,6 +886,7 @@ public class Player : NetworkBehaviour {
 
     [Command]
 	public void CmdBuildCity(Vector3 location) {
+        Debug.Log("hello3");
 		MoveManager.instance.buildCity (BoardState.instance.vertexPosition [location], this.resources, this.pieces, this.myColor, this.isServer);
 	}
 
