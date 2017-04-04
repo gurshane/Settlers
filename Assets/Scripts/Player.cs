@@ -9,6 +9,7 @@ public class Player : NetworkBehaviour {
     public GameObject myHud;
 
 	private MoveAuthorizer ma;
+    private Graph graph;
 
     [SyncVar]
     public int iD;
@@ -47,11 +48,20 @@ public class Player : NetworkBehaviour {
     [SyncVar]
     public Enums.MoveType moveType;
 
+    [SyncVar]
+    public int oldTurn;
+
     private Dictionary<Vector3, GamePiece> spawnedPieces;
 
     //For moves
-    private Vertex v1 = null;
-    private Edge e1 = null;
+    public Vertex v1 = null;
+    public Edge e1 = null;
+
+    [SyncVar]
+    public int i1 = 0;
+
+    [SyncVar]
+    public bool b1 = false;
 
 	[Command]
     public void CmdInit(int iD)//call this if server is loaded after player
@@ -122,6 +132,7 @@ public class Player : NetworkBehaviour {
         this.special = Enums.Special.NONE;
 
 		this.ma = new MoveAuthorizer ();
+        this.graph = new Graph();
 
 
         if (isLocalPlayer)
@@ -278,6 +289,32 @@ public class Player : NetworkBehaviour {
 				return;
 			}
 
+            bool chosen = false;
+            if (special == Enums.Special.KNIGHT_DISPLACED) {
+                if (!pieceHit.tag.Equals("Vertex")) {
+					return;
+				}
+                Vertex v = pieceHit.GetComponent<Vertex>();
+
+                if (graph.areConnectedVertices (v, v1, myColor))
+                {
+                    if (Object.ReferenceEquals (v.getOccupyingPiece (), null))
+                    {
+                        chosen = true;
+                    }
+                }
+
+                if (chosen) {
+					CmdAlternateDisplaceKnight (v.transform.position);
+
+                    foreach (Player p in GameManager.instance.players) {
+                        p.CmdSetMoveType(MoveType.NONE);
+                    }
+                    CmdRevertTurn();
+                    moveType = Enums.MoveType.NONE;
+				}
+            }
+
             // Must place first settlement if it hasn't been placed yet
 			if (moveType == Enums.MoveType.BUILD_SETTLEMENT) {
 
@@ -413,6 +450,21 @@ public class Player : NetworkBehaviour {
 					CmdChaseRobber (v.transform.position);
                     moveType = Enums.MoveType.NONE;
 				}
+			} else if (moveType == Enums.MoveType.MOVE_SHIP) {
+
+				if (!pieceHit.tag.Equals("Edge")) {
+					return;
+				}
+                Edge e = pieceHit.GetComponent<Edge>();
+
+                if (e1 == null) {
+                    e1 = e;
+                } else {
+                    if (ma.canShipMove(e1, e, this.myColor)) {
+                        CmdMoveShip (e.transform.position);
+                        moveType = Enums.MoveType.NONE;
+                    }
+                }
 			}
         }
     }
@@ -564,6 +616,79 @@ public class Player : NetworkBehaviour {
     public void CmdSetSpecial(Enums.Special spec)
     {
         this.special = spec; 
+    }
+
+    public int getOldTurn()
+    {
+        return this.oldTurn; 
+    }
+
+    [Command]
+    public void CmdSetOldTurn(int turn)
+    {
+        this.oldTurn = turn;
+    }
+
+    public int getI1()
+    {
+        return this.i1; 
+    }
+
+    [Command]
+    public void CmdSetI1(int i)
+    {
+        this.i1 = i;
+    }
+
+    public bool getB1()
+    {
+        return this.b1; 
+    }
+
+    [Command]
+    public void CmdSetB1(bool b)
+    {
+        this.b1 = b;
+    }
+
+    [Command]
+    public void CmdRevertTurn()
+    {
+        GameManager.instance.setSpecialTurn(oldTurn, isServer); 
+    }
+
+    public void SetV1(Vertex vReplace)
+    {
+        CmdSetV1(vReplace.transform.position);
+    }
+
+    [Command]
+    public void CmdSetV1(Vector3 vReplace)
+    {
+        RpcSetV1(vReplace);
+    }
+
+    [ClientRpc]
+    public void RpcSetV1(Vector3 vReplace)
+    {
+        v1 = BoardState.instance.vertexPosition[vReplace];
+    }
+
+    public void SetE1(Edge eReplace)
+    {
+        CmdSetE1(eReplace.transform.position);
+    }
+
+    [Command]
+    public void CmdSetE1(Vector3 eReplace)
+    {
+        RpcSetE1(eReplace);
+    }
+
+    [ClientRpc]
+    public void RpcSetE1(Vector3 eReplace)
+    {
+        e1 = BoardState.instance.edgePosition[eReplace];
     }
 
     public void setStatus(Status newStatus)
@@ -783,6 +908,35 @@ public class Player : NetworkBehaviour {
     public void CmdEndTurn()
     {
         if (GameManager.instance.getPlayerTurn() != iD) { return; }
+        if (GameManager.instance.getGamePhase() == GamePhase.PHASE_ONE) { return; }
+        if (moveType == MoveType.SPECIAL) { return; }
+
+        moveType = Enums.MoveType.NONE;
+        special = Enums.Special.NONE;
+        v1 = null;
+        e1 = null;
+        i1 = 0;
+        b1 = false;
+        movedRoad = false;
+
+        if (progressCards.Count > 4) {
+
+            // Those players discard down to 4 progress cards
+
+        }
+
+        // Set some turn specific booleans to false
+        foreach (GamePiece piece in pieces) {
+            if (piece.getPieceType () == Enums.PieceType.KNIGHT) {
+                Knight k = (Knight)piece;
+                k.notActivatedThisTurn ();
+                k.notUpgradedThisTurn ();
+            } else if (piece.getPieceType () == Enums.PieceType.ROAD) {
+                Road r = (Road)piece;
+                r.notBuiltThisTurn ();
+            }
+        }
+
 		GameManager.instance.SetPlayerTurn(this.isServer);
     }
 
@@ -913,5 +1067,10 @@ public class Player : NetworkBehaviour {
     [Command]
     public void CmdChaseRobber(Vector3 location) {
 		MoveManager.instance.chaseRobber (BoardState.instance.vertexPosition [location], this.myColor, this.isServer);        
+    }
+
+    [Command]
+    public void CmdAlternateDisplaceKnight(Vector3 location) {
+		MoveManager.instance.alternateDisplaceKnight (BoardState.instance.vertexPosition [location], i1, b1, myColor, isServer);        
     }
 }

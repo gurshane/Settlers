@@ -83,13 +83,6 @@ public class MoveManager : NetworkBehaviour {
 		Knight kTarget = (Knight)target.getOccupyingPiece ();
 		int targetLevel = kTarget.getLevel ();
 
-		Vertex displacedLocation = null;
-		foreach (Vertex v in BoardState.instance.vertexPosition.Values)
-        {
-			displacedLocation = v;
-			break;
-		}
-
 		bool gone = true;
 		foreach (Vertex v in BoardState.instance.vertexPosition.Values)
         {
@@ -99,51 +92,93 @@ public class MoveManager : NetworkBehaviour {
                 {
 					if (Object.ReferenceEquals (v, source))
                     {
-						displacedLocation = v;
 						gone = false;
 						break;
 					}
 				}
                 else
                 {
-					displacedLocation = v;
 					gone = false;
 					break;
 				}
 			}
 		}
 
+		if (!gone) {
+			int currTurn = GameManager.instance.getPlayerTurn();
+
+			foreach (Player p in GameManager.instance.players) {
+				p.CmdSetMoveType(MoveType.SPECIAL);
+				p.CmdSetOldTurn(currTurn);
+			}
+			Player opponent = GameManager.instance.getPlayer((int)kTarget.getColor());
+			opponent.CmdSetSpecial(Special.KNIGHT_DISPLACED);
+			opponent.CmdSetI1(targetLevel);
+			opponent.CmdSetB1(kTarget.isActive());
+			GameManager.instance.setSpecialTurn((int)kTarget.getColor(), server);
+		}
 		assignAuthority(server);
 		RpcDisplaceKnight(source.transform.position, target.transform.position, 
-			displacedLocation.transform.position, sourceLevel, targetLevel, gone, color);
+			sourceLevel, targetLevel, color);
 
 		removeAuthority(server);
-
 		return true;
 	}
 
+	public void alternateDisplaceKnight (Vertex displacedLocation, int targetLevel,
+		bool active, Enums.Color color, bool server) {
+
+		assignAuthority(server);
+		RpcAlternateDisplaceKnight(displacedLocation.transform.position,
+				targetLevel, active, color);
+		removeAuthority(server);
+	}
+
+	[ClientRpc]
+	void RpcAlternateDisplaceKnight(Vector3 displacedLocation, 
+		int targetLevel, bool active, Enums.Color color) 
+		
+		{
+
+		Vertex displacedPiece = BoardState.instance.vertexPosition[displacedLocation];
+
+		Player current = GameManager.instance.getCurrentPlayer();
+		List<GamePiece> pieces = current.getGamePieces();
+        Knight targetKnight = Knight.getFreeKnight(pieces);
+		targetKnight.updateLevel(targetLevel);
+		if (active) {
+			targetKnight.activateKnight();
+			targetKnight.notActivatedThisTurn();
+		}
+
+		GameObject targetKnightObject = getKnightFromLevel (targetLevel, displacedLocation);
+		targetKnightObject.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
+
+		BoardState.instance.spawnedObjects.Add(displacedLocation, targetKnightObject);
+
+        displacedPiece.setOccupyingPiece(targetKnight);
+
+        // Deactivate the knight
+        targetKnight.putOnBoard();
+
+		// Check if longest road needs to be updated
+	}
+
     [ClientRpc]
-	void RpcDisplaceKnight(Vector3 source, Vector3 target, Vector3 displacedLocation,
-		int sourceLevel, int targetLevel, bool gone, Enums.Color color)
+	void RpcDisplaceKnight(Vector3 source, Vector3 target,
+		int sourceLevel, int targetLevel, Enums.Color color)
     {
         Vertex sourcePiece = BoardState.instance.vertexPosition[source];
         Vertex targetPiece = BoardState.instance.vertexPosition[target];
-		Vertex displacedPiece = BoardState.instance.vertexPosition[displacedLocation];
 
         Knight sourceKnight = (Knight)sourcePiece.getOccupyingPiece();
         Knight targetKnight = (Knight)targetPiece.getOccupyingPiece();
 
-		GameObject sourceKnightObject = getKnightFromLevel (sourceLevel, target);
-		sourceKnightObject.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
-
-		if (!gone) {
-			GameObject targetKnightObject = getKnightFromLevel (targetLevel, displacedLocation);
-			targetKnightObject.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
-			BoardState.instance.spawnedObjects.Add (displacedLocation, targetKnightObject);
-		}
-
 		Destroy (BoardState.instance.spawnedObjects [source]);
 		Destroy (BoardState.instance.spawnedObjects [target]);
+
+		GameObject sourceKnightObject = getKnightFromLevel (sourceLevel, target);
+		sourceKnightObject.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
 
 		BoardState.instance.spawnedObjects.Remove(target);
 		BoardState.instance.spawnedObjects.Remove(source);
@@ -151,14 +186,11 @@ public class MoveManager : NetworkBehaviour {
         
         // Move the knight
         sourcePiece.setOccupyingPiece(null);
-
         targetPiece.setOccupyingPiece(sourceKnight);
-		if (!gone) {
-        	displacedPiece.setOccupyingPiece(targetKnight);
-		}
 
         // Deactivate the knight
         sourceKnight.deactivateKnight();
+		targetKnight.takeOffBoard();
 
 		// Check if longest road needs to be updated
     }
@@ -357,8 +389,6 @@ public class MoveManager : NetworkBehaviour {
 
 		Player current = GameManager.instance.getCurrentPlayer();
 
-		current.changeVictoryPoints(1);
-
 		// Add an appropriate amount of victory points
         current.changeVictoryPoints(1);
 
@@ -380,12 +410,12 @@ public class MoveManager : NetworkBehaviour {
         // Remove the current settlement
         Vertex source = BoardState.instance.vertexPosition[location];
         GamePiece settlement = source.getOccupyingPiece();
+		Destroy (BoardState.instance.spawnedObjects [location]);
+		BoardState.instance.spawnedObjects.Remove(location);
+
 		GameObject spawnedCity = Instantiate<GameObject>(PrefabHolder.instance.city, location, Quaternion.identity);
         fixPieceRotationAndPosition(spawnedCity);
         spawnedCity.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
-
-		Destroy (BoardState.instance.vertexPosition [location]);
-		BoardState.instance.spawnedObjects.Remove(location);
 
 		BoardState.instance.spawnedObjects.Add(location, spawnedCity);
 
@@ -413,6 +443,8 @@ public class MoveManager : NetworkBehaviour {
         RpcBuildCityWall(location.transform.position, color);
 
 		Player current = GameManager.instance.getCurrentPlayer();
+
+		current.changeCityWallCount(-1);
 
         // Spend the resources
         current.changeResource(Enums.ResourceType.BRICK, -2);
