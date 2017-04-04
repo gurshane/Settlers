@@ -497,7 +497,7 @@ public class GameManager : NetworkBehaviour {
             enoughComs.Add((Enums.CommodityType)i, checkCommodities((Enums.CommodityType)i, num));
         }
 
-        foreach (Hex h in BoardState.instance.hexPoisition.Values)
+        foreach (Hex h in BoardState.instance.hexPosition.Values)
         {
             // If a hex isn't the right number, or doesn't produce cards, continue
             if (h.getHexNumber() != num)
@@ -632,7 +632,7 @@ public class GameManager : NetworkBehaviour {
     {
         int total = 0;
 
-        foreach (Hex h in BoardState.instance.hexPoisition.Values)
+        foreach (Hex h in BoardState.instance.hexPosition.Values)
         {
 
             // If a hex isn't the right type or number, continue
@@ -695,7 +695,7 @@ public class GameManager : NetworkBehaviour {
     {
         int total = 0;
 
-        foreach (Hex h in BoardState.instance.hexPoisition.Values)
+        foreach (Hex h in BoardState.instance.hexPosition.Values)
         {
 
             // If a hex isn't the right type or number, continue
