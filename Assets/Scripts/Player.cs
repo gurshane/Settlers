@@ -63,6 +63,9 @@ public class Player : NetworkBehaviour {
     [SyncVar]
     public bool b1 = false;
 
+    [SyncVar]
+    public int opponent;
+
 	[Command]
     public void CmdInit(int iD)//call this if server is loaded after player
     {
@@ -81,6 +84,30 @@ public class Player : NetworkBehaviour {
     public void OnLoad()//
     {
         GameManager.instance.Init();
+    }
+
+    public int getTotalResources() {
+        int ret = 0;
+        for (int i = 0; i < 5; i++) {
+            ret += resources[i];
+        }
+        return ret;
+    }
+
+    public int getTotalCommodities() {
+        int ret = 0;
+        for (int i = 0; i < 3; i++) {
+            ret += commodities[i];
+        }
+        return ret;
+    }
+
+    public int getHandSize() {
+        return getTotalResources() + getTotalCommodities();
+    }
+
+    public int maxHandSize() {
+        return (3-cityWallsLeft)*2 + 7;
     }
 
     void Start()
@@ -130,6 +157,7 @@ public class Player : NetworkBehaviour {
         this.aqueduct = false;
         this.moveType = Enums.MoveType.PLACE_INITIAL_SETTLEMENT;
         this.special = Enums.Special.NONE;
+        this.opponent = -1;
 
 		this.ma = new MoveAuthorizer ();
         this.graph = new Graph();
@@ -151,7 +179,7 @@ public class Player : NetworkBehaviour {
 			return;   
         }
 
-        if (moveType != MoveType.MOVE_KNIGHT && moveType != MoveType.DISPLACE_KNIGHT) {
+        if (moveType != MoveType.MOVE_KNIGHT && moveType != MoveType.DISPLACE_KNIGHT && moveType != MoveType.CHASE_ROBBER) {
             v1 = null;
         }
 
@@ -273,6 +301,57 @@ public class Player : NetworkBehaviour {
 
         // Main game phase one
 		if (GameManager.instance.getGamePhase () == Enums.GamePhase.PHASE_ONE) {
+
+            // Get mouse click
+			if (Input.GetButtonDown ("Fire1")) {
+				ray = Camera.main.ScreenPointToRay (Input.mousePosition);
+				if (Physics.Raycast (ray, out impact)) {
+					pieceHit = impact.collider.gameObject;
+				}
+			}
+
+			if (Object.ReferenceEquals(pieceHit, null)) {
+				return;
+			}
+
+            if (special == Enums.Special.MOVE_ROBBER) {
+                if (!pieceHit.tag.Equals("Hex")) {
+					return;
+				}
+                Hex h = pieceHit.GetComponent<Hex>();
+
+                if (ma.canMoveRobber(h)) {
+					CmdMoveRobber (h.transform.position);
+                    CmdSetSpecial(Special.STEAL_RESOURCES_ROBBER);
+				}
+            } else if (special == Enums.Special.MOVE_PIRATE) {
+                if (!pieceHit.tag.Equals("Hex")) {
+					return;
+				}
+                Hex h = pieceHit.GetComponent<Hex>();
+
+                if (ma.canMovePirate(h)) {
+					CmdMovePirate (h.transform.position);
+                    CmdSetSpecial(Special.STEAL_RESOURCES_PIRATE);
+				}
+            } else if (special == Enums.Special.STEAL_RESOURCES_ROBBER) {
+                if (!pieceHit.tag.Equals("Vertex")) {
+					return;
+				}
+                Vertex v = pieceHit.GetComponent<Vertex>();
+
+                bool canSteal = false;
+                if (!Object.ReferenceEquals(v.getOccupyingPiece(), null)) {
+                    if (v.getOccupyingPiece().getColor() != myColor) {
+                        canSteal = true;
+                    }
+                }
+
+                if (canSteal) {
+					CmdSetOpponent((int)v.getOccupyingPiece().getColor());
+                    CmdSetSpecial(Special.CHOOSE_OPPONENT_RESOURCES);
+				}
+            }
 		}
 
         // Main game phase two
@@ -289,8 +368,8 @@ public class Player : NetworkBehaviour {
 				return;
 			}
 
-            bool chosen = false;
             if (special == Enums.Special.KNIGHT_DISPLACED) {
+                bool chosen = false;
                 if (!pieceHit.tag.Equals("Vertex")) {
 					return;
 				}
@@ -378,7 +457,7 @@ public class Player : NetworkBehaviour {
 				Vertex v = pieceHit.GetComponent<Vertex>();
 
 				if (ma.canUpgradeKnight (this.resources, this.devFlipChart, v, this.pieces, this.myColor)) {
-					CmdBuildSettlement (v.transform.position);
+					CmdUpgradeKnight (v.transform.position);
                     moveType = Enums.MoveType.NONE;
 				}
 			} else if (moveType == Enums.MoveType.ACTIVATE_KNIGHT) {
@@ -436,20 +515,28 @@ public class Player : NetworkBehaviour {
 				Edge e = pieceHit.GetComponent<Edge>();
 
 				if (ma.canBuildShip(e, this.resources, this.pieces, this.myColor)) {
+                    Debug.Log("ship1");
 					CmdBuildShip (e.transform.position);
                     moveType = Enums.MoveType.NONE;
 				}
 			} else if (moveType == Enums.MoveType.CHASE_ROBBER) {
 
-				if (!pieceHit.tag.Equals("Vertex")) {
-					return;
-				}
-				Vertex v = pieceHit.GetComponent<Vertex>();
-
-				if (ma.canChaseRobber (v, this.myColor)) {
-					CmdChaseRobber (v.transform.position);
-                    moveType = Enums.MoveType.NONE;
-				}
+                if (v1 == null) {
+                    if (!pieceHit.tag.Equals("Vertex")) {
+                        return;
+                    }
+                    Vertex v = pieceHit.GetComponent<Vertex>();
+                    v1 = v;
+                } else {
+                    if (!pieceHit.tag.Equals("Hex")) {
+                        return;
+                    }
+                    Hex h = pieceHit.GetComponent<Hex>();
+                    if (ma.canChaseRobber(v1, this.myColor)) {
+                        CmdChaseRobber (h.transform.position);
+                        moveType = Enums.MoveType.NONE;
+                    }
+                }
 			} else if (moveType == Enums.MoveType.MOVE_SHIP) {
 
 				if (!pieceHit.tag.Equals("Edge")) {
@@ -461,6 +548,7 @@ public class Player : NetworkBehaviour {
                     e1 = e;
                 } else {
                     if (ma.canShipMove(e1, e, this.myColor)) {
+                        Debug.Log("heywhatsup");
                         CmdMoveShip (e.transform.position);
                         moveType = Enums.MoveType.NONE;
                     }
@@ -638,6 +726,17 @@ public class Player : NetworkBehaviour {
     public void CmdSetI1(int i)
     {
         this.i1 = i;
+    }
+
+    public int getOpponent()
+    {
+        return this.opponent; 
+    }
+
+    [Command]
+    public void CmdSetOpponent(int i)
+    {
+        this.opponent = i;
     }
 
     public bool getB1()
@@ -911,7 +1010,9 @@ public class Player : NetworkBehaviour {
         if (GameManager.instance.getGamePhase() == GamePhase.PHASE_ONE) { return; }
         if (moveType == MoveType.SPECIAL) { return; }
 
-        moveType = Enums.MoveType.NONE;
+        if (moveType != MoveType.PLACE_INITIAL_CITY) {
+            moveType = Enums.MoveType.NONE;
+        }
         special = Enums.Special.NONE;
         v1 = null;
         e1 = null;
@@ -1066,11 +1167,21 @@ public class Player : NetworkBehaviour {
 
     [Command]
     public void CmdChaseRobber(Vector3 location) {
-		MoveManager.instance.chaseRobber (BoardState.instance.vertexPosition [location], this.myColor, this.isServer);        
+		MoveManager.instance.chaseRobber (v1, BoardState.instance.hexPosition [location], this.myColor, this.isServer);        
     }
 
     [Command]
     public void CmdAlternateDisplaceKnight(Vector3 location) {
 		MoveManager.instance.alternateDisplaceKnight (BoardState.instance.vertexPosition [location], i1, b1, myColor, isServer);        
+    }
+
+    [Command]
+    public void CmdMoveRobber(Vector3 location) {
+		MoveManager.instance.moveRobber (BoardState.instance.hexPosition [location], isServer);        
+    }
+
+    [Command]
+    public void CmdMovePirate(Vector3 location) {
+		MoveManager.instance.movePirate (BoardState.instance.hexPosition [location], isServer);        
     }
 }

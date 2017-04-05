@@ -565,12 +565,12 @@ public class MoveManager : NetworkBehaviour {
 	public bool buildShip(Edge location, int[] resources,
 		List<GamePiece> pieces, Enums.Color color, bool server)
     {
-
+		Debug.Log("ship2");
 		if (!ma.canBuildShip (location, resources, pieces, color))
         {
 			return false;
 		}
-
+		Debug.Log("ship3");
 		assignAuthority(server);
         RpcBuildShip(location.transform.position, color);
 
@@ -613,20 +613,42 @@ public class MoveManager : NetworkBehaviour {
 	// Move a ship from source to target
 	public bool moveShip(Edge source, Edge target, Enums.Color color, bool server)
     {
+		if (!ma.canShipMove (source, target, color))
+        {
+			return false;
+		}
 		assignAuthority(server);
-        RpcMoveShip(source.transform.position, target.transform.position);
+        RpcMoveShip(source.transform.position, target.transform.position, color);
+
+		Player current = GameManager.instance.getCurrentPlayer();
+		current.movesRoad();
+
 		removeAuthority(server);
 		return true;
 	}
 
     [ClientRpc]
-    void RpcMoveShip(Vector3 source, Vector3 target)
+    void RpcMoveShip(Vector3 source, Vector3 target, Enums.Color color)
     {
+		Edge sourcePiece = BoardState.instance.edgePosition [source];
+        Edge targetPiece = BoardState.instance.edgePosition [target];
 
+		GameObject spawnedBoat = Instantiate<GameObject>(PrefabHolder.instance.boat, target, Quaternion.identity);
+		spawnedBoat.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
+		Destroy (BoardState.instance.spawnedObjects [source]);
+
+		BoardState.instance.spawnedObjects.Add(target, spawnedBoat);
+		BoardState.instance.spawnedObjects.Remove (source);
+
+        Road movedBoat = (Road)sourcePiece.getOccupyingPiece();
+
+        // Move the knight
+        sourcePiece.setOccupyingPiece(null);
+        targetPiece.setOccupyingPiece(movedBoat);
     }
 
 	// Chase robber from source
-	public bool chaseRobber(Vertex source, Enums.Color color, bool server)
+	public bool chaseRobber(Vertex source, Hex target, Enums.Color color, bool server)
     {
 		// Check if the knight can displace
 		if (!ma.canChaseRobber (source, color))
@@ -636,16 +658,13 @@ public class MoveManager : NetworkBehaviour {
 
 		Knight kSource = (Knight)source.getOccupyingPiece ();
 
-		foreach (Hex h in BoardState.instance.hexPosition.Values)
-        {
-			if (ma.canMoveRobber(h)) {
-				moveRobber(h, server);
-				break;
-			}
+		if (!ma.canMoveRobber(target)) {
+			return false;
 		}
 
 		assignAuthority(server);
         RpcChaseRobber(source.transform.position);
+		RpcMoveRobber(target.transform.position);
 		removeAuthority(server);
 		return true;
 	}
