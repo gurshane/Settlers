@@ -89,7 +89,9 @@ public class GameManager : NetworkBehaviour {
         {
             return;
         }
-        Debug.Log("Number of objects tagged Player: " + objects.Length);
+        Debug.Log("Number of objects tagged Player: " + objects.Length);//why only 1 player object found?
+        //client connections delay issues, how to delay until all connections present?
+        //why isnt syncvar properly working on player objects for iD number?????    
         Player[] temp = new Player[objects.Length];
         for (int i = 0; i < objects.Length; i++)
         {

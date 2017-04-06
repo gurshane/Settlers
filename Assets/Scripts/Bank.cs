@@ -228,24 +228,24 @@ public class Bank : NetworkBehaviour {
 		int totalWanted = 0;
 
 		// Extract the information from the trade
-		SyncListInt resOffered = trade.getResourcesOffered ();
-		SyncListInt resWanted = trade.getResourcesWanted ();
-		SyncListInt comOffered = trade.getCommoditiesOffered ();
-		SyncListInt comWanted = trade.getCommoditiesWanted ();
+		int[] resOffered = trade.getResourcesOffered ();
+		int[] resWanted = trade.getResourcesWanted ();
+		int[] comOffered = trade.getCommoditiesOffered ();
+		int[] comWanted = trade.getCommoditiesWanted ();
 
 		// Find the total offered amount
-		for (int i = 0; i < resOffered.Count; i++)
+		for (int i = 0; i < resOffered.Length; i++)
         {
 			totalAvailable += resOffered [i] / resRatios [i];
 		}
-		for (int i = 0; i < comOffered.Count; i++)
+		for (int i = 0; i < comOffered.Length; i++)
         {
 			totalAvailable += comOffered [i] / comRatios [i];
 		}
 		totalAvailable += trade.getGoldOffered () / 2;
 
 		// Find the total requested amount
-		for (int i = 0; i < resWanted.Count; i++)
+		for (int i = 0; i < resWanted.Length; i++)
         {
 			if (resWanted [i] > resources [i])
             {
@@ -253,7 +253,7 @@ public class Bank : NetworkBehaviour {
 			}
 			totalWanted += resWanted [i];
 		}
-		for (int i = 0; i < comWanted.Count; i++)
+		for (int i = 0; i < comWanted.Length; i++)
         {
 			if (comWanted [i] > commodities [i])
             {
@@ -282,38 +282,38 @@ public class Bank : NetworkBehaviour {
         }
 
 		// Extract the information from the trade
-		SyncListInt resOffered = trade.getResourcesOffered();
-		SyncListInt resWanted = trade.getResourcesWanted();
-		SyncListInt comOffered = trade.getCommoditiesOffered();
-		SyncListInt comWanted = trade.getCommoditiesWanted();
+		int[] resOffered = trade.getResourcesOffered();
+		int[] resWanted = trade.getResourcesWanted();
+		int[] comOffered = trade.getCommoditiesOffered();
+		int[] comWanted = trade.getCommoditiesWanted();
 
 		Player trader = trade.getPlayerOffering();
 		int tradeId = trader.getID ();
 		int gold = trade.getGoldOffered ();
 
 		// Update all relevent fields
-		for (int i = 0; i < resOffered.Count; i++)
+		for (int i = 0; i < resOffered.Length; i++)
 		{
 			trader.changeResource((Enums.ResourceType)i, resOffered[i]);
 			depositResource((Enums.ResourceType)i, resOffered[i], trader.isServer);
 		}
-		for (int i = 0; i < comOffered.Count; i++)
+		for (int i = 0; i < comOffered.Length; i++)
 		{
 			trader.changeCommodity((Enums.CommodityType)i, comOffered[i]);
 			depositCommodity((Enums.CommodityType)i, comOffered[i], trader.isServer);
 		}
-		for (int i = 0; i < resWanted.Count; i++)
+		for (int i = 0; i < resWanted.Length; i++)
 		{
 			trader.changeResource((Enums.ResourceType)i, resWanted[i]);
 			withdrawResource((Enums.ResourceType)i, resWanted[i], trader.isServer);
 		}
-		for (int i = 0; i < comWanted.Count; i++)
+		for (int i = 0; i < comWanted.Length; i++)
 		{
 			trader.changeCommodity((Enums.CommodityType)i, comWanted[i]);
 			withdrawCommodity((Enums.CommodityType)i, comWanted[i], trader.isServer);
 		}
-        trader.changeGoldCount(gold);
-        trade.CmdDestroy(trade.netId);
+		trader.changeGoldCount(gold);
+			
         return true;
     }
 
