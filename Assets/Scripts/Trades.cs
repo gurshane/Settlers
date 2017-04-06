@@ -1,33 +1,36 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Networking;
 
-public class Trades : MonoBehaviour {
+public class Trades : NetworkBehaviour {
 
-    private int[] resourcesOffered;
-    private int[] commoditiesOffered;
-    private int[] resourcesWanted;
-    private int[] commoditiesWanted;
+    SyncListInt resourcesOffered;
+    SyncListInt commoditiesOffered;
+    SyncListInt resourcesWanted;
+    SyncListInt commoditiesWanted;
+    [SyncVar]
     private int goldOffered;
+    [SyncVar]
     private int goldWanted;
     private Player offering;
 
-    public int [] getResourcesOffered()
+    public SyncListInt getResourcesOffered()
     {
         return resourcesOffered;
     }
 
-    public int [] getCommoditiesOffered()
+    public SyncListInt getCommoditiesOffered()
     {
         return commoditiesOffered;
     }
 
-    public int[] getResourcesWanted()
+    public SyncListInt getResourcesWanted()
     {
         return resourcesWanted;
     }
 
-    public int[] getCommoditiesWanted()
+    public SyncListInt getCommoditiesWanted()
     {
         return commoditiesWanted;
     }
@@ -47,9 +50,29 @@ public class Trades : MonoBehaviour {
         return offering;
     }
 
-    public void init()
+    public void init(int [] resourcesOffer, int [] resourcesDemand, int [] commoditiesOffer, int [] commoditiesDemand, int goldOffer, int goldDemand, Player offer)
     {
-
+        for (int i = 0; i < resourcesOffer.Length; i++)
+        {
+            resourcesOffered.Add(resourcesOffer[i]);
+            resourcesWanted.Add(resourcesDemand[i]);
+        }
+        for (int j = 0; j < commoditiesOffer.Length; j++)
+        {
+            commoditiesOffered.Add(commoditiesOffer[j]);
+            commoditiesWanted.Add(commoditiesDemand[j]);
+        }
+        goldOffered = goldOffer;
+        goldWanted = goldDemand;
+        offering = offer;
     }
+
+    [Command]
+    public void CmdDestroy(NetworkInstanceId netID)
+    {
+        GameObject theObject = NetworkServer.FindLocalObject(netID);
+        NetworkServer.Destroy(theObject);
+    }
+
 
 }
