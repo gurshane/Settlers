@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System;
 using Enums;
 using UnityEngine.Networking;
 
@@ -163,7 +164,7 @@ public class Player : NetworkBehaviour {
 				}
 			}
 
-			if (Object.ReferenceEquals(pieceHit, null)) {
+			if (System.Object.ReferenceEquals(pieceHit, null)) {
 				return;
 			}
 				
@@ -206,7 +207,7 @@ public class Player : NetworkBehaviour {
 				}
 			}
 
-			if (Object.ReferenceEquals(pieceHit, null)) {
+			if (System.Object.ReferenceEquals(pieceHit, null)) {
 				return;
 			}
 
@@ -583,6 +584,7 @@ public class Player : NetworkBehaviour {
     [Command]
     public void CmdChangeCommodity(CommodityType commodityType, int num)
     {
+        commodities[(int)commodityType] += num;
         RpcChangeCommodity(commodityType, num);
     }
 
@@ -661,4 +663,27 @@ public class Player : NetworkBehaviour {
 	public void CmdPlaceInitialShip(Vector3 location) {
 		MoveManager.instance.placeInitialShip (BoardState.instance.edgePosition [location], this.myColor, this.pieces, this.isServer);
 	}
+
+    //call this from player accepting the trade 
+    public void acceptTrade(Trades trade)
+    {
+        Player offered = trade.getPlayerOffering();
+        for (int i = 0; i < trade.getResourcesOffered().Count; i++)
+        {
+            offered.changeResource((Enums.ResourceType)i, -trade.getResourcesOffered()[i]);
+            offered.changeResource((Enums.ResourceType)i, trade.getResourcesWanted()[i]);
+            this.changeResource((Enums.ResourceType)i, trade.getResourcesOffered()[i]);
+            this.changeResource((Enums.ResourceType)i, -trade.getResourcesWanted()[i]);
+        }
+        for (int i = 0; i < trade.getCommoditiesOffered().Count; i++)
+        {
+            offered.changeCommodity((Enums.CommodityType)i, -trade.getCommoditiesOffered()[i]);
+            offered.changeCommodity((Enums.CommodityType)i, trade.getCommoditiesWanted()[i]);
+            this.changeCommodity((Enums.CommodityType)i, trade.getCommoditiesOffered()[i]);
+            this.changeCommodity((Enums.CommodityType)i, -trade.getCommoditiesWanted()[i]);
+        }
+        offered.changeGoldCount(trade.getGoldWanted() - trade.getGoldOffered());
+        this.changeGoldCount(trade.getGoldOffered() - trade.getGoldWanted());
+        trade.CmdDestroy(trade.netId);//destroy the trade 
+    }
 }
