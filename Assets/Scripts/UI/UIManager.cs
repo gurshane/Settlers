@@ -125,10 +125,37 @@ public class UIManager : NetworkBehaviour {
     #endregion
 
 
+	#region Buildable Nodes Attributes
+	/// <summary>
+	/// List of vertices to highlight
+	/// </summary>
+	private List<Vertex> _vToHighlight;
+
+	/// <summary>
+	/// List of edges to highlight
+	/// </summary>
+	private List<Edge> _eToHighlight;
+
+	private bool highlightBoardPieces;
+
+	/// <summary>
+	/// The highlighted material applied to vertices/edges.
+	/// </summary>
+	[SerializeField]
+	private Material highlightMaterial;
+
+	private MoveType recentMove;
+
+	#endregion
+
 	// Use this for initialization
 	void Awake () {
         
 		_SmartPanel.gameObject.SetActive (true);
+		_vToHighlight = new List<Vertex> ();
+		_eToHighlight = new List<Edge> ();
+		recentMove = MoveType.NONE;
+
 		_UIMoveManager = GetComponent<UIMoveManager> ();
 
 
@@ -157,8 +184,8 @@ public class UIManager : NetworkBehaviour {
 			_MaritimeTradePanel.gameObject.SetActive (false);
 
 
-			// Set the Dice Roll panel to false at start. Only shows during second turn
-			_DiceRollPanel.gameObject.SetActive(false);
+			// Set the Dice Roll panel to true at start. Only shows the rollDice button at the right turns though
+			_DiceRollPanel.gameObject.SetActive(true);
         }
     }
 
@@ -172,8 +199,172 @@ public class UIManager : NetworkBehaviour {
 		_CurrentPlayer.CmdDiceRoll ();
 	}
 
+	public void showDiceRollPanel()
+	{
+		bool check1 = GameManager.instance.getPlayerTurn () == _CurrentPlayer.getID ();
+		bool check2 = GameManager.instance.getGamePhase () == GamePhase.PHASE_ONE;
+		UIDiceRollPanel diceButton = _DiceRollPanel.GetComponent<UIDiceRollPanel> ();
+
+		if (check1 && check2) {
+			diceButton.showRollButton(true);
+		} 
+
+		else 
+		{
+			diceButton.showRollButton(false);
+		}
+	}
+
 	#endregion
 
+	#region Smart Panel methods
+
+	/// <summary>
+	/// Toggles the highlightBoardPieces attribute. 
+	/// Method for the BuildableNodes button alone
+	/// </summary>
+	public void toggleHighlight()
+	{
+		highlightBoardPieces = !highlightBoardPieces;
+
+		updateHighlight ();
+
+		/*// If highlightBoardPieces is true
+		if (highlightBoardPieces) 
+		{
+			getHighlightList ();
+			highlight ();
+		} 
+
+		else 
+		{
+			unHighlight ();
+		}*/
+	}
+
+	/// <summary>
+	/// Updates the pieces to be highlight if the toggle is true
+	/// </summary>
+	public void updateHighlight()
+	{
+		// If the recentMoveType has yet to change, there is no need to change the highlighted pieces
+		if (recentMove == _CurrentPlayer.getMoveType ()) return;
+
+
+		// Clear board of any previously highlighted elements
+		highlight (false);
+
+		// If  the highlightBoardPieces attribute is true, then highlight new set of elements
+		if (highlightBoardPieces) 
+		{
+			getHighlightList ();
+			recentMove = _CurrentPlayer.getMoveType ();
+			highlight (true);
+		} 
+	
+	}
+
+
+	/// <summary>
+	/// Highlights the populated vertex list or edge list (whichever is actively populated)
+	/// </summary>
+	private void highlight(bool p_State)
+	{
+		if (_vToHighlight.Count > 0) 
+		{
+			foreach (Vertex v in _vToHighlight) 
+			{
+				v.GetComponent<Renderer> ().enabled = p_State;
+				v.GetComponent<Renderer> ().material = highlightMaterial;
+			}
+		}
+
+		else if (_eToHighlight.Count > 0) 
+		{
+			foreach (Edge e in _eToHighlight) 
+			{
+				e.GetComponent<Renderer> ().enabled = p_State;
+				e.GetComponent<Renderer> ().material = highlightMaterial;
+			}
+		}
+	}
+		
+
+
+	/// <summary>
+	/// Fills the vToHighlight, or eToHilghlight list with the vertices/edges corresponding to the Player's current
+	/// move type
+	/// </summary>
+	private void getHighlightList()
+	{
+
+		Buildable _build = new Buildable ();
+
+		// Clear both lists initially. In order for highlight() to check against if either one is empty
+		_vToHighlight.Clear();
+		_eToHighlight.Clear ();
+
+		switch (_CurrentPlayer.getMoveType()) 
+		{
+		case Enums.MoveType.ACTIVATE_KNIGHT:
+			_vToHighlight = _build.buildableActivateKnight (_CurrentPlayer.resources, _CurrentPlayer.getColor());
+			break;
+		case Enums.MoveType.BUILD_CITY:
+			_vToHighlight = _build.buildableBuildCity(_CurrentPlayer.getResources(), _CurrentPlayer.getGamePieces(), _CurrentPlayer.getColor());
+			break;
+		case Enums.MoveType.BUILD_CITY_WALL:
+			_vToHighlight = _build.buildableBuildCityWall (_CurrentPlayer.getResources(), _CurrentPlayer.getCityWallCount (), _CurrentPlayer.getColor ());
+			break;
+		case Enums.MoveType.BUILD_KNIGHT:
+			_vToHighlight = _build.buildableBuildKnight (_CurrentPlayer.getResources (), _CurrentPlayer.getGamePieces (), _CurrentPlayer.getColor ());
+			break;
+		// Edges to be Highlighted
+		case Enums.MoveType.BUILD_ROAD:
+			_eToHighlight = _build.buildableBuildRoad (_CurrentPlayer.getResources (), _CurrentPlayer.getGamePieces (), _CurrentPlayer.getColor ());
+			break;
+		case Enums.MoveType.BUILD_SETTLEMENT:
+			_vToHighlight = _build.buildableBuildSettlement (_CurrentPlayer.getResources (), _CurrentPlayer.getGamePieces (), _CurrentPlayer.getColor ());
+			break;
+		case Enums.MoveType.BUILD_SHIP:
+			_eToHighlight = _build.buildableBuildShip (_CurrentPlayer.getResources (), _CurrentPlayer.getGamePieces (), _CurrentPlayer.getColor ());
+			break;
+		case Enums.MoveType.CHASE_ROBBER:
+			_vToHighlight = _build.buildableChaseRobber (_CurrentPlayer.getColor ());
+			break;
+		case Enums.MoveType.DISPLACE_KNIGHT:
+			_vToHighlight = _build.buildableDisplaceKnight (_CurrentPlayer.getColor ());
+			break;
+		case Enums.MoveType.MOVE_KNIGHT:
+			_vToHighlight = _build.buildableMoveKnight (_CurrentPlayer.getColor ());
+			break;
+		case Enums.MoveType.MOVE_SHIP:
+			_eToHighlight = _build.buildableMoveShip (_CurrentPlayer.getColor ());
+			break;
+		case Enums.MoveType.PLACE_INITIAL_CITY:
+			_vToHighlight = _build.buildablePlaceInitialTownPiece ();
+			break;
+		case Enums.MoveType.PLACE_INITIAL_ROAD:
+			_eToHighlight = _build.buildablePlaceInitialRoad (_CurrentPlayer.getColor ());
+			break;
+		case Enums.MoveType.PLACE_INITIAL_SETTLEMENT:
+			_vToHighlight = _build.buildablePlaceInitialTownPiece ();
+			break;
+		case Enums.MoveType.PLACE_INITIAL_SHIP:
+			_eToHighlight = _build.buildablePlaceInitialShip (_CurrentPlayer.getColor ());
+			break;
+		case Enums.MoveType.UPGRADE_KNIGHT:
+			_vToHighlight = _build.buildableUpgradgeKnight (_CurrentPlayer.getResources (), _CurrentPlayer.getDevFlipChart (), _CurrentPlayer.getGamePieces (), _CurrentPlayer.getColor ());
+			break;
+		case Enums.MoveType.NONE:
+			highlight (false);
+			break;
+		default:
+			break;
+		}
+
+	}
+
+	#endregion
 
     #region Update Methods
     /// <summary>
@@ -213,11 +404,9 @@ public class UIManager : NetworkBehaviour {
 	/// </summary>
 	public void updateDiceRollPanel()
 	{
+		
 		_DiceRollPanel.GetComponent<UIElement> ().uiUpdate(_CurrentPlayer);
 
-
-		// If it is second turn, set DiceRoll Panel active to true
-		//if (_PlayerHighlighter.secondTurn == true) _DiceRollPanel.gameObject.SetActive (true);
 	}
 
 	/// <summary>
@@ -381,7 +570,7 @@ public class UIManager : NetworkBehaviour {
 	}
 
 
-	#region Setters
+	#region Setters and Getters
 
 	/// <summary>
 	/// Gets the game manager attribute of this instance
@@ -487,6 +676,12 @@ public class UIManager : NetworkBehaviour {
 				updateTurnsPanel();
 
 				updatePlayerInfoPanels ();
+
+				showDiceRollPanel ();
+
+
+				updateHighlight ();
+
             }
         }
 	

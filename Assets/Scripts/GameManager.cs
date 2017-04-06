@@ -140,6 +140,13 @@ public class GameManager : NetworkBehaviour {
     {
         return this.playerTurn;
     }
+
+    public void setSpecialTurn(int turn, bool server) {
+        // Assign client authority
+        assignAuthority(server);
+        playerTurn = turn;
+        removeAuthority(server);
+    }
 	
     // Move to next turn based on game phase
 	public void SetPlayerTurn(bool server)
@@ -184,8 +191,8 @@ public class GameManager : NetworkBehaviour {
             thirdDie = UnityEngine.Random.Range(1, 4);
             eventDie = (Enums.EventDie)thirdDie;
         }
-        removeAuthority(server);
         resolveDice();
+        removeAuthority(server);
     }
 
     public int getNumberResources() {
@@ -359,6 +366,11 @@ public class GameManager : NetworkBehaviour {
         }
     }
 
+    public void sevenShortcut(int start, bool server){
+        assignAuthority(server);
+        resolveSeven(start);
+        removeAuthority(server);
+    }
    
 
     // Resolve a dice roll
@@ -368,22 +380,23 @@ public class GameManager : NetworkBehaviour {
         // Check if a seven was rolled
         if (firstDie + secondDie == 7)
         {
-            resolveSeven();
+            resolveSeven(0);
         }
         else
         {
             distribute();
+            gamePhase = Enums.GamePhase.PHASE_TWO;
         }
 
         //Barbarian
 
         //Event Die
-
-        gamePhase = Enums.GamePhase.PHASE_TWO;
     }
 
+
+
     // Resolve a seven if it is rolled
-    private void resolveSeven()
+    private void resolveSeven(int start)
     {
 
         // If the barbarian has not attacked, nothing happens
@@ -392,18 +405,26 @@ public class GameManager : NetworkBehaviour {
             return;
         }
 
-        foreach (Player p in players)
+        for (int i = start; i < players.Count; i++)
         {
+            Player p = players[i];
+            if (p.getHandSize() > p.maxHandSize() ){
 
-            //Discard cards
-
+                foreach (Player p2 in players) {
+                    p2.CmdSetMoveType(MoveType.SPECIAL);
+                    p2.CmdSetOldTurn(playerTurn);
+                }
+                p.CmdSetSpecial(Special.DISCARD_RESOURCE_SEVEN);
+                setSpecialTurn(p.getID(), isServer);
+                return;
+            }
         }
 
-        //Choose pirate or robber
-
-        //Move pirate or robber
-
-        //vertices adjacent to robber
+        foreach (Player p2 in players) {
+            p2.CmdSetMoveType(MoveType.SPECIAL);
+            p2.CmdSetOldTurn(playerTurn);
+        }
+        getCurrentPlayer().CmdSetSpecial(Special.CHOOSE_PIRATE_OR_ROBBER);
     }
 
     private void resolveBarbarian()
@@ -495,7 +516,7 @@ public class GameManager : NetworkBehaviour {
             enoughComs.Add((Enums.CommodityType)i, checkCommodities((Enums.CommodityType)i, num));
         }
 
-        foreach (Hex h in BoardState.instance.hexPoisition.Values)
+        foreach (Hex h in BoardState.instance.hexPosition.Values)
         {
             // If a hex isn't the right number, or doesn't produce cards, continue
             if (h.getHexNumber() != num)
@@ -630,7 +651,7 @@ public class GameManager : NetworkBehaviour {
     {
         int total = 0;
 
-        foreach (Hex h in BoardState.instance.hexPoisition.Values)
+        foreach (Hex h in BoardState.instance.hexPosition.Values)
         {
 
             // If a hex isn't the right type or number, continue
@@ -693,7 +714,7 @@ public class GameManager : NetworkBehaviour {
     {
         int total = 0;
 
-        foreach (Hex h in BoardState.instance.hexPoisition.Values)
+        foreach (Hex h in BoardState.instance.hexPosition.Values)
         {
 
             // If a hex isn't the right type or number, continue

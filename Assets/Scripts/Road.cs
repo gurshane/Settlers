@@ -4,8 +4,8 @@ using UnityEngine;
 
 public class Road : GamePiece {
 
-	private bool isShip;
-	private bool builtThisTurn;
+	public bool isShip;
+	public bool builtThisTurn;
 
     public Road(bool isShip) :
         base(Enums.PieceType.ROAD)
