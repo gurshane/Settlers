@@ -594,7 +594,9 @@ public class MoveManager : NetworkBehaviour {
     {
         Edge edge = BoardState.instance.edgePosition[location];
 		GameObject spawnedBoat = Instantiate<GameObject>(PrefabHolder.instance.boat, location, Quaternion.identity);
-        fixPieceRotationAndPosition(spawnedBoat);
+
+        spawnedBoat.transform.position += new Vector3(0f, 10f, 0f);
+
         spawnedBoat.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
 		BoardState.instance.spawnedObjects.Add(location, spawnedBoat);
 
@@ -945,7 +947,9 @@ public class MoveManager : NetworkBehaviour {
     {
         Edge edge = BoardState.instance.edgePosition[location];
 		GameObject spawnedBoat = Instantiate<GameObject>(PrefabHolder.instance.boat, location, Quaternion.identity);
-        fixPieceRotationAndPosition(spawnedBoat);
+
+        spawnedBoat.transform.position += new Vector3(0f, 10f, 0f);
+
         spawnedBoat.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
 		BoardState.instance.spawnedObjects.Add(location, spawnedBoat);
 
