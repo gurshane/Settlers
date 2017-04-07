@@ -43,31 +43,12 @@ public class UIMoveManager : MonoBehaviour {
 	[SerializeField]
 	private Transform _BuildingPanel;
 
-	/// <summary>
-	/// The resource discard panel.
-	/// </summary>
-	[SerializeField]
-	private Transform _ResourceDiscardPanel;
-	private int originalPlayerHandSum;
-
-	[SerializeField]
-	private Transform _PirateRobberChoosePanel;
-
 	#endregion
 
 	// -------------------------
 
 	void Start () {
 		_UIManager = GetComponent<UIManager> ();
-
-		_InitialPhasePanel.gameObject.SetActive (true);
-
-		_ResourceDiscardPanel.gameObject.SetActive (false);
-		originalPlayerHandSum = 0;
-
-		_KnightPanel.gameObject.SetActive (false);
-		_BuildingPanel.gameObject.SetActive (false);
-		_PirateRobberChoosePanel.gameObject.SetActive (false);
 
 		buildingToggle = false;
 		knightToggle = false;
@@ -260,107 +241,6 @@ public class UIMoveManager : MonoBehaviour {
 
 	#endregion
 
-	#region Resource Discard Panel Methods
-
-	public void revealResourceDiscardPanel()
-	{
-
-		if (_CurrentPlayer.getSpecial () == Special.DISCARD_RESOURCE_SEVEN) 
-		{
-			_ResourceDiscardPanel.gameObject.SetActive (true);
-
-			// If originalHandSum hasn't been modified at all, then set it to Player's current hand size
-			if (originalPlayerHandSum == 0) {
-				originalPlayerHandSum = _CurrentPlayer.getHandSize ();
-			}
-		} 
-		else {
-			_ResourceDiscardPanel.gameObject.SetActive (false);
-			originalPlayerHandSum = 0;
-		}
-	}
-
-
-	/// <summary>
-	/// Decrements player's p_resource by 1
-	/// </summary>
-	/// <param name="p_Resource">P resource.</param>
-	public void discardPlayerResource(int p_Resource)
-	{
-		_CurrentPlayer.changeResource ((ResourceType)p_Resource, -1);
-
-		// If handsize goes lower than half the original hand size when discard began,
-		// close panel, revert turn back to the player who rolled 7
-		if (_CurrentPlayer.getHandSize () <= originalPlayerHandSum - originalPlayerHandSum / 2) 
-		{
-			_CurrentPlayer.CmdSetSpecial (Special.NONE);
-			int temp = GameManager.instance.getPlayerTurn ();
-			_CurrentPlayer.CmdRevertTurn ();
-
-			// Goes to the next player to discard
-			GameManager.instance.sevenShortcut (temp, _CurrentPlayer.isServer);
-		}
-	}
-
-	/// <summary>
-	/// Decrements player's pCommodity by 1
-	/// </summary>
-	/// <param name="p_Commodity">P commodity.</param>
-	public void discardPlayerCommodity(int p_Commodity)
-	{
-		_CurrentPlayer.changeCommodity ((CommodityType)p_Commodity, -1);
-
-		// If handsize goes lower than half the original hand size when discard began,
-		// close panel, revert turn back to the player who rolled 7
-		if (_CurrentPlayer.getHandSize () <= originalPlayerHandSum - originalPlayerHandSum / 2) 
-		{
-			_CurrentPlayer.CmdSetSpecial (Special.NONE);
-			int temp = GameManager.instance.getPlayerTurn ();
-			_CurrentPlayer.CmdRevertTurn ();
-
-			// Goes to the next player to discard
-			GameManager.instance.sevenShortcut (temp+1, _CurrentPlayer.isServer);
-		}
-
-	}
-
-	#endregion
-
-
-	#region Choose Pirate or Robber Panel Methods
-	public void revealChoosePirateRobberPanel()
-	{
-		if (_CurrentPlayer.getSpecial () == Special.CHOOSE_PIRATE_OR_ROBBER) 
-		{
-			_PirateRobberChoosePanel.gameObject.SetActive (true);
-
-		} 
-		else {
-			_PirateRobberChoosePanel.gameObject.SetActive (false);
-
-		}
-	}
-
-	/// <summary>
-	/// Chooses the pirate or robber depending on parameter value
-	/// </summary>
-	/// <param name="p_EnumIndex">P enum index.</param>
-	public void choosePirateOrRobber(int p_EnumIndex)
-	{
-		switch (p_EnumIndex) 
-		{
-		case 1:
-			_CurrentPlayer.CmdSetSpecial (Enums.Special.MOVE_ROBBER);
-			break;
-		case 2:
-			_CurrentPlayer.CmdSetSpecial (Enums.Special.MOVE_PIRATE);
-			break;
-		default:
-			break;
-		}
-	}
-	#endregion
-
 
 	#region Development Chart Methods
 	/// <summary>
@@ -381,9 +261,6 @@ public class UIMoveManager : MonoBehaviour {
 	/// </summary>
 	public void toggleBuildPanel()
 	{
-		if (GameManager.instance.getGamePhase () == GamePhase.SETUP_ONE || GameManager.instance.getGamePhase () == GamePhase.SETUP_TWO)
-			return;
-		
 		buildingToggle = !buildingToggle;
 		_BuildingPanel.gameObject.SetActive (buildingToggle);
 		_KnightPanel.gameObject.SetActive (false);
@@ -391,9 +268,6 @@ public class UIMoveManager : MonoBehaviour {
 
 	public void toggleKnightsPanel()
 	{
-		if (GameManager.instance.getGamePhase () == GamePhase.SETUP_ONE || GameManager.instance.getGamePhase () == GamePhase.SETUP_TWO)
-			return;
-		
 		knightToggle = !knightToggle;
 		_KnightPanel.gameObject.SetActive (knightToggle);
 		_BuildingPanel.gameObject.SetActive (false);
@@ -498,7 +372,7 @@ public class UIMoveManager : MonoBehaviour {
 			rString = "Place Initial Ship";
 			break;
 		case Enums.MoveType.SPECIAL:
-			rString = "Special: " + convert(_CurrentPlayer.getSpecial());
+			rString = "Special";
 			break;
 		case Enums.MoveType.UPGRADE_KNIGHT:
 			rString = "Upgrade Knight";
@@ -513,46 +387,6 @@ public class UIMoveManager : MonoBehaviour {
 		return rString;
 	}
 
-	private string convert(Enums.Special  p_Special)
-	{
-		string rString = "";
-
-		switch (p_Special) 
-		{
-		case Special.CHOOSE_OPPONENT_RESOURCES:
-			rString = "Choose Opponent Resources";
-			break;
-		case Special.CHOOSE_PIRATE_OR_ROBBER:
-			rString = "Choose Pirate or Robber";
-			break;
-		case Special.DISCARD_PROGRESS:
-			rString = "Discard Progress Card";
-			break;
-		case Special.DISCARD_RESOURCE_SEVEN:
-			rString = "Discard Cards";
-			break;
-		case Special.KNIGHT_DISPLACED:
-			rString = "Knight Displaced";
-			break;
-		case Special.MOVE_PIRATE:
-			rString = "Move Pirate";
-			break;
-		case Special.MOVE_ROBBER:
-			rString = "Move Robber";
-			break;
-		//case Special.STEAL_RESOURCES:
-			//break;
-		case Special.NONE:
-			rString = "None";
-			break;
-		default:
-			break;
-		}
-
-		return rString;
-	}
-
-
 	private void moveTypeChange(Enums.MoveType mt) {
 		if (_CurrentPlayer.getMoveType () != MoveType.SPECIAL) {
 			_CurrentPlayer.CmdSetMoveType (mt);
@@ -565,10 +399,5 @@ public class UIMoveManager : MonoBehaviour {
 
 		handleInitialPhasePanelDisplay ();
 		handleBannerText ();
-
-
-		/* Show or hide Discard Resource Panel */
-		revealResourceDiscardPanel ();
-		revealChoosePirateRobberPanel ();
 	}
 }

@@ -203,11 +203,9 @@ public class UIManager : NetworkBehaviour {
 	{
 		bool check1 = GameManager.instance.getPlayerTurn () == _CurrentPlayer.getID ();
 		bool check2 = GameManager.instance.getGamePhase () == GamePhase.PHASE_ONE;
-		bool check3 = _CurrentPlayer.getMoveType () == MoveType.SPECIAL;
 		UIDiceRollPanel diceButton = _DiceRollPanel.GetComponent<UIDiceRollPanel> ();
 
-
-		if (check1 && check2 && !check3) {
+		if (check1 && check2) {
 			diceButton.showRollButton(true);
 		} 
 
@@ -228,8 +226,6 @@ public class UIManager : NetworkBehaviour {
 	public void toggleHighlight()
 	{
 		highlightBoardPieces = !highlightBoardPieces;
-		Debug.Log ("highlightBoardPieces: " + highlightBoardPieces);
-
 
 		updateHighlight ();
 
@@ -247,21 +243,20 @@ public class UIManager : NetworkBehaviour {
 	}
 
 	/// <summary>
-	/// Updates the pieces to be highlighted if the toggle is true
-	/// else, it hides all highlighted pieces again
+	/// Updates the pieces to be highlight if the toggle is true
 	/// </summary>
-	private void updateHighlight()
+	public void updateHighlight()
 	{
-		if (highlightBoardPieces == false)
-			highlight(false);
-		
 		// If the recentMoveType has yet to change, there is no need to change the highlighted pieces
-		//if (recentMove == _CurrentPlayer.getMoveType ()) return;
+		if (recentMove == _CurrentPlayer.getMoveType ()) return;
+
+
+		// Clear board of any previously highlighted elements
+		highlight (false);
 
 		// If  the highlightBoardPieces attribute is true, then highlight new set of elements
 		if (highlightBoardPieces) 
 		{
-			highlight (false);
 			getHighlightList ();
 			recentMove = _CurrentPlayer.getMoveType ();
 			highlight (true);
