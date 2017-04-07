@@ -334,7 +334,7 @@ public class Player : NetworkBehaviour {
 					CmdMovePirate (h.transform.position);
                     CmdSetSpecial(Special.STEAL_RESOURCES_PIRATE);
 				}
-            } else if (special == Enums.Special.STEAL_RESOURCES_ROBBER) {
+            } else if (special == Enums.Special.STEAL_RESOURCES) {
                 if (!pieceHit.tag.Equals("Vertex")) {
 					return;
 				}
