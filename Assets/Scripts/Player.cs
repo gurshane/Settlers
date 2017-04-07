@@ -322,7 +322,7 @@ public class Player : NetworkBehaviour {
 
                 if (ma.canMoveRobber(h)) {
 					CmdMoveRobber (h.transform.position);
-                    CmdSetSpecial(Special.STEAL_RESOURCES_ROBBER);
+                    CmdSetSpecial(Special.STEAL_RESOURCES);
 				}
             } else if (special == Enums.Special.MOVE_PIRATE) {
                 if (!pieceHit.tag.Equals("Hex")) {
@@ -332,7 +332,7 @@ public class Player : NetworkBehaviour {
 
                 if (ma.canMovePirate(h)) {
 					CmdMovePirate (h.transform.position);
-                    CmdSetSpecial(Special.STEAL_RESOURCES_PIRATE);
+                    CmdSetSpecial(Special.STEAL_RESOURCES);
 				}
             } else if (special == Enums.Special.STEAL_RESOURCES) {
                 if (!pieceHit.tag.Equals("Vertex")) {
