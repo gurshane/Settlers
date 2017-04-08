@@ -347,6 +347,16 @@ public class UIManager : NetworkBehaviour {
 		case Enums.MoveType.UPGRADE_KNIGHT:
 			_vToHighlight = _build.buildableUpgradgeKnight (_CurrentPlayer.getResources (), _CurrentPlayer.getDevFlipChart (), _CurrentPlayer.getGamePieces (), _CurrentPlayer.getColor ());
 			break;
+		case Enums.MoveType.SPECIAL:
+			if (Enums.Special.STEAL_RESOURCES_ROBBER == _CurrentPlayer.getSpecial ()) 
+			{
+				_vToHighlight = _build.buildableCanStealRobber (_CurrentPlayer.getColor ());
+			}
+			if (Enums.Special.STEAL_RESOURCES_PIRATE == _CurrentPlayer.getSpecial ()) 
+			{
+				_eToHighlight = _build.buildableCanStealPirate (_CurrentPlayer.getColor ());
+			}
+			break;
 		case Enums.MoveType.NONE:
 			highlight (false);
 			break;
