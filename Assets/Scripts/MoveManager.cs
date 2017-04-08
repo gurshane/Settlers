@@ -722,7 +722,6 @@ public class MoveManager : NetworkBehaviour {
 
 		GameObject newRobber = Instantiate<GameObject>(PrefabHolder.instance.robber, target, Quaternion.identity);
         fixPieceRotationAndPosition(newRobber);
-        newRobber.GetComponent<MeshRenderer>().material.SetColor("_Color", UnityEngine.Color.gray);
 		BoardState.instance.spawnedObjects.Add(target, newRobber);
 
 		if (source != null) {
@@ -772,7 +771,6 @@ public class MoveManager : NetworkBehaviour {
 
 		GameObject newPirate = Instantiate<GameObject>(PrefabHolder.instance.pirate, target, Quaternion.identity);
         fixPieceRotationAndPosition(newPirate);
-        newPirate.GetComponent<MeshRenderer>().material.SetColor("_Color", UnityEngine.Color.black);
 		BoardState.instance.spawnedObjects.Add(target, newPirate);
 
 		if (source != null) {
