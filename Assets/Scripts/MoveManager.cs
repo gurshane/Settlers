@@ -716,8 +716,10 @@ public class MoveManager : NetworkBehaviour {
         newRobber.GetComponent<MeshRenderer>().material.SetColor("_Color", UnityEngine.Color.gray);
 		BoardState.instance.spawnedObjects.Add(target, newRobber);
 
-		Destroy (BoardState.instance.spawnedObjects [source.transform.position]);
-		BoardState.instance.spawnedObjects.Remove(source.transform.position);
+		if (source != null) {
+			Destroy (BoardState.instance.spawnedObjects [source.transform.position]);
+			BoardState.instance.spawnedObjects.Remove(source.transform.position);
+		}
     }
 
 	// Move Pirate to target
@@ -755,8 +757,10 @@ public class MoveManager : NetworkBehaviour {
         newPirate.GetComponent<MeshRenderer>().material.SetColor("_Color", UnityEngine.Color.black);
 		BoardState.instance.spawnedObjects.Add(target, newPirate);
 
-		Destroy (BoardState.instance.spawnedObjects [source.transform.position]);
-		BoardState.instance.spawnedObjects.Remove(source.transform.position);
+		if (source != null) {
+			Destroy (BoardState.instance.spawnedObjects [source.transform.position]);
+			BoardState.instance.spawnedObjects.Remove(source.transform.position);
+		}
     }
 
 	// Place Merchant at target
