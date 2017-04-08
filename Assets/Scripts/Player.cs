@@ -918,6 +918,7 @@ public class Player : NetworkBehaviour {
     }
 
     public void revertTurn() {
+        Debug.Log("prevert1" + GameManager.instance.getPlayerTurn());
         CmdRevertTurn();
     }
 
