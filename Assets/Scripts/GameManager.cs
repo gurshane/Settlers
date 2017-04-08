@@ -404,7 +404,7 @@ public class GameManager : NetworkBehaviour {
         // If the barbarian has not attacked, nothing happens
         if (!barbarianHasAttacked)
         {
-            return;
+            //return;
         }
 
         for (int i = start; i < players.Count; i++)

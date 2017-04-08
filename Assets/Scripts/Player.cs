@@ -315,35 +315,125 @@ public class Player : NetworkBehaviour {
 			}
 
             if (special == Enums.Special.MOVE_ROBBER) {
-                if (!pieceHit.tag.Equals("Hex")) {
+                Debug.Log("robber1");
+                if (!pieceHit.tag.Equals("MainHex") && !pieceHit.tag.Equals("IslandHex")) {
 					return;
 				}
                 Hex h = pieceHit.GetComponent<Hex>();
-
+                Debug.Log("robber2");
                 if (ma.canMoveRobber(h)) {
+                    Debug.Log("robber3");
 					CmdMoveRobber (h.transform.position);
-                    CmdSetSpecial(Special.STEAL_RESOURCES);
+
+                    bool stealable = false;
+                    foreach (Hex hex in BoardState.instance.hexPosition.Values) {
+                        GamePiece hexPiece = hex.getOccupyingPiece();
+                        if (!Object.ReferenceEquals(hexPiece, null)) {
+                            if (hexPiece.getPieceType() == PieceType.ROBBER) {
+                                foreach (Vertex vert in hex.getVertices()){
+                                    GamePiece vertPiece = vert.getOccupyingPiece();
+                                    if (!Object.ReferenceEquals(vertPiece, null)) {
+                                        if (vertPiece.getColor() != myColor){
+                                            if (vertPiece.getPieceType() == PieceType.CITY ||
+                                                vertPiece.getPieceType() == PieceType.SETTLEMENT) {
+
+                                                stealable = true;
+                                                break;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    if (stealable) {
+                        CmdSetSpecial(Special.STEAL_RESOURCES);
+                    } else {
+                        CmdSetSpecial(Special.NONE);
+                        foreach(Player p in GameManager.instance.getPlayers()) {
+                            CmdSetMoveType(MoveType.NONE);
+                        }
+                    }
 				}
             } else if (special == Enums.Special.MOVE_PIRATE) {
-                if (!pieceHit.tag.Equals("Hex")) {
+                if (!pieceHit.tag.Equals("WaterHex")) {
 					return;
 				}
                 Hex h = pieceHit.GetComponent<Hex>();
 
                 if (ma.canMovePirate(h)) {
 					CmdMovePirate (h.transform.position);
-                    CmdSetSpecial(Special.STEAL_RESOURCES);
+
+                    bool stealable = false;
+                    foreach (Edge edge in BoardState.instance.edgePosition.Values) {
+                        GamePiece edgePiece = edge.getOccupyingPiece();
+                        if (!Object.ReferenceEquals(edgePiece, null)) {
+                            if (edgePiece.getPieceType() == PieceType.ROAD && ((Road)edgePiece).getIsShip()) {
+                                Hex leftHex = edge.getLeftHex();
+                                if (!Object.ReferenceEquals(leftHex, null)) {
+                                    GamePiece leftHexPiece = leftHex.getOccupyingPiece();
+                                    if (!Object.ReferenceEquals(leftHexPiece, null)) {
+                                        if (leftHexPiece.getPieceType() == PieceType.PIRATE) {
+
+                                            stealable = true;
+                                            break;
+                                        }
+                                    }
+                                }
+                                Hex rightHex = edge.getRightHex();
+                                if (!Object.ReferenceEquals(rightHex, null)) {
+                                    GamePiece rightHexPiece = rightHex.getOccupyingPiece();
+                                    if (!Object.ReferenceEquals(rightHexPiece, null)) {
+                                        if (rightHexPiece.getPieceType() == PieceType.PIRATE) {
+
+                                            stealable = true;
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    if (stealable) {
+                        CmdSetSpecial(Special.STEAL_RESOURCES);
+                    } else {
+                        CmdSetSpecial(Special.NONE);
+                        foreach(Player p in GameManager.instance.getPlayers()) {
+                            CmdSetMoveType(MoveType.NONE);
+                        }
+                    }
 				}
-            } else if (special == Enums.Special.STEAL_RESOURCES) {
+            } else if (special == Enums.Special.STEAL_RESOURCES) { 
+
                 if (!pieceHit.tag.Equals("Vertex")) {
 					return;
 				}
                 Vertex v = pieceHit.GetComponent<Vertex>();
 
+                bool nextToRobber = false;
+                foreach (Hex hex in BoardState.instance.hexPosition.Values) {
+                    GamePiece hexPiece = hex.getOccupyingPiece();
+                    if (!Object.ReferenceEquals(hexPiece, null)) {
+                        if (hexPiece.getPieceType() == PieceType.ROBBER) {
+                            if(hex.adjacentToVertex(v)) {
+                                nextToRobber = true;
+                            }
+                        }
+                    }
+                }
+
+                if (!nextToRobber) return;
+
                 bool canSteal = false;
                 if (!Object.ReferenceEquals(v.getOccupyingPiece(), null)) {
                     if (v.getOccupyingPiece().getColor() != myColor) {
-                        canSteal = true;
+                        if(v.getOccupyingPiece().getPieceType() == PieceType.CITY ||
+                            v.getOccupyingPiece().getPieceType() == PieceType.SETTLEMENT) {
+
+                            canSteal = true;
+                        }
                     }
                 }
 
@@ -551,7 +641,7 @@ public class Player : NetworkBehaviour {
                     Vertex v = pieceHit.GetComponent<Vertex>();
                     v1 = v;
                 } else {
-                    if (!pieceHit.tag.Equals("Hex")) {
+                    if (!pieceHit.tag.Equals("MainHex") && !pieceHit.tag.Equals("MainHex")) {
                         return;
                     }
                     Hex h = pieceHit.GetComponent<Hex>();
