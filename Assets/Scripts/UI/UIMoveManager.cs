@@ -298,7 +298,7 @@ public class UIMoveManager : MonoBehaviour {
 			_CurrentPlayer.CmdRevertTurn ();
 
 			// Goes to the next player to discard
-			GameManager.instance.sevenShortcut (temp, _CurrentPlayer.isServer);
+			GameManager.instance.sevenShortcut (temp+1);
 		}
 	}
 
@@ -319,7 +319,7 @@ public class UIMoveManager : MonoBehaviour {
 			_CurrentPlayer.CmdRevertTurn ();
 
 			// Goes to the next player to discard
-			GameManager.instance.sevenShortcut (temp+1, _CurrentPlayer.isServer);
+			GameManager.instance.sevenShortcut (temp+1);
 		}
 
 	}
