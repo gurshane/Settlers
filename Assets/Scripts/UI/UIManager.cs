@@ -26,10 +26,6 @@ public class UIManager : NetworkBehaviour {
 	[SerializeField]
 	private Player _CurrentPlayer;
 
-	/// <summary>
-	/// The player's highlighter component
-	/// </summary>
-	HighLighter _PlayerHighlighter;
 
 	#endregion
 
@@ -164,7 +160,6 @@ public class UIManager : NetworkBehaviour {
 		// Set UIMoveManager's Current Player to this instance's current player attribute
 		_UIMoveManager.setCurrentPlayer (_CurrentPlayer);
 
-		_PlayerHighlighter = _CurrentPlayer.GetComponent<HighLighter> ();
 
         if (_CurrentPlayer.gameObject.GetComponent<NetworkIdentity>().isLocalPlayer)
         {
@@ -174,6 +169,11 @@ public class UIManager : NetworkBehaviour {
             _VertexButtonsPanel.gameObject.SetActive(false);
             _EdgeButtonsPanel.gameObject.SetActive(false);
 
+			// Hide PlayerPanels information
+			foreach (Transform panel in _PlayerInfosPanel) 
+			{
+				panel.gameObject.SetActive (false);
+			}
 
 			// Get the GameManager Component off of the CurrentPlayer object
 			_GameManager = _CurrentPlayer.GetComponent<GameManager>();
@@ -228,22 +228,9 @@ public class UIManager : NetworkBehaviour {
 	public void toggleHighlight()
 	{
 		highlightBoardPieces = !highlightBoardPieces;
-		Debug.Log ("highlightBoardPieces: " + highlightBoardPieces);
-
 
 		updateHighlight ();
 
-		/*// If highlightBoardPieces is true
-		if (highlightBoardPieces) 
-		{
-			getHighlightList ();
-			highlight ();
-		} 
-
-		else 
-		{
-			unHighlight ();
-		}*/
 	}
 
 	/// <summary>
@@ -432,35 +419,46 @@ public class UIManager : NetworkBehaviour {
 
 	public void updatePlayerInfoPanels ()
 	{
-
+		/*
 		Transform panel = _PlayerInfosPanel.GetChild (0);
 		UIPlayerInfoPanel infoPanel = panel.GetComponent<UIPlayerInfoPanel> ();
 
 		infoPanel.uiUpdate (_CurrentPlayer);
+		*/
 
-		/*
+
 		// Keep track of index to assign a player to a PlayerInfoPanel
 		int pIndex = 0;
 
 		// Get the list of Player names
-		List<string> pNames = GameManager.getPlayerNames ();
+		List<Player> allPlayers = GameManager.instance.players;
 
 		// Instantiate a Player object to loop through the list of GameManager.players
 		Player _P;
 
+		//Debug.Log ("Players Count: " + allPlayers.Count);
 		// Loop through each GameManager.Players
 		// Assign the Player to the Panel
+
 		foreach (Transform panel in _PlayerInfosPanel) 
 		{
-			// GUsing pIndex to get the corresponding Player username
-			// Use that string to getPlayer 
-			_P = GameManager.getPlayer ( pNames [pIndex] );
+			// If we increment further than there are players in game, break immediately
+			if (pIndex+1 > allPlayers.Count)
+				break;
+
+
+			// set _P to be the player at the particular index in iteration
+			_P = GameManager.instance.players[pIndex];
+
+			// Make the panel active
+			panel.gameObject.SetActive (true);
 
 			// Update the PlayerInfoPanel with the player _P info
 			panel.GetComponent<UIPlayerInfoPanel> ().uiUpdate (_P);
 
+			// Increment pIndex
 			pIndex++;
-		}*/
+		}
 	}
 	/*
 	/// <summary>
