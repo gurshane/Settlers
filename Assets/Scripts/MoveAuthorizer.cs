@@ -1072,4 +1072,55 @@ public class MoveAuthorizer
         }
         return false;
     }
+
+    public bool canStealRobber(Vertex v, Enums.Color color) {
+
+        bool nextToRobber = false;
+        foreach (Hex hex in BoardState.instance.hexPosition.Values) {
+            GamePiece hexPiece = hex.getOccupyingPiece();
+            if (!Object.ReferenceEquals(hexPiece, null)) {
+                if (hexPiece.getPieceType() == PieceType.ROBBER) {
+                    if(hex.adjacentToVertex(v)) {
+                        if (!Object.ReferenceEquals(v.getOccupyingPiece(), null)) {
+                            if (v.getOccupyingPiece().getColor() != color) {
+                                if(v.getOccupyingPiece().getPieceType() == PieceType.CITY ||
+                                    v.getOccupyingPiece().getPieceType() == PieceType.SETTLEMENT) {
+
+                                    return true;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
+    public bool canStealPirate(Edge e, Enums.Color color) {
+
+        Hex leftHex = e.getLeftHex();
+            if (!Object.ReferenceEquals(leftHex, null)) {
+                GamePiece leftHexPiece = leftHex.getOccupyingPiece();
+                if (!Object.ReferenceEquals(leftHexPiece, null)) {
+                    if (leftHexPiece.getPieceType() == PieceType.PIRATE) {
+
+                        return true;
+                    }
+                }
+            }
+            Hex rightHex = e.getRightHex();
+            if (!Object.ReferenceEquals(rightHex, null)) {
+                GamePiece rightHexPiece = rightHex.getOccupyingPiece();
+                if (!Object.ReferenceEquals(rightHexPiece, null)) {
+                    if (rightHexPiece.getPieceType() == PieceType.PIRATE) {
+
+                        return true;
+                    }
+                }
+            }
+
+        return false;
+    }
 }

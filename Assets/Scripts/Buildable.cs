@@ -294,4 +294,28 @@ public class Buildable {
 		return edges;
 	}
 
+	public List<Vertex> buildableCanStealRobber(Enums.Color color) {
+		
+		List<Vertex> vertices = new List<Vertex>();
+
+		foreach (Vertex v in BoardState.instance.vertexPosition.Values) {
+			if (ma.canStealRobber(v, color)) {
+				vertices.Add(v);
+			}
+		}
+		return vertices;
+	}
+
+	public List<Edge> buildableCanStealPirate(Enums.Color color) {
+		
+		List<Edge> edges = new List<Edge>();
+
+		foreach (Edge e in BoardState.instance.edgePosition.Values) {
+			if (ma.canStealPirate(e, color)) {
+				edges.Add(e);
+			}
+		}
+		return edges;
+	}
+
 }

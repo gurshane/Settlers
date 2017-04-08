@@ -348,7 +348,7 @@ public class Player : NetworkBehaviour {
                     }
 
                     if (stealable) {
-                        CmdSetSpecial(Special.STEAL_RESOURCES);
+                        CmdSetSpecial(Special.STEAL_RESOURCES_ROBBER);
                     } else {
                         CmdSetSpecial(Special.NONE);
                         foreach(Player p in GameManager.instance.getPlayers()) {
@@ -397,7 +397,7 @@ public class Player : NetworkBehaviour {
                     }
 
                     if (stealable) {
-                        CmdSetSpecial(Special.STEAL_RESOURCES);
+                        CmdSetSpecial(Special.STEAL_RESOURCES_PIRATE);
                     } else {
                         CmdSetSpecial(Special.NONE);
                         foreach(Player p in GameManager.instance.getPlayers()) {
@@ -405,65 +405,73 @@ public class Player : NetworkBehaviour {
                         }
                     }
 				}
-            } else if (special == Enums.Special.STEAL_RESOURCES) { 
+            } else if (special == Enums.Special.STEAL_RESOURCES_ROBBER) { 
 
-                if (!pieceHit.tag.Equals("Vertex")) {
-					return;
-				}
-                Vertex v = pieceHit.GetComponent<Vertex>();
+                if (pieceHit.tag.Equals("Vertex")) {
 
-                bool nextToRobber = false;
-                foreach (Hex hex in BoardState.instance.hexPosition.Values) {
-                    GamePiece hexPiece = hex.getOccupyingPiece();
-                    if (!Object.ReferenceEquals(hexPiece, null)) {
-                        if (hexPiece.getPieceType() == PieceType.ROBBER) {
-                            if(hex.adjacentToVertex(v)) {
-                                nextToRobber = true;
-                            }
-                        }
-                    }
-                }
+                    Vertex v = pieceHit.GetComponent<Vertex>();
 
-                if (!nextToRobber) return;
-
-                bool canSteal = false;
-                if (!Object.ReferenceEquals(v.getOccupyingPiece(), null)) {
-                    if (v.getOccupyingPiece().getColor() != myColor) {
-                        if(v.getOccupyingPiece().getPieceType() == PieceType.CITY ||
-                            v.getOccupyingPiece().getPieceType() == PieceType.SETTLEMENT) {
-
-                            canSteal = true;
-                        }
-                    }
-                }
-
-                if (canSteal) {
-					int opp = (int)v.getOccupyingPiece().getColor();
-                    Player oppo  = GameManager.instance.getPlayer(opp);
-                    int hSize = oppo.getHandSize();
-                    bool taken = false;
-                    for (int i = 0; i < 5; i++) {
-                        oppo.changeResource((ResourceType)i, -1);
-                        if (oppo.getHandSize() < hSize) {
-                            taken = true;
-                            changeResource((ResourceType)i, 1);
-                            break;
-                        }
-                    }
-                    if (!taken) {
-                        for (int i = 0; i < 3; i++) {
-                            oppo.changeCommodity((CommodityType)i, -1);
+                    if (ma.canStealRobber(v, myColor)) {
+                        int opp = (int)v.getOccupyingPiece().getColor();
+                        Player oppo  = GameManager.instance.getPlayer(opp);
+                        int hSize = oppo.getHandSize();
+                        bool taken = false;
+                        for (int i = 0; i < 5; i++) {
+                            oppo.changeResource((ResourceType)i, -1);
                             if (oppo.getHandSize() < hSize) {
-                                changeCommodity((CommodityType)i, 1);
+                                taken = true;
+                                changeResource((ResourceType)i, 1);
                                 break;
                             }
                         }
-                    }
-                    CmdSetSpecial(Special.NONE);
-                    foreach(Player p in GameManager.instance.getPlayers()) {
-                        CmdSetMoveType(MoveType.NONE);
+                        if (!taken) {
+                            for (int i = 0; i < 3; i++) {
+                                oppo.changeCommodity((CommodityType)i, -1);
+                                if (oppo.getHandSize() < hSize) {
+                                    changeCommodity((CommodityType)i, 1);
+                                    break;
+                                }
+                            }
+                        }
+                        CmdSetSpecial(Special.NONE);
+                        foreach(Player p in GameManager.instance.getPlayers()) {
+                            CmdSetMoveType(MoveType.NONE);
+                        }
                     }
 				}
+            } else if (special == Enums.Special.STEAL_RESOURCES_PIRATE) { 
+                if (pieceHit.tag.Equals("Edge")) {
+
+                    Edge e = pieceHit.GetComponent<Edge>();
+
+                    if (ma.canStealPirate(e, myColor)) {
+                        int opp = (int)e.getOccupyingPiece().getColor();
+                        Player oppo  = GameManager.instance.getPlayer(opp);
+                        int hSize = oppo.getHandSize();
+                        bool taken = false;
+                        for (int i = 0; i < 5; i++) {
+                            oppo.changeResource((ResourceType)i, -1);
+                            if (oppo.getHandSize() < hSize) {
+                                taken = true;
+                                changeResource((ResourceType)i, 1);
+                                break;
+                            }
+                        }
+                        if (!taken) {
+                            for (int i = 0; i < 3; i++) {
+                                oppo.changeCommodity((CommodityType)i, -1);
+                                if (oppo.getHandSize() < hSize) {
+                                    changeCommodity((CommodityType)i, 1);
+                                    break;
+                                }
+                            }
+                        }
+                        CmdSetSpecial(Special.NONE);
+                        foreach(Player p in GameManager.instance.getPlayers()) {
+                            CmdSetMoveType(MoveType.NONE);
+                        }
+                    }
+				} 
             }
 		}
 
@@ -827,7 +835,9 @@ public class Player : NetworkBehaviour {
     [Command]
     public void CmdSetOldTurn(int turn)
     {
-        this.oldTurn = turn;
+        foreach (Player p in GameManager.instance.getPlayers()) {
+            p.oldTurn = turn;
+         }
     }
 
     public int getI1()

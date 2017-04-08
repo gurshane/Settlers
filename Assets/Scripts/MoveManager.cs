@@ -700,18 +700,27 @@ public class MoveManager : NetworkBehaviour {
     void RpcMoveRobber(Vector3 target)
     {
 		Hex source = null;
+		GamePiece piece = null;
 		foreach (Hex h in BoardState.instance.hexPosition.Values) {
-			GamePiece piece = h.getOccupyingPiece();
+			piece = h.getOccupyingPiece();
 			if (!Object.ReferenceEquals(piece, null)) {
 				if (piece.getPieceType() == Enums.PieceType.ROBBER) {
 					source = h;
 					break;
+				} else {
+					piece = null;
 				}
 			}
 		}
 
 		Hex targetLocation = BoardState.instance.hexPosition[target];
-		GameObject newRobber = Instantiate<GameObject>(PrefabHolder.instance.city, target, Quaternion.identity);
+		if (!Object.ReferenceEquals(piece, null)) {
+			targetLocation.setOccupyingPiece(piece);
+		} else {
+			targetLocation.setOccupyingPiece(new Robber());
+		}
+
+		GameObject newRobber = Instantiate<GameObject>(PrefabHolder.instance.robber, target, Quaternion.identity);
         fixPieceRotationAndPosition(newRobber);
         newRobber.GetComponent<MeshRenderer>().material.SetColor("_Color", UnityEngine.Color.gray);
 		BoardState.instance.spawnedObjects.Add(target, newRobber);
@@ -741,18 +750,27 @@ public class MoveManager : NetworkBehaviour {
     void RpcMovePirate(Vector3 target)
     {
 		Hex source = null;
+		GamePiece piece = null;
 		foreach (Hex h in BoardState.instance.hexPosition.Values) {
-			GamePiece piece = h.getOccupyingPiece();
+			piece = h.getOccupyingPiece();
 			if (!Object.ReferenceEquals(piece, null)) {
 				if (piece.getPieceType() == Enums.PieceType.PIRATE) {
 					source = h;
 					break;
+				} else {
+					piece = null;
 				}
 			}
 		}
 
 		Hex targetLocation = BoardState.instance.hexPosition[target];
-		GameObject newPirate = Instantiate<GameObject>(PrefabHolder.instance.city, target, Quaternion.identity);
+		if (!Object.ReferenceEquals(piece, null)) {
+			targetLocation.setOccupyingPiece(piece);
+		} else {
+			targetLocation.setOccupyingPiece(new Robber());
+		}
+
+		GameObject newPirate = Instantiate<GameObject>(PrefabHolder.instance.pirate, target, Quaternion.identity);
         fixPieceRotationAndPosition(newPirate);
         newPirate.GetComponent<MeshRenderer>().material.SetColor("_Color", UnityEngine.Color.black);
 		BoardState.instance.spawnedObjects.Add(target, newPirate);
