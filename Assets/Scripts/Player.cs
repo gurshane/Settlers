@@ -929,7 +929,7 @@ public class Player : NetworkBehaviour {
     }
 
     [ClientRpc]
-    public void RpcReverTurn() {
+    public void RpcRevertTurn() {
         GameManager.instance.setSpecialTurn(oldTurn, isServer);
         Debug.Log("prevert" + GameManager.instance.getPlayerTurn()); 
     }
