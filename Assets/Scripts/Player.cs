@@ -852,7 +852,13 @@ public class Player : NetworkBehaviour {
     [Command]
     public void CmdSetSpecial(Enums.Special spec)
     {
-        this.special = spec; 
+        RpcSetSpecial(spec);
+    }
+
+    [ClientRpc]
+    public void RpcSetSpecial(Enums.Special spec)
+    {
+        this.special = spec;
     }
 
     public int getOldTurn()
