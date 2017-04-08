@@ -70,7 +70,7 @@ public class UIMyPlayerPanel : UIElement {
 		Image playerIconFillImage = _PlayerIcon.transform.GetChild (0).GetComponent<Image> ();
 
 		// Set the Fill image color to the newly acquired color
-		playerIconFillImage.color = playerColor;
+		playerIconFillImage.color = GameManager.instance.getCurrentPlayer().getColor();
 	}
 
 	/// <summary>

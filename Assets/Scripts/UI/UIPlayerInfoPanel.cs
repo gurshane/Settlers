@@ -70,9 +70,13 @@ public class UIPlayerInfoPanel : UIElement {
 	/// <param name="p_Player">P player.</param>
 	public override void uiUpdate(Player p_Player)
 	{
+
+		//Change the text displaying player name accordingly
+		_PlayerName.text = enumToString (p_Player.getColor());
+
+
 		// Update the victory points displayed for this player
 		_VictoryPoints.text = "" + p_Player.getVictoryCounts ();
-
 
 		// Get Player's devChart
 		int[] devChart = p_Player.getDevFlipChart ();
@@ -98,6 +102,35 @@ public class UIPlayerInfoPanel : UIElement {
 		_DevChartImages [2] = _ScienceProgressImage;
 	}
 
+
+	/// <summary>
+	/// Converts from Color enum to string
+	/// </summary>
+	/// <returns>The to string.</returns>
+	/// <param name="p_Color">P color.</param>
+	private string enumToString(Enums.Color p_Color)
+	{
+		string rString = "";
+		switch (p_Color) 
+		{
+		case Enums.Color.BLUE:
+			rString = "Blue Player";
+			break;
+		case Enums.Color.ORANGE:
+			rString = "Green Player";
+			break;
+		case Enums.Color.RED:
+			rString = "Red Player";
+			break;
+		case Enums.Color.WHITE:
+			rString = "White Player";
+			break;
+		default:
+			break;
+		}
+
+		return rString;
+	}
 
 	// Update is called once per frame
 	void Update () {
