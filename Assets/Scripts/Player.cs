@@ -1116,9 +1116,7 @@ public class Player : NetworkBehaviour {
         this.commodities[comP] += num;
     }
 
-    [Command]
-    public void CmdEndTurn()
-    {
+    public void endTurn() {
         if (GameManager.instance.getPlayerTurn() != iD) { return; }
         if (GameManager.instance.getGamePhase() == GamePhase.PHASE_ONE) { return; }
         if (moveType == MoveType.SPECIAL) { return; }
@@ -1150,6 +1148,13 @@ public class Player : NetworkBehaviour {
                 r.notBuiltThisTurn ();
             }
         }
+
+		CmdEndTurn();
+    }
+
+    [Command]
+    public void CmdEndTurn()
+    {
 
 		GameManager.instance.SetPlayerTurn(this.isServer);
     }

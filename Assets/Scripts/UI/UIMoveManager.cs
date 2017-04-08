@@ -79,7 +79,7 @@ public class UIMoveManager : MonoBehaviour {
 	/// </summary>
 	public void uiEndTurn()
 	{
-		_CurrentPlayer.CmdEndTurn ();
+		_CurrentPlayer.endTurn ();
 	}
 
 	/// <summary>
