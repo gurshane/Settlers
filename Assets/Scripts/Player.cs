@@ -924,7 +924,8 @@ public class Player : NetworkBehaviour {
     [Command]
     public void CmdRevertTurn()
     {
-        GameManager.instance.setSpecialTurn(oldTurn, isServer); 
+        GameManager.instance.setSpecialTurn(oldTurn, isServer);
+        Debug.Log("prevert" + GameManager.instance.getPlayerTurn()); 
     }
 
     public void SetV1(Vertex vReplace)
