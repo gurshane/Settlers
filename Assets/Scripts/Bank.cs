@@ -8,6 +8,8 @@ public class Bank : NetworkBehaviour {
 	public int[] resources;
     public int[] commodities;
 
+    public List<FishToken> fishTokens;
+
 	public List<Enums.ProgressCardName> tradeCards;
 	public List<Enums.ProgressCardName> politicsCards;
 	public List<Enums.ProgressCardName> scienceCards;
@@ -93,6 +95,42 @@ public class Bank : NetworkBehaviour {
         tradeCards.Add(Enums.ProgressCardName.RESOURCEMONOPOLY);
         tradeCards.Add(Enums.ProgressCardName.TRADEMONOPOLY);
         tradeCards.Add(Enums.ProgressCardName.TRADEMONOPOLY);
+
+        fishTokens = new List<FishToken>();
+        fishTokens.Add(new FishToken(false, 1));
+        fishTokens.Add(new FishToken(false, 1));
+        fishTokens.Add(new FishToken(false, 1));
+        fishTokens.Add(new FishToken(false, 1));
+        fishTokens.Add(new FishToken(false, 1));
+        fishTokens.Add(new FishToken(false, 1));
+        fishTokens.Add(new FishToken(false, 1));
+        fishTokens.Add(new FishToken(false, 1));
+        fishTokens.Add(new FishToken(false, 1));
+        fishTokens.Add(new FishToken(false, 1));
+        fishTokens.Add(new FishToken(false, 1));
+
+        fishTokens.Add(new FishToken(false, 2));
+        fishTokens.Add(new FishToken(false, 2));
+        fishTokens.Add(new FishToken(false, 2));
+        fishTokens.Add(new FishToken(false, 2));
+        fishTokens.Add(new FishToken(false, 2));
+        fishTokens.Add(new FishToken(false, 2));
+        fishTokens.Add(new FishToken(false, 2));
+        fishTokens.Add(new FishToken(false, 2));
+        fishTokens.Add(new FishToken(false, 2));
+        fishTokens.Add(new FishToken(false, 2));
+
+        fishTokens.Add(new FishToken(false, 3));
+        fishTokens.Add(new FishToken(false, 3));
+        fishTokens.Add(new FishToken(false, 3));
+        fishTokens.Add(new FishToken(false, 3));
+        fishTokens.Add(new FishToken(false, 3));
+        fishTokens.Add(new FishToken(false, 3));
+        fishTokens.Add(new FishToken(false, 3));
+        fishTokens.Add(new FishToken(false, 3));
+
+
+
     }
 
     public int getResourceAmount(Enums.ResourceType res)

@@ -25,7 +25,10 @@ public class Player : NetworkBehaviour {
 
     [SyncVar]
     private int goldCount;
-    
+
+    [SyncVar]
+    private int numFish;
+
     [SyncVar]
     private int safeCardCount;
 
@@ -37,6 +40,7 @@ public class Player : NetworkBehaviour {
     public int[] devFlipChart;
     public int[] resourceRatios;
     public int[] commodityRatios;
+
     
     public int cityWallsLeft;
     public bool movedRoad;
@@ -764,6 +768,22 @@ public class Player : NetworkBehaviour {
     public void CmdChangeVP(int num)
     {
         this.victoryPoints += num;
+    }
+
+    public bool changeFishCount(int num)
+    {
+        if((this.numFish + num) < 0)
+        {
+            return false;
+        }
+        CmdChangeFishCount(num);
+        return true;
+    }
+
+    [Command]
+    public void CmdChangeFishCount(int num)
+    {
+        this.numFish += num;
     }
 
     public int getGoldCount()//return gold count
