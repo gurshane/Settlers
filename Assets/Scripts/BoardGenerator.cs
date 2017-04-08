@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
+using System;
 
 public class BoardGenerator : NetworkBehaviour {
 
@@ -64,7 +65,8 @@ public class BoardGenerator : NetworkBehaviour {
         numberTiles.Add('R', 11);
         numberTiles.Add('S', 11);
     }
-    // Use this for initialization
+    
+
     [ServerCallback]
     void LateUpdate ()
     {
@@ -83,13 +85,14 @@ public class BoardGenerator : NetworkBehaviour {
             mainBoardHexSpawns = new List<GameObject>(GameObject.FindGameObjectsWithTag("MainHex"));
             islandHexSpawns = new List<GameObject>(GameObject.FindGameObjectsWithTag("IslandHex"));
 
-
-            makeBoard();
+            StartCoroutine(makeBoard());
         }
 	}
 
-	void makeBoard()
+	IEnumerator makeBoard()
     {
+        yield return new WaitForSeconds(5.0f);
+
         //Spawn Main Board Hexes
         //----------------------
         //Spawn Forest
@@ -126,7 +129,7 @@ public class BoardGenerator : NetworkBehaviour {
     {
        for( int i = 0; i < numToSpawn; i++)
         {
-            GameObject targetSpawn = (spawnPositions[Random.Range(0, spawnPositions.Count)]);
+            GameObject targetSpawn = (spawnPositions[UnityEngine.Random.Range(0, spawnPositions.Count)]);
             Transform targetTransform = targetSpawn.transform;
             GameObject spawnedHex = Instantiate(hexToSpawn, targetTransform.position, Quaternion.identity, targetTransform);
 
@@ -178,7 +181,14 @@ public class BoardGenerator : NetworkBehaviour {
                 spawnedIslandHexes.Add(spawnedHex);
             }
 
-            NetworkServer.Spawn(spawnedHex);
+            try
+            {
+                NetworkServer.Spawn(spawnedHex);
+            }
+            catch(Exception e)
+            {
+
+            }
             spawnPositions.Remove(targetSpawn);
         }
     }
