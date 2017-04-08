@@ -29,8 +29,8 @@ public class Player : NetworkBehaviour {
     [SyncVar]
     private int safeCardCount;
 
-    private List<GamePiece> pieces;
-    private List<ProgressCardName> progressCards;
+    public List<GamePiece> pieces;
+    public List<ProgressCardName> progressCards;
 
     public int[] resources;
     public int[] commodities;
@@ -38,9 +38,9 @@ public class Player : NetworkBehaviour {
     public int[] resourceRatios;
     public int[] commodityRatios;
     
-    private int cityWallsLeft;
-    private bool movedRoad;
-    private bool aqueduct;
+    public int cityWallsLeft;
+    public bool movedRoad;
+    public bool aqueduct;
 
     [SyncVar]
     public Enums.Special special;

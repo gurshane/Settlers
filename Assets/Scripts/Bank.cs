@@ -196,7 +196,7 @@ public class Bank : NetworkBehaviour {
     }
 
 	// Draw and return a progress card from the requested pile
-	public void withdrawProgressCard(Enums.DevChartType progressType)
+	public void withdrawProgressCard(Enums.DevChartType progressType, int player)
     {
         Enums.ProgressCardName prog;
 		if (progressType == Enums.DevChartType.TRADE)
@@ -217,7 +217,7 @@ public class Bank : NetworkBehaviour {
             prog = scienceCards[rand];
             scienceCards.RemoveAt(rand);
 		}
-        Player current = GameManager.instance.getCurrentPlayer();
+        Player current = GameManager.instance.getPlayer(player);
         current.addProgressCard(prog);
     }
 		

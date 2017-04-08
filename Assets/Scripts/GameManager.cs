@@ -382,17 +382,27 @@ public class GameManager : NetworkBehaviour {
         // Check if a seven was rolled
         if (firstDie + secondDie == 7)
         {
+            coloredEventDie();
             resolveSeven(0);
         }
         else
         {
+            coloredEventDie();
             distribute();
             gamePhase = Enums.GamePhase.PHASE_TWO;
         }
 
         //Barbarian
+    }
 
-        //Event Die
+    private void coloredEventDie() {
+        if (eventDie == EventDie.BARBARIAN) return;
+        foreach (Player p in players) {
+            int[] devs = p.getDevFlipChart();
+            if (firstDie <= devs[(int)eventDie-1] + 1) {
+                Bank.instance.withdrawProgressCard((DevChartType)((int)eventDie - 1), p.getID());
+            }
+        }
     }
 
 
