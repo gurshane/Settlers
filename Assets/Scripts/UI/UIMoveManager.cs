@@ -297,6 +297,8 @@ public class UIMoveManager : MonoBehaviour {
 			int temp = GameManager.instance.getPlayerTurn ();
 			_CurrentPlayer.revertTurn ();
 
+			Debug.Log ("Revert Turn" + GameManager.instance.getPlayerTurn ());
+
 			// Goes to the next player to discard
 			GameManager.instance.sevenShortcut (temp+1);
 		}
