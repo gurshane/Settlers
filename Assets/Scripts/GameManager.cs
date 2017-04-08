@@ -426,6 +426,9 @@ public class GameManager : NetworkBehaviour {
                     p2.setMoveType(MoveType.SPECIAL);
                     p2.setOldTurn(playerTurn);
                 }
+
+                Debug.Log("old turn" + p2.getOldTurn());
+
                 p.setSpecial(Special.DISCARD_RESOURCE_SEVEN);
                 setSpecialTurn(p.getID(), isServer);
                 return;
