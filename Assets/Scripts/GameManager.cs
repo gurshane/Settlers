@@ -423,20 +423,20 @@ public class GameManager : NetworkBehaviour {
             if (p.getHandSize() > p.maxHandSize() ){
 
                 foreach (Player p2 in players) {
-                    p2.CmdSetMoveType(MoveType.SPECIAL);
-                    p2.CmdSetOldTurn(playerTurn);
+                    p2.setMoveType(MoveType.SPECIAL);
+                    p2.setOldTurn(playerTurn);
                 }
-                p.CmdSetSpecial(Special.DISCARD_RESOURCE_SEVEN);
+                p.setSpecial(Special.DISCARD_RESOURCE_SEVEN);
                 setSpecialTurn(p.getID(), isServer);
                 return;
             }
         }
 
         foreach (Player p2 in players) {
-            p2.CmdSetMoveType(MoveType.SPECIAL);
-            p2.CmdSetOldTurn(playerTurn);
+            p2.setMoveType(MoveType.SPECIAL);
+            p2.setOldTurn(playerTurn);
         }
-        getCurrentPlayer().CmdSetSpecial(Special.CHOOSE_PIRATE_OR_ROBBER);
+        getCurrentPlayer().setSpecial(Special.CHOOSE_PIRATE_OR_ROBBER);
     }
 
     private void resolveBarbarian()

@@ -108,13 +108,13 @@ public class MoveManager : NetworkBehaviour {
 			int currTurn = GameManager.instance.getPlayerTurn();
 
 			foreach (Player p in GameManager.instance.players) {
-				p.CmdSetMoveType(MoveType.SPECIAL);
-				p.CmdSetOldTurn(currTurn);
+				p.setMoveType(MoveType.SPECIAL);
+				p.setOldTurn(currTurn);
 			}
 			Player opponent = GameManager.instance.getPlayer((int)kTarget.getColor());
-			opponent.CmdSetSpecial(Special.KNIGHT_DISPLACED);
-			opponent.CmdSetI1(targetLevel);
-			opponent.CmdSetB1(kTarget.isActive());
+			opponent.setSpecial(Special.KNIGHT_DISPLACED);
+			opponent.setI1(targetLevel);
+			opponent.setB1(kTarget.isActive());
 			GameManager.instance.setSpecialTurn((int)kTarget.getColor(), server);
 		}
 		assignAuthority(server);

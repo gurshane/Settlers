@@ -348,11 +348,11 @@ public class Player : NetworkBehaviour {
                     }
 
                     if (stealable) {
-                        CmdSetSpecial(Special.STEAL_RESOURCES_ROBBER);
+                        setSpecial(Special.STEAL_RESOURCES_ROBBER);
                     } else {
-                        CmdSetSpecial(Special.NONE);
+                        setSpecial(Special.NONE);
                         foreach(Player p in GameManager.instance.getPlayers()) {
-                            CmdSetMoveType(MoveType.NONE);
+                            setMoveType(MoveType.NONE);
                         }
                     }
 				}
@@ -397,11 +397,11 @@ public class Player : NetworkBehaviour {
                     }
 
                     if (stealable) {
-                        CmdSetSpecial(Special.STEAL_RESOURCES_PIRATE);
+                        setSpecial(Special.STEAL_RESOURCES_PIRATE);
                     } else {
-                        CmdSetSpecial(Special.NONE);
+                        setSpecial(Special.NONE);
                         foreach(Player p in GameManager.instance.getPlayers()) {
-                            CmdSetMoveType(MoveType.NONE);
+                            setMoveType(MoveType.NONE);
                         }
                     }
 				}
@@ -433,9 +433,9 @@ public class Player : NetworkBehaviour {
                                 }
                             }
                         }
-                        CmdSetSpecial(Special.NONE);
+                        setSpecial(Special.NONE);
                         foreach(Player p in GameManager.instance.getPlayers()) {
-                            CmdSetMoveType(MoveType.NONE);
+                            setMoveType(MoveType.NONE);
                         }
                     }
 				}
@@ -466,9 +466,9 @@ public class Player : NetworkBehaviour {
                                 }
                             }
                         }
-                        CmdSetSpecial(Special.NONE);
+                        setSpecial(Special.NONE);
                         foreach(Player p in GameManager.instance.getPlayers()) {
-                            CmdSetMoveType(MoveType.NONE);
+                            setMoveType(MoveType.NONE);
                         }
                     }
 				} 
@@ -508,9 +508,9 @@ public class Player : NetworkBehaviour {
 					CmdAlternateDisplaceKnight (v.transform.position);
 
                     foreach (Player p in GameManager.instance.players) {
-                        p.CmdSetMoveType(MoveType.NONE);
+                        p.setMoveType(MoveType.NONE);
                     }
-                    CmdRevertTurn();
+                    revertTurn();
                     moveType = Enums.MoveType.NONE;
 				}
             }
@@ -810,6 +810,10 @@ public class Player : NetworkBehaviour {
         return this.moveType; 
     }
 
+    public void setMoveType(Enums.MoveType mType) {
+        CmdSetMoveType(mType);
+    }
+
     [Command]
     public void CmdSetMoveType(Enums.MoveType mType)
     {
@@ -821,6 +825,10 @@ public class Player : NetworkBehaviour {
         return this.special; 
     }
 
+    public void setSpecial(Enums.Special spec) {
+        CmdSetSpecial(spec);
+    }
+
     [Command]
     public void CmdSetSpecial(Enums.Special spec)
     {
@@ -830,6 +838,10 @@ public class Player : NetworkBehaviour {
     public int getOldTurn()
     {
         return this.oldTurn; 
+    }
+
+    public void setOldTurn(int turn) {
+        CmdSetOldTurn(turn);
     }
 
     [Command]
@@ -845,6 +857,10 @@ public class Player : NetworkBehaviour {
         return this.i1; 
     }
 
+    public void setI1(int i) {
+        CmdSetI1(i);
+    }
+
     [Command]
     public void CmdSetI1(int i)
     {
@@ -854,6 +870,10 @@ public class Player : NetworkBehaviour {
     public int getOpponent()
     {
         return this.opponent; 
+    }
+
+    public void setOpponent(int i) {
+        CmdSetOpponent(i);
     }
 
     [Command]
@@ -867,10 +887,18 @@ public class Player : NetworkBehaviour {
         return this.b1; 
     }
 
+    public void setB1(bool b) {
+        CmdSetB1(b);
+    }
+
     [Command]
     public void CmdSetB1(bool b)
     {
         this.b1 = b;
+    }
+
+    public void revertTurn() {
+        CmdRevertTurn();
     }
 
     [Command]
