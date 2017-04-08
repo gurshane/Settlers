@@ -368,10 +368,10 @@ public class GameManager : NetworkBehaviour {
         }
     }
 
-    public void sevenShortcut(int start, bool server){
-        assignAuthority(server);
+    public void sevenShortcut(int start){
+        assignAuthority(isServer);
         resolveSeven(start);
-        removeAuthority(server);
+        removeAuthority(isServer);
     }
    
 
