@@ -10,6 +10,7 @@ public class Vertex : BoardPiece {
     public Enums.PortType portType;
 
     public bool producesFish;
+    public int fishNumber;
 
     private bool hasWall;
     private bool adjacentToRobber;
