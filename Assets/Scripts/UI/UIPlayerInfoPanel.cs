@@ -60,8 +60,8 @@ public class UIPlayerInfoPanel : UIElement {
 	public void instantiate(Player p_Player)
 	{
         //_PlayerName.text = p_Player.getUserName ();
-        _PlayerName.text = "Hi";
-		_VictoryPoints.text = "" + p_Player.getVictoryCounts ();
+        //_PlayerName.text = "Hi";
+		//_VictoryPoints.text = "" + p_Player.getVictoryCounts ();
 	}
 
 	/// <summary>

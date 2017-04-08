@@ -540,8 +540,11 @@ public class UIMoveManager : MonoBehaviour {
 		case Special.MOVE_ROBBER:
 			rString = "Move Robber";
 			break;
-		case Special.STEAL_RESOURCES:
-			rString = "Steal Resources";
+		case Special.STEAL_RESOURCES_ROBBER:
+			rString = "Steal Resources Robber";
+			break;
+		case Special.STEAL_RESOURCES_PIRATE:
+			rString = "Steal Resources Pirate";
 			break;
 		case Special.NONE:
 			rString = "None";
