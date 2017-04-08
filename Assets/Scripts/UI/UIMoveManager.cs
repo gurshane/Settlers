@@ -291,13 +291,14 @@ public class UIMoveManager : MonoBehaviour {
 
 		// If handsize goes lower than half the original hand size when discard began,
 		// close panel, revert turn back to the player who rolled 7
-		if (_CurrentPlayer.getHandSize () <= originalPlayerHandSum - originalPlayerHandSum / 2) 
+		if (_CurrentPlayer.getHandSize () <= (originalPlayerHandSum - originalPlayerHandSum / 2)) 
 		{
 			_CurrentPlayer.setSpecial (Special.NONE);
 			int temp = GameManager.instance.getPlayerTurn ();
 			_CurrentPlayer.revertTurn ();
 
 			Debug.Log ("Revert Turn" + GameManager.instance.getPlayerTurn ());
+			Debug.Log ("Temp" + temp);
 
 			// Goes to the next player to discard
 			GameManager.instance.sevenShortcut (temp+1);
