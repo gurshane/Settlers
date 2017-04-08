@@ -143,7 +143,7 @@ public class Player : NetworkBehaviour {
         progressCards = new List<ProgressCardName>();
         status = Enums.Status.ACTIVE;
 
-        this.resources = new int[5] { 0, 0, 0, 0, 0 };
+        this.resources = new int[5] { 10, 10, 10, 10, 10 };
         this.commodities = new int[3] { 0, 0, 0 };
         this.goldCount = 0;
         this.devFlipChart = new int[3] { 1, 1, 1 };
