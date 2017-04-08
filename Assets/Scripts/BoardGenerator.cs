@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
-using System;
 
 public class BoardGenerator : NetworkBehaviour {
 
@@ -85,13 +84,12 @@ public class BoardGenerator : NetworkBehaviour {
             mainBoardHexSpawns = new List<GameObject>(GameObject.FindGameObjectsWithTag("MainHex"));
             islandHexSpawns = new List<GameObject>(GameObject.FindGameObjectsWithTag("IslandHex"));
 
-            StartCoroutine(makeBoard());
+            makeBoard();
         }
 	}
 
-	IEnumerator makeBoard()
+	void makeBoard()
     {
-        yield return new WaitForSeconds(5.0f);
 
         //Spawn Main Board Hexes
         //----------------------
@@ -181,14 +179,8 @@ public class BoardGenerator : NetworkBehaviour {
                 spawnedIslandHexes.Add(spawnedHex);
             }
 
-            try
-            {
-                NetworkServer.Spawn(spawnedHex);
-            }
-            catch(Exception e)
-            {
-
-            }
+            NetworkServer.Spawn(spawnedHex);
+            
             spawnPositions.Remove(targetSpawn);
         }
     }
