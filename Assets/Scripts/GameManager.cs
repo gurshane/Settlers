@@ -415,6 +415,7 @@ public class GameManager : NetworkBehaviour {
     // Resolve a seven if it is rolled
     private void resolveSeven(int start)
     {
+        int old = getCurrentPlayer().getOldTurn();
 
         // If the barbarian has not attacked, nothing happens
         if (!barbarianHasAttacked)
@@ -434,7 +435,7 @@ public class GameManager : NetworkBehaviour {
                 Debug.Log("old turn" + p.getOldTurn());
 
                 p.setSpecial(Special.DISCARD_RESOURCE_SEVEN);
-                setSpecialTurn(p.getID(), isServer);
+                p.setSpecialTurn(old);
                 return;
             }
         }
@@ -442,7 +443,7 @@ public class GameManager : NetworkBehaviour {
         foreach (Player p2 in players) {
             p2.setMoveType(MoveType.SPECIAL);
         }
-        getCurrentPlayer().setSpecial(Special.CHOOSE_PIRATE_OR_ROBBER);
+        getPlayer(old).setSpecial(Special.CHOOSE_PIRATE_OR_ROBBER);
     }
 
     private void resolveBarbarian()

@@ -115,7 +115,7 @@ public class MoveManager : NetworkBehaviour {
 			opponent.setSpecial(Special.KNIGHT_DISPLACED);
 			opponent.setI1(targetLevel);
 			opponent.setB1(kTarget.isActive());
-			GameManager.instance.setSpecialTurn((int)kTarget.getColor(), server);
+			opponent.setSpecialTurn((int)kTarget.getColor());
 		}
 		assignAuthority(server);
 		RpcDisplaceKnight(source.transform.position, target.transform.position, 

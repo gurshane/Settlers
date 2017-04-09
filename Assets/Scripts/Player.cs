@@ -931,6 +931,21 @@ public class Player : NetworkBehaviour {
         this.b1 = b;
     }
 
+    public void setSpecialTurn(int turn) {
+        CmdSetSpecialTurn(turn);
+    }
+
+    [Command]
+    public void CmdSetSpecialTurn(int turn)
+    {
+        RpcSetSpecialTurn(turn);
+    }
+
+    [ClientRpc]
+    public void RpcSetSpecialTurn(int turn) {
+        GameManager.instance.setSpecialTurn(turn, isServer);
+    }
+
     public void revertTurn() {
         Debug.Log("prevert1" + GameManager.instance.getPlayerTurn());
         CmdRevertTurn();
