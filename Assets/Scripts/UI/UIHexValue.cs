@@ -78,12 +78,5 @@ public class UIHexValue : MonoBehaviour {
 		faceCamera ();
 		updatePosition ();
 		updateValue ();
-        if(_Hex)
-        {
-            if(_Hex.hexType == Enums.HexType.DESERT)
-            {
-                Destroy(gameObject);
-            }
-        }
 	}
 }
