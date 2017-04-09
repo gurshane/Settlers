@@ -968,17 +968,20 @@ public class Player : NetworkBehaviour {
     }
 
     public void endPhaseOne() {
+        Debug.Log("epo1");
         CmdEndPhaseOne(isServer);
     }
 
     [Command]
     public void CmdEndPhaseOne(bool server)
     {
+        Debug.Log("epo2");
         RpcEndPhaseOne(server);
     }
 
     [ClientRpc]
     public void RpcEndPhaseOne(bool server) {
+        Debug.Log("epo3");
         GameManager.instance.setGamePhase(GamePhase.PHASE_TWO, server);
     }
 
