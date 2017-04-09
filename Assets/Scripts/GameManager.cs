@@ -292,12 +292,12 @@ public class GameManager : NetworkBehaviour {
                 ((City)opponent).removeMetropolis();
                 Enums.Color opColor = opponent.getColor();
                 Player op = getPlayer(opColor);
-                op.changeVictoryPoints(-2);
+                getPersonalPlayer().changeVictoryPoints(-2, op.getID());
             }
         }
 
         ((City)p).makeMetropolis();
-        getPlayer(player).changeVictoryPoints(2);
+        getPersonalPlayer().changeVictoryPoints(2, getPlayer(player).getID());
 
         return true;
     }
@@ -362,7 +362,7 @@ public class GameManager : NetworkBehaviour {
             Player p = getPlayer(merchantController);
             if (!Object.ReferenceEquals(p, null))
             {
-                p.changeVictoryPoints(-1);
+                getPersonalPlayer().changeVictoryPoints(-1, p.getID());
             }
         }
 
@@ -370,7 +370,7 @@ public class GameManager : NetworkBehaviour {
         if (!Object.ReferenceEquals(given, null))
         {
             merchantController = player;
-            given.changeVictoryPoints(1);
+            getPersonalPlayer().changeVictoryPoints(1, given.getID());
             m.putOnBoard();
         }
     }
@@ -590,11 +590,11 @@ public class GameManager : NetworkBehaviour {
                     if (res != Enums.ResourceType.NONE && enoughRes[res])
                     {
                         Bank.instance.withdrawResource(res, 1, p.isServer);
-                        p.changeResource(res, 1);
+                        getPersonalPlayer().changeResource(res, 1, p.getID());
                     }
                     else if (gold)
                     {
-                        p.changeGoldCount(2);
+                        getPersonalPlayer().changeGoldCount(2, p.getID());
                     }
                 }
 
@@ -608,27 +608,27 @@ public class GameManager : NetworkBehaviour {
                         if (enoughRes[res])
                         {
                             Bank.instance.withdrawResource(res, 1, p.isServer);
-                            p.changeResource(res, 1);
+                            getPersonalPlayer().changeResource(res, 1, p.getID());
                         }
                         if (enoughComs[com])
                         {
                             Bank.instance.withdrawCommodity(com, 1, p.isServer);
-                            p.changeCommodity(com, 1);
+                            getPersonalPlayer().changeCommodity(com, 1, p.getID());
                         }
                     }
                     else if (res == Enums.ResourceType.BRICK && enoughRes[res])
                     {
                         Bank.instance.withdrawResource(res, 2, p.isServer);
-                        p.changeResource(res, 2);
+                        getPersonalPlayer().changeResource(res, 2, p.getID());
                     }
                     else if (res == Enums.ResourceType.GRAIN && enoughRes[res])
                     {
                         Bank.instance.withdrawResource(res, 2, p.isServer);
-                        p.changeResource(res, 2);
+                        getPersonalPlayer().changeResource(res, 2, p.getID());
                     }
                     else if (gold)
                     {
-                        p.changeGoldCount(2);
+                        getPersonalPlayer().changeGoldCount(2, p.getID());
                     }
                 }
             }

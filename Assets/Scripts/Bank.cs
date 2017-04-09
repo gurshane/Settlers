@@ -256,7 +256,7 @@ public class Bank : NetworkBehaviour {
             scienceCards.RemoveAt(rand);
 		}
         Player current = GameManager.instance.getPlayer(player);
-        current.addProgressCard(prog);
+        GameManager.instance.getPersonalPlayer().addProgressCard(prog, current.getID());
     }
 		
 	// Make sure a given trade is valid
@@ -332,25 +332,25 @@ public class Bank : NetworkBehaviour {
 		// Update all relevent fields
 		for (int i = 0; i < resOffered.Length; i++)
 		{
-			trader.changeResource((Enums.ResourceType)i, resOffered[i]);
+			GameManager.instance.getPersonalPlayer().changeResource((Enums.ResourceType)i, resOffered[i], trader.getID());
 			depositResource((Enums.ResourceType)i, resOffered[i], trader.isServer);
 		}
 		for (int i = 0; i < comOffered.Length; i++)
 		{
-			trader.changeCommodity((Enums.CommodityType)i, comOffered[i]);
+			GameManager.instance.getPersonalPlayer().changeCommodity((Enums.CommodityType)i, comOffered[i], trader.getID());
 			depositCommodity((Enums.CommodityType)i, comOffered[i], trader.isServer);
 		}
 		for (int i = 0; i < resWanted.Length; i++)
 		{
-			trader.changeResource((Enums.ResourceType)i, resWanted[i]);
+			GameManager.instance.getPersonalPlayer().changeResource((Enums.ResourceType)i, resWanted[i], trader.getID());
 			withdrawResource((Enums.ResourceType)i, resWanted[i], trader.isServer);
 		}
 		for (int i = 0; i < comWanted.Length; i++)
 		{
-			trader.changeCommodity((Enums.CommodityType)i, comWanted[i]);
+			GameManager.instance.getPersonalPlayer().changeCommodity((Enums.CommodityType)i, comWanted[i], trader.getID());
 			withdrawCommodity((Enums.CommodityType)i, comWanted[i], trader.isServer);
 		}
-		trader.changeGoldCount(gold);
+		GameManager.instance.getPersonalPlayer().changeGoldCount(gold, trader.getID());
 			
         return true;
     }
