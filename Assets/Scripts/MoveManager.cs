@@ -724,7 +724,7 @@ public class MoveManager : NetworkBehaviour {
         fixPieceRotationAndPosition(newRobber);
 		BoardState.instance.spawnedObjects.Add(target, newRobber);
 
-		if (source != null) {
+		if (!Object.ReferenceEquals(piece, null)) {
 			Destroy (BoardState.instance.spawnedObjects [source.transform.position]);
 			BoardState.instance.spawnedObjects.Remove(source.transform.position);
 		}
