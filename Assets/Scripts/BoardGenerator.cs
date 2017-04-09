@@ -134,6 +134,15 @@ public class BoardGenerator : NetworkBehaviour {
         for ( int i = 0; i < numToSpawn; i++)
         {
             GameObject targetSpawn = (spawnPositions[UnityEngine.Random.Range(0, spawnPositions.Count)]);
+            while (targetSpawn.name.Equals("Hex (4)") && !hexToSpawn.name.Equals("desertTile"))
+            {
+                targetSpawn = (spawnPositions[UnityEngine.Random.Range(0, spawnPositions.Count)]);
+
+                if(spawnPositions.Count == 1)
+                {
+                    return;
+                }
+            }
             Transform targetTransform = targetSpawn.transform;
             GameObject spawnedHex = Instantiate(hexToSpawn, targetTransform.position, Quaternion.identity, targetTransform);
 
