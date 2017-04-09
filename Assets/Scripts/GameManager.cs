@@ -666,7 +666,7 @@ public class GameManager : NetworkBehaviour {
 
             Enums.ResourceType res = getResourceFromHex(hType);
             Enums.CommodityType com = getCommodityFromHex(hType);
-            if (res == Enums.ResourceType.NONE && hType != Enums.HexType.DESERT)
+            if (res == Enums.ResourceType.NONE)
             {
                 continue;
             }
@@ -680,18 +680,13 @@ public class GameManager : NetworkBehaviour {
                     continue;
                 }
 
+                // Distribue resources for settlements
                 if (current.getPieceType() == Enums.PieceType.SETTLEMENT)
                 {
                     Debug.Log("Hex type: " + h.getHexType() + ", enough: " + enoughRes[res]);
                     Enums.Color ownerColor = current.getColor();
                     Player p = getPlayer(ownerColor);
-                    if (hType == Enums.HexType.DESERT)
-                    {
-                        Debug.Log("fish hex:" + num);
-                        int numFish = Bank.instance.getFishToken(p.isServer);
-                        getPersonalPlayer().changeFishCount(numFish, p.getID());
-                    }
-                    else if (res != Enums.ResourceType.NONE && enoughRes[res])
+                    if (res != Enums.ResourceType.NONE && enoughRes[res])
                     {
                         Bank.instance.withdrawResource(res, 1, p.isServer);
                         getPersonalPlayer().changeResource(res, 1, p.getID());
@@ -702,18 +697,12 @@ public class GameManager : NetworkBehaviour {
                     }
                 }
 
-                    // Distribute resources and commodities for cities
+                // Distribute resources and commodities for cities
                 if (current.getPieceType() == Enums.PieceType.CITY)
                 {
                     Enums.Color ownerColor = current.getColor();
                     Player p = getPlayer(ownerColor);
-                    if (hType == Enums.HexType.DESERT)
-                    {
-                        Debug.Log("fish hex:" + num);
-                        int numFish = Bank.instance.getFishTokens(p.isServer); //get more than one fish token
-                        getPersonalPlayer().changeFishCount(numFish, p.getID());
-                    }
-                    else if (com != Enums.CommodityType.NONE)
+                    if (com != Enums.CommodityType.NONE)
                     {
                         if (enoughRes[res])
                         {
