@@ -318,4 +318,26 @@ public class Buildable {
 		return edges;
 	}
 
+	public List<Hex> buildableCanMoveRobber() {
+		List<Hex> hexes = new List<Hex>();
+
+		foreach (Hex h in BoardState.instance.hexPosition.Values) {
+			if (ma.canMoveRobber(h)) {
+				hexes.Add(h);
+			}
+		}
+		return hexes;
+	}
+
+	public List<Hex> buildableCanMovePirate() {
+		List<Hex> hexes = new List<Hex>();
+
+		foreach (Hex h in BoardState.instance.hexPosition.Values) {
+			if (ma.canMovePirate(h)) {
+				hexes.Add(h);
+			}
+		}
+		return hexes;
+	}
+
 }
