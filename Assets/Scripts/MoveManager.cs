@@ -226,13 +226,16 @@ public class MoveManager : NetworkBehaviour {
     [ClientRpc]
 	void RpcUpgradeKnight(int[] resources, int[] devChart, Vector3 v, int level, Enums.Color color)
     {
-		Vertex source = BoardState.instance.vertexPosition[v];
+		// Remove the current settlement
+        Vertex source = BoardState.instance.vertexPosition[v];
+        Knight knight = (Knight)source.getOccupyingPiece();
+		Destroy (BoardState.instance.spawnedObjects [v]);
+		BoardState.instance.spawnedObjects.Remove(v);
 
 		GameObject newKnight = getKnightFromLevel (level + 1, v, color);
-		BoardState.instance.spawnedObjects.Add(v, newKnight);
+        fixPieceRotationAndPosition(newKnight);
 
-		// Upgrade the knight
-		Knight knight = (Knight)source.getOccupyingPiece();
+		BoardState.instance.spawnedObjects.Add(v, newKnight);
 
 		knight.upgrade ();
     }
