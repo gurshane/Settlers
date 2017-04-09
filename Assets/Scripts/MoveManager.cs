@@ -504,7 +504,7 @@ public class MoveManager : NetworkBehaviour {
 	void RpcBuildKnight(Vector3 location, Enums.Color color)
     {
 		Vertex source = BoardState.instance.vertexPosition[location];
-		GameObject spawnedKnight = getKnightFromLevel(1);
+		GameObject spawnedKnight = getKnightFromLevel(1, location, color);
         spawnedKnight.transform.position += new Vector3(0f, 10f, 0f);
 		BoardState.instance.spawnedObjects.Add(location, spawnedKnight);
 
