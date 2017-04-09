@@ -6,6 +6,8 @@ using UnityEngine.Networking;
 public class BoardGenerator : NetworkBehaviour {
 
     //Spawn Locations
+    public List<GameObject> lakeSpawnLocations;
+
     private List<GameObject> mainBoardHexSpawns;
     private List<GameObject> islandHexSpawns;
 
@@ -102,7 +104,6 @@ public class BoardGenerator : NetworkBehaviour {
         //Spawn Hills
         spawnHex(mainBoardHexSpawns, hillHex, 3, true);
         //Spawn Dessert
-        spawnHex(mainBoardHexSpawns, dessertHex, 1, true);
         //Spawn Mountain 
         spawnHex(mainBoardHexSpawns, mountainHex, 3, true);
         //Spawn Pasture 
@@ -123,6 +124,9 @@ public class BoardGenerator : NetworkBehaviour {
         spawnHex(islandHexSpawns, mountainHex, 2, false);
         //Spawn Pasture 
         spawnHex(islandHexSpawns, pastureHex, 1, false);
+
+
+        spawnHex(lakeSpawnLocations, dessertHex, 1, true);
     }
 
     void spawnHex(List<GameObject> spawnPositions, GameObject hexToSpawn, int numToSpawn, bool isOnMainBoard)
@@ -131,7 +135,7 @@ public class BoardGenerator : NetworkBehaviour {
         {
             GameObject targetSpawn = (spawnPositions[UnityEngine.Random.Range(0, spawnPositions.Count)]);
             Transform targetTransform = targetSpawn.transform;
-            GameObject spawnedHex = Instantiate(hexToSpawn, targetTransform.position, Quaternion.identity, targetTransform);
+            GameObject spawnedHex = Instantiate(hexToSpawn, targetTransform.position, hexToSpawn.transform.rotation, targetTransform);
 
             Hex hex = targetSpawn.gameObject.GetComponent<Hex>();
             string name = hexToSpawn.name;

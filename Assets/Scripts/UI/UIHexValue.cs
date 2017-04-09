@@ -8,6 +8,8 @@ using UnityEngine.UI;
 /// </summary>
 public class UIHexValue : MonoBehaviour {
 
+    public bool isFishVal;
+
 	/// <summary>
 	/// The camera which this UI element updates to constantly face
 	/// </summary>
@@ -31,6 +33,11 @@ public class UIHexValue : MonoBehaviour {
 
 		_Camera = Camera.main;
 		_HexNumber = GetComponent<TextMesh>();
+
+        if(isFishVal)
+        {
+            _HexNumber.color = Color.cyan;
+        }
 	}
 
 	/// <summary>
