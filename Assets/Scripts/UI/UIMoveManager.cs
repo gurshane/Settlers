@@ -557,7 +557,7 @@ public class UIMoveManager : MonoBehaviour {
 
 	private void moveTypeChange(Enums.MoveType mt) {
 		if (_CurrentPlayer.getMoveType () != MoveType.SPECIAL) {
-			_CurrentPlayer.setMoveType (mt);
+			_CurrentPlayer.setMoveType (mt, _CurrentPlayer.getID());
 		}
 	}
 			

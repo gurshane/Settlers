@@ -356,7 +356,7 @@ public class Player : NetworkBehaviour {
                     } else {
                         setSpecial(Special.NONE, getID());
                         foreach(Player p in GameManager.instance.getPlayers()) {
-                            setMoveType(MoveType.NONE);
+                            GameManager.instance.getPersonalPlayer().setMoveType(MoveType.NONE, p.getID());
                         }
                         revertTurn();
                         endPhaseOne();
@@ -407,7 +407,7 @@ public class Player : NetworkBehaviour {
                     } else {
                         setSpecial(Special.NONE, getID());
                         foreach(Player p in GameManager.instance.getPlayers()) {
-                            setMoveType(MoveType.NONE);
+                            GameManager.instance.getPersonalPlayer().setMoveType(MoveType.NONE, p.getID());
                         }
                         revertTurn();
                         endPhaseOne();
@@ -443,7 +443,7 @@ public class Player : NetworkBehaviour {
                         }
                         setSpecial(Special.NONE, getID());
                         foreach(Player p in GameManager.instance.getPlayers()) {
-                            setMoveType(MoveType.NONE);
+                            GameManager.instance.getPersonalPlayer().setMoveType(MoveType.NONE, p.getID());
                         }
                         revertTurn();
                         endPhaseOne();
@@ -478,7 +478,7 @@ public class Player : NetworkBehaviour {
                         }
                         setSpecial(Special.NONE, getID());
                         foreach(Player p in GameManager.instance.getPlayers()) {
-                            setMoveType(MoveType.NONE);
+                            GameManager.instance.getPersonalPlayer().setMoveType(MoveType.NONE, p.getID());
                         }
                         revertTurn();
                         endPhaseOne();
@@ -520,7 +520,7 @@ public class Player : NetworkBehaviour {
 					CmdAlternateDisplaceKnight (v.transform.position);
 
                     foreach (Player p in GameManager.instance.players) {
-                        p.setMoveType(MoveType.NONE);
+                        GameManager.instance.getPersonalPlayer().setMoveType(MoveType.NONE, p.getID());
                     }
                     revertTurn();
                     moveType = Enums.MoveType.NONE;
@@ -838,14 +838,14 @@ public class Player : NetworkBehaviour {
         return this.moveType; 
     }
 
-    public void setMoveType(Enums.MoveType mType) {
-        CmdSetMoveType(mType);
+    public void setMoveType(Enums.MoveType mType, int plyr) {
+        CmdSetMoveType(mType, plyr);
     }
 
     [Command]
-    public void CmdSetMoveType(Enums.MoveType mType)
+    public void CmdSetMoveType(Enums.MoveType mType, int plyr)
     {
-        this.moveType = mType; 
+        GameManager.instance.getPlayer(plyr).moveType = mType; 
     }
 
     public Enums.Special getSpecial()
@@ -895,14 +895,14 @@ public class Player : NetworkBehaviour {
         return this.i1; 
     }
 
-    public void setI1(int i) {
-        CmdSetI1(i);
+    public void setI1(int i, int plyr) {
+        CmdSetI1(i, plyr);
     }
 
     [Command]
-    public void CmdSetI1(int i)
+    public void CmdSetI1(int i, int plyr)
     {
-        this.i1 = i;
+        GameManager.instance.getPlayer(plyr).i1 = i;
     }
 
     public int getOpponent()
@@ -910,14 +910,14 @@ public class Player : NetworkBehaviour {
         return this.opponent; 
     }
 
-    public void setOpponent(int i) {
-        CmdSetOpponent(i);
+    public void setOpponent(int i, int plyr) {
+        CmdSetOpponent(i, plyr);
     }
 
     [Command]
-    public void CmdSetOpponent(int i)
+    public void CmdSetOpponent(int i, int plyr)
     {
-        this.opponent = i;
+        GameManager.instance.getPlayer(plyr).opponent = i;
     }
 
     public bool getB1()
@@ -925,14 +925,14 @@ public class Player : NetworkBehaviour {
         return this.b1; 
     }
 
-    public void setB1(bool b) {
-        CmdSetB1(b);
+    public void setB1(bool b, int plyr) {
+        CmdSetB1(b, plyr);
     }
 
     [Command]
-    public void CmdSetB1(bool b)
+    public void CmdSetB1(bool b, int plyr)
     {
-        this.b1 = b;
+        GameManager.instance.getPlayer(plyr).b1 = b;
     }
 
     public void setSpecialTurn(int turn) {

@@ -430,7 +430,7 @@ public class GameManager : NetworkBehaviour {
             if (p.getHandSize() > p.maxHandSize() ){
 
                 foreach (Player p2 in players) {
-                    p2.setMoveType(MoveType.SPECIAL);
+                    getPersonalPlayer().setMoveType(MoveType.SPECIAL, p2.getID());
                 }
 
                 Debug.Log("old turn" + p.getOldTurn());
@@ -445,7 +445,7 @@ public class GameManager : NetworkBehaviour {
         }
 
         foreach (Player p2 in players) {
-            p2.setMoveType(MoveType.SPECIAL);
+            getPersonalPlayer().setMoveType(MoveType.SPECIAL, p2.getID());
         }
         getPersonalPlayer().setSpecialTurn(old);
         Debug.Log("im here");
