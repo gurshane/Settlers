@@ -776,7 +776,7 @@ public class MoveManager : NetworkBehaviour {
 		if (!Object.ReferenceEquals(piece, null)) {
 			targetLocation.setOccupyingPiece(piece);
 		} else {
-			targetLocation.setOccupyingPiece(new Robber());
+			targetLocation.setOccupyingPiece(new Pirate());
 		}
 
 		GameObject newPirate = Instantiate<GameObject>(PrefabHolder.instance.pirate, target, Quaternion.identity);

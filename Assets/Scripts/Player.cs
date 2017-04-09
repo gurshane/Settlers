@@ -375,7 +375,7 @@ public class Player : NetworkBehaviour {
                     foreach (Edge edge in BoardState.instance.edgePosition.Values) {
                         GamePiece edgePiece = edge.getOccupyingPiece();
                         if (!Object.ReferenceEquals(edgePiece, null)) {
-                            if (edgePiece.getPieceType() == PieceType.ROAD && ((Road)edgePiece).getIsShip()) {
+                            if (edgePiece.getPieceType() == PieceType.ROAD && ((Road)edgePiece).getIsShip() && edgePiece.getColor() != myColor) {
                                 Hex leftHex = edge.getLeftHex();
                                 if (Object.ReferenceEquals(leftHex, h)) {
                                     stealable = true;
