@@ -406,11 +406,10 @@ public class Player : NetworkBehaviour {
                     if (ma.canStealRobber(v, myColor)) {
                         int opp = (int)v.getOccupyingPiece().getColor();
                         Player oppo  = GameManager.instance.getPlayer(opp);
-                        int hSize = oppo.getHandSize();
                         bool taken = false;
                         for (int i = 0; i < 5; i++) {
-                            oppo.changeResource((ResourceType)i, -1);
-                            if (oppo.getHandSize() < hSize) {
+                            if(oppo.getResources()[i] > 0) {
+                                oppo.changeResource((ResourceType)i, -1);
                                 taken = true;
                                 changeResource((ResourceType)i, 1);
                                 break;
@@ -418,8 +417,8 @@ public class Player : NetworkBehaviour {
                         }
                         if (!taken) {
                             for (int i = 0; i < 3; i++) {
-                                oppo.changeCommodity((CommodityType)i, -1);
-                                if (oppo.getHandSize() < hSize) {
+                                if(oppo.getCommodities()[i] > 0) {
+                                    oppo.changeCommodity((CommodityType)i, -1);
                                     changeCommodity((CommodityType)i, 1);
                                     break;
                                 }
@@ -441,11 +440,10 @@ public class Player : NetworkBehaviour {
                     if (ma.canStealPirate(e, myColor)) {
                         int opp = (int)e.getOccupyingPiece().getColor();
                         Player oppo  = GameManager.instance.getPlayer(opp);
-                        int hSize = oppo.getHandSize();
                         bool taken = false;
                         for (int i = 0; i < 5; i++) {
-                            oppo.changeResource((ResourceType)i, -1);
-                            if (oppo.getHandSize() < hSize) {
+                            if(oppo.getResources()[i] > 0) {
+                                oppo.changeResource((ResourceType)i, -1);
                                 taken = true;
                                 changeResource((ResourceType)i, 1);
                                 break;
@@ -453,8 +451,8 @@ public class Player : NetworkBehaviour {
                         }
                         if (!taken) {
                             for (int i = 0; i < 3; i++) {
-                                oppo.changeCommodity((CommodityType)i, -1);
-                                if (oppo.getHandSize() < hSize) {
+                                if(oppo.getCommodities()[i] > 0) {
+                                    oppo.changeCommodity((CommodityType)i, -1);
                                     changeCommodity((CommodityType)i, 1);
                                     break;
                                 }
