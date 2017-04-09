@@ -1100,6 +1100,17 @@ public class MoveAuthorizer
 
     public bool canStealPirate(Edge e, Enums.Color color) {
 
+        GamePiece edgePiece = e.getOccupyingPiece();
+        if (Object.ReferenceEquals(edgePiece, null)) return false;
+
+        if (edgePiece.getPieceType() != PieceType.ROAD) return false;
+
+        if(edgePiece.getColor() == color) return false;
+
+        Road ship = (Road)edgePiece;
+
+        if (!ship.getIsShip()) return false;
+
         Hex leftHex = e.getLeftHex();
             if (!Object.ReferenceEquals(leftHex, null)) {
                 GamePiece leftHexPiece = leftHex.getOccupyingPiece();
