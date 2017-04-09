@@ -127,7 +127,6 @@ public class BoardGenerator : NetworkBehaviour {
 
     void spawnHex(List<GameObject> spawnPositions, GameObject hexToSpawn, int numToSpawn, bool isOnMainBoard)
     {
-        GameObject obj = null;
         for ( int i = 0; i < numToSpawn; i++)
         {
             GameObject targetSpawn = (spawnPositions[UnityEngine.Random.Range(0, spawnPositions.Count)]);
@@ -149,8 +148,6 @@ public class BoardGenerator : NetworkBehaviour {
                 case "desertTile":
                     hex.hexType = Enums.HexType.DESERT;
                     hex.resourceType = Enums.ResourceType.NONE;
-                    obj = Instantiate(robber, spawnedHex.transform.position, Quaternion.identity, spawnedHex.transform);
-                    hex.setOccupyingPiece(new Robber());
                     break;
                 case "goldTile":
                     hex.hexType = Enums.HexType.GOLD;
@@ -185,10 +182,6 @@ public class BoardGenerator : NetworkBehaviour {
             }
 
             NetworkServer.Spawn(spawnedHex);
-            if(obj)
-            {
-                NetworkServer.Spawn(obj);
-            }
             
             spawnPositions.Remove(targetSpawn);
         }

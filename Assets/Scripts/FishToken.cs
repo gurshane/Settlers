@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class FishToken : MonoBehaviour {
+public class FishToken {
 
     public bool isBoot;
     public int value;

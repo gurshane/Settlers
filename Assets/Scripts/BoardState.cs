@@ -27,37 +27,44 @@ public class BoardState : NetworkBehaviour
         edgePosition = new Dictionary<Vector3, Edge>();
         hexPosition = new Dictionary<Vector3, Hex>();
         spawnedObjects = new Dictionary<Vector3, GameObject>();
-        
+
+        StartCoroutine(initialize());
     }
 
     // Update is called once per frame
-    void LateUpdate ()
+
+
+    IEnumerator initialize ()
     {
-        if(vertexPosition.Count < 112)
+        yield return new WaitForSeconds(5.0f);
+
+        vertexPosition.Clear();
+        foreach (GameObject vertex in GameObject.FindGameObjectsWithTag("Vertex"))
         {
-            vertexPosition.Clear();
-            foreach (GameObject vertex in GameObject.FindGameObjectsWithTag("Vertex"))
-            {
-                vertexPosition.Add(vertex.transform.position, vertex.GetComponent<Vertex>());
-            }
+            vertexPosition.Add(vertex.transform.position, vertex.GetComponent<Vertex>());
         }
-        if(edgePosition.Count < 155)
+
+        edgePosition.Clear();
+        foreach (GameObject edge in GameObject.FindGameObjectsWithTag("Edge"))
         {
-            edgePosition.Clear();
-            foreach (GameObject edge in GameObject.FindGameObjectsWithTag("Edge"))
-            {
-                edgePosition.Add(edge.transform.position, edge.GetComponent<Edge>());
-            }
+            edgePosition.Add(edge.transform.position, edge.GetComponent<Edge>());
         }
-        if(hexPosition.Count < 19)
+
+        hexPosition.Clear();
+        foreach (GameObject hex in GameObject.FindGameObjectsWithTag("MainHex"))
         {
-            hexPosition.Clear();
-            foreach (GameObject hex in GameObject.FindGameObjectsWithTag("MainHex"))
-            {
-                hexPosition.Add(hex.transform.position, hex.GetComponent<Hex>());
-            }
+            hexPosition.Add(hex.transform.position, hex.GetComponent<Hex>());
+        }
+        foreach (GameObject hex in GameObject.FindGameObjectsWithTag("IslandHex"))
+        {
+            hexPosition.Add(hex.transform.position, hex.GetComponent<Hex>());
+        }
+        foreach (GameObject hex in GameObject.FindGameObjectsWithTag("WaterHex"))
+        {
+            hexPosition.Add(hex.transform.position, hex.GetComponent<Hex>());
         }
             
             
 	}
+
 }
