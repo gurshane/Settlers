@@ -96,6 +96,11 @@ public class Bank : NetworkBehaviour {
         tradeCards.Add(Enums.ProgressCardName.TRADEMONOPOLY);
         tradeCards.Add(Enums.ProgressCardName.TRADEMONOPOLY);
 
+        generateFishTokens();
+    }
+
+    public void generateFishTokens()
+    {
         fishTokens = new List<FishToken>();
         fishTokens.Add(new FishToken(false, 1));
         fishTokens.Add(new FishToken(false, 1));
@@ -129,8 +134,53 @@ public class Bank : NetworkBehaviour {
         fishTokens.Add(new FishToken(false, 3));
         fishTokens.Add(new FishToken(false, 3));
 
-
         fishTokens.Add(new FishToken(true, 1));
+    }
+
+    public int getFishToken(bool server)
+    {
+        if(fishTokens.Count < 3)
+        {
+            generateFishTokens();
+        }
+        
+        int numFish = fishTokens[0].value;
+
+        assignAuthority(server);
+        RpcWithdrawFishToken();
+        removeAuthority(server);
+
+        return numFish;
+    }
+
+    [ClientRpc]
+    public void RpcWithdrawFishToken()
+    {
+        fishTokens.RemoveAt(0);
+    }
+
+    public int getFishTokens(bool server)
+    {
+        if (fishTokens.Count < 3)
+        {
+            generateFishTokens();
+        }
+
+        int numFish = fishTokens[0].value;
+        numFish += fishTokens[1].value;
+
+        assignAuthority(server);
+        RpcWithdrawFishTokens();
+        removeAuthority(server);
+
+        return numFish;
+    }
+
+    [ClientRpc]
+    public void RpcWithdrawFishTokens()
+    {
+        fishTokens.RemoveAt(0);
+        fishTokens.RemoveAt(0);
     }
 
     public int getResourceAmount(Enums.ResourceType res)

@@ -1123,4 +1123,15 @@ public class MoveAuthorizer
 
         return false;
     }
+
+    public bool canDestroyCity(Vertex v, Enums.Color color) {
+        GamePiece city = v.getOccupyingPiece();
+        if (Object.ReferenceEquals(city, null)) return false;
+
+        if (city.getPieceType() != PieceType.CITY) return false;
+
+        if (city.getColor() != color) return false;
+
+        return true;
+    }
 }

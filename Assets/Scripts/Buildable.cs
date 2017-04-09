@@ -340,4 +340,13 @@ public class Buildable {
 		return hexes;
 	}
 
+	public List<Vertex> buildableCanDestroyCity(Enums.Color color) {
+		List<Vertex> vertices = new List<Vertex>();
+		foreach (Vertex v in BoardState.instance.vertexPosition.Values) {
+			if (ma.canDestroyCity(v, color)) {
+				vertices.Add(v);
+			}
+		}
+		return vertices;
+	}
 }

@@ -350,12 +350,16 @@ public class Player : NetworkBehaviour {
                     if (stealable) {
                         setSpecial(Special.STEAL_RESOURCES_ROBBER, getID());
                     } else {
-                        setSpecial(Special.NONE, getID());
-                        foreach(Player p in GameManager.instance.getPlayers()) {
-                            GameManager.instance.getPersonalPlayer().setMoveType(MoveType.NONE, p.getID());
+                        if (!b1) {
+                            setSpecial(Special.NONE, getID());
+                            foreach(Player p in GameManager.instance.getPlayers()) {
+                                GameManager.instance.getPersonalPlayer().setMoveType(MoveType.NONE, p.getID());
+                            }
+                            revertTurn();
+                            endPhaseOne();
+                        } else {
+                            GameManager.instance.barbarianAttack();
                         }
-                        revertTurn();
-                        endPhaseOne();
                     }
 				}
             } else if (special == Enums.Special.MOVE_PIRATE) {
@@ -389,12 +393,16 @@ public class Player : NetworkBehaviour {
                     if (stealable) {
                         setSpecial(Special.STEAL_RESOURCES_PIRATE, getID());
                     } else {
-                        setSpecial(Special.NONE, getID());
-                        foreach(Player p in GameManager.instance.getPlayers()) {
-                            GameManager.instance.getPersonalPlayer().setMoveType(MoveType.NONE, p.getID());
+                        if (!b1) {
+                            setSpecial(Special.NONE, getID());
+                            foreach(Player p in GameManager.instance.getPlayers()) {
+                                GameManager.instance.getPersonalPlayer().setMoveType(MoveType.NONE, p.getID());
+                            }
+                            revertTurn();
+                            endPhaseOne();
+                        } else {
+                            GameManager.instance.barbarianAttack();
                         }
-                        revertTurn();
-                        endPhaseOne();
                     }
 				}
             } else if (special == Enums.Special.STEAL_RESOURCES_ROBBER) { 
@@ -424,12 +432,16 @@ public class Player : NetworkBehaviour {
                                 }
                             }
                         }
-                        setSpecial(Special.NONE, getID());
-                        foreach(Player p in GameManager.instance.getPlayers()) {
-                            GameManager.instance.getPersonalPlayer().setMoveType(MoveType.NONE, p.getID());
+                        if (!b1) {
+                            setSpecial(Special.NONE, getID());
+                            foreach(Player p in GameManager.instance.getPlayers()) {
+                                GameManager.instance.getPersonalPlayer().setMoveType(MoveType.NONE, p.getID());
+                            }
+                            revertTurn();
+                            endPhaseOne();
+                        } else {
+                            GameManager.instance.barbarianAttack();
                         }
-                        revertTurn();
-                        endPhaseOne();
                     }
 				}
             } else if (special == Enums.Special.STEAL_RESOURCES_PIRATE) { 
@@ -458,14 +470,29 @@ public class Player : NetworkBehaviour {
                                 }
                             }
                         }
-                        setSpecial(Special.NONE, getID());
-                        foreach(Player p in GameManager.instance.getPlayers()) {
-                            GameManager.instance.getPersonalPlayer().setMoveType(MoveType.NONE, p.getID());
+                        if (!b1) {
+                            setSpecial(Special.NONE, getID());
+                            foreach(Player p in GameManager.instance.getPlayers()) {
+                                GameManager.instance.getPersonalPlayer().setMoveType(MoveType.NONE, p.getID());
+                            }
+                            revertTurn();
+                            endPhaseOne();
+                        } else {
+                            GameManager.instance.barbarianAttack();
                         }
-                        revertTurn();
-                        endPhaseOne();
                     }
 				} 
+            } else if (special == Enums.Special.CHOOSE_DESTROYED_CITY) {
+                if (!pieceHit.tag.Equals("Vertex")) {
+					return;
+				}
+                Vertex v = pieceHit.GetComponent<Vertex>();
+
+                if (ma.canDestroyCity(v, myColor)) {
+					CmdDestroyCity (v.transform.position);
+
+                    GameManager.instance.barbarianLossShortcut(getID() + 1);
+				}
             }
 		}
 
@@ -951,7 +978,7 @@ public class Player : NetworkBehaviour {
 
     public void endPhaseOne() {
         Debug.Log("epo1");
-        CmdEndPhaseOne(isServer);
+        if (GameManager.instance.getGamePhase() == GamePhase.PHASE_ONE) CmdEndPhaseOne(isServer);
     }
 
     [Command]
@@ -965,6 +992,26 @@ public class Player : NetworkBehaviour {
     public void RpcEndPhaseOne(bool server) {
         Debug.Log("epo3");
         GameManager.instance.setGamePhase(GamePhase.PHASE_TWO, server);
+    }
+
+    public void moveBarbarian() {
+        CmdMoveBarbarian();
+    }
+
+    [Command]
+    public void CmdMoveBarbarian()
+    {
+        RpcMoveBarbarian();
+    }
+
+    [ClientRpc]
+    public void RpcMoveBarbarian() {
+        if (GameManager.instance.getBarbarianPosition() == 7) {
+            GameManager.instance.barbarianPos = 1;
+            GameManager.instance.barbarianHasAttacked = true;
+        } else {
+            GameManager.instance.barbarianPos++;
+        }
     }
 
     public void SetV1(Vertex vReplace)
@@ -1398,5 +1445,10 @@ public class Player : NetworkBehaviour {
     [Command]
     public void CmdMovePirate(Vector3 location) {
 		MoveManager.instance.movePirate (BoardState.instance.hexPosition [location], isServer);        
+    }
+
+    [Command]
+    public void CmdDestroyCity (Vector3 location) {
+		MoveManager.instance.destroyCity (BoardState.instance.vertexPosition [location], myColor, isServer);        
     }
 }
