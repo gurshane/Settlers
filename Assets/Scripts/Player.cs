@@ -335,10 +335,13 @@ public class Player : NetworkBehaviour {
                         GamePiece hexPiece = hex.getOccupyingPiece();
                         if (!Object.ReferenceEquals(hexPiece, null)) {
                             if (hexPiece.getPieceType() == PieceType.ROBBER) {
+                                Debug.Log("step1");
                                 foreach (Vertex vert in hex.getVertices()){
                                     GamePiece vertPiece = vert.getOccupyingPiece();
                                     if (!Object.ReferenceEquals(vertPiece, null)) {
+                                        Debug.Log("step2");
                                         if (vertPiece.getColor() != myColor){
+                                            Debug.Log("step3");
                                             if (vertPiece.getPieceType() == PieceType.CITY ||
                                                 vertPiece.getPieceType() == PieceType.SETTLEMENT) {
 
