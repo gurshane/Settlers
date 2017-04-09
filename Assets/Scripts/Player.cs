@@ -233,7 +233,7 @@ public class Player : NetworkBehaviour {
 
 				if (ma.canPlaceInitialRoad(e, this.myColor)) {
 					CmdPlaceInitialRoad (e.transform.position);
-                    moveType = Enums.MoveType.PLACE_INITIAL_CITY;
+                    moveType = Enums.MoveType.NONE;
 				}
 			} else if (moveType == Enums.MoveType.PLACE_INITIAL_SHIP) {
 
@@ -244,7 +244,7 @@ public class Player : NetworkBehaviour {
 
 				if (ma.canPlaceInitialShip(e, this.myColor)) {
 					CmdPlaceInitialShip (e.transform.position);
-                    moveType = Enums.MoveType.PLACE_INITIAL_CITY;
+                    moveType = Enums.MoveType.NONE;
 				}
 			}
 		}
@@ -1269,8 +1269,10 @@ public class Player : NetworkBehaviour {
                 (moveType != MoveType.PLACE_INITIAL_ROAD &&
                 moveType != MoveType.PLACE_INITIAL_SHIP)) { return; }
 
-        if (moveType != MoveType.PLACE_INITIAL_CITY) {
-            moveType = Enums.MoveType.NONE;
+        moveType = Enums.MoveType.NONE;
+
+        if (GameManager.instance.getGamePhase() == GamePhase.SETUP_ONE) {
+            moveType = Enums.MoveType.PLACE_INITIAL_CITY;
         }
         special = Enums.Special.NONE;
         v1 = null;
