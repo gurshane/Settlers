@@ -134,7 +134,7 @@ public class GameManager : NetworkBehaviour {
         metropolises.Add(Enums.DevChartType.SCIENCE, null);
 
         barbarianHasAttacked = false;
-        barbarianPos = 1;
+        barbarianPos = 6;
         graph = new Graph();
 
         Init();
@@ -592,16 +592,48 @@ public class GameManager : NetworkBehaviour {
             }
         }
 
-        int worstPlayer = 0;
-        for (int i = 1; i < players.Count; i++) {
-            if (playerContributions[i] < playerContributions[worstPlayer]) {
+        bool[] possibleDestruction = new bool[players.Count];
+        for (int i = 0; i < players.Count; i++) {
+            possibleDestruction[i] = false;
+        }
+        foreach (Vertex v in BoardState.instance.vertexPosition.Values) {
+            GamePiece gp = v.getOccupyingPiece();
+            if(!Object.ReferenceEquals(gp, null))
+            {
+                if (gp.getPieceType() == PieceType.CITY) {
+                    City c = (City)gp;
+                    if (!c.isMetropolis()) possibleDestruction[(int)c.getColor()] = false;
+                }
+            }
+        }
+
+        int worstPlayer = -1;
+        for (int i = 0; i < players.Count; i++) {
+            if (possibleDestruction[i]) {
+                worstPlayer = i;
+                break; 
+            } 
+        }
+
+        if (worstPlayer == -1) {
+            foreach(Player p in getPlayers()) {
+                getPersonalPlayer().setSpecial(Special.NONE, p.getID());
+                getPersonalPlayer().setMoveType(MoveType.NONE, p.getID());
+            }
+            getPersonalPlayer().revertTurn();
+            getPersonalPlayer().endPhaseOne();
+            return;
+        }
+
+        for (int i = 0; i < players.Count; i++) {
+            if (possibleDestruction[i] && (playerContributions[i] < playerContributions[worstPlayer])) {
                 worstPlayer = i;
             } 
         }
 
         for (int i = start; i < players.Count; i++)
         {
-            if (playerContributions[i] > playerContributions[worstPlayer]) continue;
+            if (!possibleDestruction[i] || playerContributions[i] > playerContributions[worstPlayer]) continue;
 
             Player p = players[i];
 
