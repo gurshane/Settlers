@@ -215,10 +215,10 @@ public class MoveManager : NetworkBehaviour {
 		Player current = GameManager.instance.getCurrentPlayer();
 
 		// Spend the correct resources
-        current.changeResource(Enums.ResourceType.WOOL, -1);
+        GameManager.instance.getPersonalPlayer().changeResource(Enums.ResourceType.WOOL, -1, current.getID());
         Bank.instance.depositResource(Enums.ResourceType.WOOL, 1, current.isServer);
 
-        current.changeResource(Enums.ResourceType.ORE, -1);
+        GameManager.instance.getPersonalPlayer().changeResource(Enums.ResourceType.ORE, -1, current.getID());
         Bank.instance.depositResource(Enums.ResourceType.ORE, 1, current.isServer);
 
 		removeAuthority(server);
@@ -255,7 +255,7 @@ public class MoveManager : NetworkBehaviour {
 		Player current = GameManager.instance.getCurrentPlayer();
 
 		// Spend the correct resources
-        current.changeResource(Enums.ResourceType.GRAIN, -1);
+        GameManager.instance.getPersonalPlayer().changeResource(Enums.ResourceType.GRAIN, -1, current.getID());
         Bank.instance.depositResource(Enums.ResourceType.GRAIN, 1, current.isServer);
 
 		removeAuthority(server);
@@ -289,15 +289,15 @@ public class MoveManager : NetworkBehaviour {
 		int newLevel = level + 1;
 
 		// Spend the correct resources
-        current.changeCommodity(com, -level);
+        GameManager.instance.getPersonalPlayer().changeCommodity(com, -level, current.getID());
         Bank.instance.depositCommodity(com, level, current.isServer);
 
-		current.upgradeDevChart(dev);
+		GameManager.instance.getPersonalPlayer().upgradeDevChart(dev, current.getID());
 
 		if (newLevel == 3) {
 			if (dev == Enums.DevChartType.TRADE) {
 				for (int i = 0; i < 3; i++) {
-					current.updateCommodityRatio(com, 2);
+					GameManager.instance.getPersonalPlayer().updateCommodityRatio(com, 2, current.getID());
 				}
 			} else if (dev == Enums.DevChartType.SCIENCE) {
 				current.makeAqueduct();
@@ -325,20 +325,20 @@ public class MoveManager : NetworkBehaviour {
 		Player current = GameManager.instance.getCurrentPlayer();
 
 		// Add an appropriate amount of victory points
-        current.changeVictoryPoints(1);
-        current.changeVictoryPoints(location.getChits());
+        GameManager.instance.getPersonalPlayer().changeVictoryPoints(1, current.getID());
+        GameManager.instance.getPersonalPlayer().changeVictoryPoints(location.getChits(), current.getID());
 
         // Spend the correct resources
-        current.changeResource(Enums.ResourceType.BRICK, -1);
+        GameManager.instance.getPersonalPlayer().changeResource(Enums.ResourceType.BRICK, -1, current.getID());
         Bank.instance.depositResource(Enums.ResourceType.BRICK, 1, current.isServer);
 
-        current.changeResource(Enums.ResourceType.GRAIN, -1);
+        GameManager.instance.getPersonalPlayer().changeResource(Enums.ResourceType.GRAIN, -1, current.getID());
         Bank.instance.depositResource(Enums.ResourceType.GRAIN, 1, current.isServer);
 
-        current.changeResource(Enums.ResourceType.WOOL, -1);
+        GameManager.instance.getPersonalPlayer().changeResource(Enums.ResourceType.WOOL, -1, current.getID());
         Bank.instance.depositResource(Enums.ResourceType.WOOL, 1, current.isServer);
 
-        current.changeResource(Enums.ResourceType.LUMBER, -1);
+        GameManager.instance.getPersonalPlayer().changeResource(Enums.ResourceType.LUMBER, -1, current.getID());
         Bank.instance.depositResource(Enums.ResourceType.LUMBER, 1, current.isServer);
 
 		removeAuthority(server);
@@ -390,13 +390,13 @@ public class MoveManager : NetworkBehaviour {
 		Player current = GameManager.instance.getCurrentPlayer();
 
 		// Add an appropriate amount of victory points
-        current.changeVictoryPoints(1);
+        GameManager.instance.getPersonalPlayer().changeVictoryPoints(1, current.getID());
 
         // Spend the resources
-        current.changeResource(Enums.ResourceType.GRAIN, -2);
+        GameManager.instance.getPersonalPlayer().changeResource(Enums.ResourceType.GRAIN, -2, current.getID());
         Bank.instance.depositResource(Enums.ResourceType.GRAIN, 2, current.isServer);
 
-        current.changeResource(Enums.ResourceType.ORE, -3);
+        GameManager.instance.getPersonalPlayer().changeResource(Enums.ResourceType.ORE, -3, current.getID());
         Bank.instance.depositResource(Enums.ResourceType.ORE, 3, current.isServer);
 
 		removeAuthority(server);
@@ -444,10 +444,10 @@ public class MoveManager : NetworkBehaviour {
 
 		Player current = GameManager.instance.getCurrentPlayer();
 
-		current.changeCityWallCount(-1);
+		GameManager.instance.getPersonalPlayer().changeCityWallCount(-1, current.getID());
 
         // Spend the resources
-        current.changeResource(Enums.ResourceType.BRICK, -2);
+        GameManager.instance.getPersonalPlayer().changeResource(Enums.ResourceType.BRICK, -2, current.getID());
         Bank.instance.depositResource(Enums.ResourceType.BRICK, 2, current.isServer);
 
 		removeAuthority(server);
@@ -466,7 +466,7 @@ public class MoveManager : NetworkBehaviour {
 
 		Player current = GameManager.instance.getCurrentPlayer();
 
-        current.changeCityWallCount(-1);
+        GameManager.instance.getPersonalPlayer().changeCityWallCount(-1, current.getID());
 		source.addWall();
     }
 
@@ -485,10 +485,10 @@ public class MoveManager : NetworkBehaviour {
 		Player current = GameManager.instance.getCurrentPlayer();
 
         // Spend the resources
-        current.changeResource(Enums.ResourceType.WOOL, -1);
+        GameManager.instance.getPersonalPlayer().changeResource(Enums.ResourceType.WOOL, -1, current.getID());
         Bank.instance.depositResource(Enums.ResourceType.WOOL, 1, current.isServer);
 
-        current.changeResource(Enums.ResourceType.ORE, -1);
+        GameManager.instance.getPersonalPlayer().changeResource(Enums.ResourceType.ORE, -1, current.getID());
         Bank.instance.depositResource(Enums.ResourceType.ORE, 1, current.isServer);
 
 		removeAuthority(server);
@@ -529,10 +529,10 @@ public class MoveManager : NetworkBehaviour {
 		Player current = GameManager.instance.getCurrentPlayer();
 
 		// Spend the resources
-        current.changeResource(Enums.ResourceType.BRICK, -1);
+        GameManager.instance.getPersonalPlayer().changeResource(Enums.ResourceType.BRICK, -1, current.getID());
         Bank.instance.depositResource(Enums.ResourceType.BRICK, 1, current.isServer);
 
-        current.changeResource(Enums.ResourceType.LUMBER, -1);
+        GameManager.instance.getPersonalPlayer().changeResource(Enums.ResourceType.LUMBER, -1, current.getID());
         Bank.instance.depositResource(Enums.ResourceType.LUMBER, 1, current.isServer);
 
 		removeAuthority(server);
@@ -577,10 +577,10 @@ public class MoveManager : NetworkBehaviour {
 		Player current = GameManager.instance.getCurrentPlayer();
 
 		// Spend the resources
-        current.changeResource(Enums.ResourceType.WOOL, -1);
+        GameManager.instance.getPersonalPlayer().changeResource(Enums.ResourceType.WOOL, -1, current.getID());
         Bank.instance.depositResource(Enums.ResourceType.WOOL, 1, current.isServer);
 
-        current.changeResource(Enums.ResourceType.LUMBER, -1);
+        GameManager.instance.getPersonalPlayer().changeResource(Enums.ResourceType.LUMBER, -1, current.getID());
         Bank.instance.depositResource(Enums.ResourceType.LUMBER, 1, current.isServer);
 
 		removeAuthority(server);
@@ -831,7 +831,7 @@ public class MoveManager : NetworkBehaviour {
 		assignAuthority(server);
 		RpcPlaceInitialSettlement(v.transform.position, current.getColor());
 
-		current.changeVictoryPoints(1);
+		GameManager.instance.getPersonalPlayer().changeVictoryPoints(1, current.getID());
 
 		removeAuthority(server);
 
@@ -880,14 +880,14 @@ public class MoveManager : NetworkBehaviour {
                 Enums.ResourceType res = GameManager.instance.getResourceFromHex(h.getHexType());
                 if (res != Enums.ResourceType.NONE)
                 {
-                    current.changeResource(res, 1);
+                    GameManager.instance.getPersonalPlayer().changeResource(res, 1, current.getID());
                     Bank.instance.withdrawResource(res, 1, current.isServer);
                 }
             }
         }
 
 		// Update the victory points and add a port 
-        current.changeVictoryPoints(2);
+        GameManager.instance.getPersonalPlayer().changeVictoryPoints(2, current.getID());
 
 		removeAuthority(server);
         
@@ -1061,13 +1061,13 @@ public class MoveManager : NetworkBehaviour {
 					ratios [i] = 3;
 				}
 			}
-			current.updateResourceRatios (ratios);
+			GameManager.instance.getPersonalPlayer().updateResourceRatios (ratios, current.getID());
 
 		// If there is a specific port, update the correct ratio
 		}
         else if (port != Enums.PortType.NONE)
         {
-			current.updateResourceRatio (getResourceFromPort (port), 2);
+			GameManager.instance.getPersonalPlayer().updateResourceRatio (getResourceFromPort (port), 2, current.getID());
 		}
 	}
 

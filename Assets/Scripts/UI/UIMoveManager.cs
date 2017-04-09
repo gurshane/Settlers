@@ -287,7 +287,7 @@ public class UIMoveManager : MonoBehaviour {
 	/// <param name="p_Resource">P resource.</param>
 	public void discardPlayerResource(int p_Resource)
 	{
-		_CurrentPlayer.changeResource ((ResourceType)p_Resource, -1);
+		_CurrentPlayer.changeResource ((ResourceType)p_Resource, -1, _CurrentPlayer.getID());
 
 		// If handsize goes lower than half the original hand size when discard began,
 		// close panel, revert turn back to the player who rolled 7
@@ -308,7 +308,7 @@ public class UIMoveManager : MonoBehaviour {
 	/// <param name="p_Commodity">P commodity.</param>
 	public void discardPlayerCommodity(int p_Commodity)
 	{
-		_CurrentPlayer.changeCommodity ((CommodityType)p_Commodity, -1);
+		_CurrentPlayer.changeCommodity ((CommodityType)p_Commodity, -1, _CurrentPlayer.getID());
 
 		// If handsize goes lower than half the original hand size when discard began,
 		// close panel, revert turn back to the player who rolled 7

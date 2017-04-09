@@ -409,17 +409,17 @@ public class Player : NetworkBehaviour {
                         bool taken = false;
                         for (int i = 0; i < 5; i++) {
                             if(oppo.getResources()[i] > 0) {
-                                oppo.changeResource((ResourceType)i, -1);
+                                GameManager.instance.getPersonalPlayer().changeResource((ResourceType)i, -1, oppo.getID());
                                 taken = true;
-                                changeResource((ResourceType)i, 1);
+                                changeResource((ResourceType)i, 1, getID());
                                 break;
                             }
                         }
                         if (!taken) {
                             for (int i = 0; i < 3; i++) {
                                 if(oppo.getCommodities()[i] > 0) {
-                                    oppo.changeCommodity((CommodityType)i, -1);
-                                    changeCommodity((CommodityType)i, 1);
+                                    GameManager.instance.getPersonalPlayer().changeCommodity((CommodityType)i, -1, oppo.getID());
+                                    changeCommodity((CommodityType)i, 1, getID());
                                     break;
                                 }
                             }
@@ -443,17 +443,17 @@ public class Player : NetworkBehaviour {
                         bool taken = false;
                         for (int i = 0; i < 5; i++) {
                             if(oppo.getResources()[i] > 0) {
-                                oppo.changeResource((ResourceType)i, -1);
+                                GameManager.instance.getPersonalPlayer().changeResource((ResourceType)i, -1, oppo.getID());
                                 taken = true;
-                                changeResource((ResourceType)i, 1);
+                                changeResource((ResourceType)i, 1, getID());
                                 break;
                             }
                         }
                         if (!taken) {
                             for (int i = 0; i < 3; i++) {
                                 if(oppo.getCommodities()[i] > 0) {
-                                    oppo.changeCommodity((CommodityType)i, -1);
-                                    changeCommodity((CommodityType)i, 1);
+                                    GameManager.instance.getPersonalPlayer().changeCommodity((CommodityType)i, -1, oppo.getID());
+                                    changeCommodity((CommodityType)i, 1, getID());
                                     break;
                                 }
                             }
@@ -742,38 +742,38 @@ public class Player : NetworkBehaviour {
         return this.victoryPoints;
     }
 
-    public bool changeVictoryPoints(int num)
+    public bool changeVictoryPoints(int num, int plyr)
     {//decrease victory points
         //if (!isLocalPlayer)
             //return false;
-        if (this.victoryPoints + num < 0)
+        if (GameManager.instance.getPlayer(plyr).victoryPoints + num < 0)
         {
             return false;
         }
-        CmdChangeVP(num);
+        CmdChangeVP(num, plyr);
         return true;
     }
 
     [Command]
-    public void CmdChangeVP(int num)
+    public void CmdChangeVP(int num, int plyr)
     {
-        this.victoryPoints += num;
+        GameManager.instance.getPlayer(plyr).victoryPoints += num;
     }
 
-    public bool changeFishCount(int num)
+    public bool changeFishCount(int num, int plyr)
     {
-        if((this.numFish + num) < 0)
+        if((GameManager.instance.getPlayer(plyr).numFish + num) < 0)
         {
             return false;
         }
-        CmdChangeFishCount(num);
+        CmdChangeFishCount(num, plyr);
         return true;
     }
 
     [Command]
-    public void CmdChangeFishCount(int num)
+    public void CmdChangeFishCount(int num, int plyr)
     {
-        this.numFish += num;
+        GameManager.instance.getPlayer(plyr).numFish += num;
     }
 
     public int getGoldCount()//return gold count
@@ -781,20 +781,20 @@ public class Player : NetworkBehaviour {
         return this.goldCount;
     }
 
-    public bool changeGoldCount(int num)
+    public bool changeGoldCount(int num, int plyr)
     {//decrease gold count
-        if (this.goldCount + num < 0)
+        if (GameManager.instance.getPlayer(plyr).goldCount + num < 0)
         {
             return false;
         }
-        CmdChangeGold(num);
+        CmdChangeGold(num, plyr);
         return true;
     }
 
     [Command]
-    public void CmdChangeGold(int num)
+    public void CmdChangeGold(int num, int plyr)
     {
-        this.goldCount += num;
+        GameManager.instance.getPlayer(plyr).goldCount += num;
     }
 
     public int getSafeCardCount()//get safe card count (number of cards possible to carry in a hand)
@@ -1052,82 +1052,81 @@ public class Player : NetworkBehaviour {
         this.aqueduct = true;
     }
 
-    public void upgradeDevChart(Enums.DevChartType devChartType)
+    public void upgradeDevChart(Enums.DevChartType devChartType, int plyr)
     {
-        CmdUpgradeDevChart(devChartType);
+        CmdUpgradeDevChart(devChartType, plyr);
     }
 
     [Command]
-    public void CmdUpgradeDevChart(Enums.DevChartType devChartType)
+    public void CmdUpgradeDevChart(Enums.DevChartType devChartType, int plyr)
     {
-        RpcUpgradeDevChart(devChartType);
+        RpcUpgradeDevChart(devChartType, plyr);
 
     }
 
     [ClientRpc]
-    public void RpcUpgradeDevChart(Enums.DevChartType devChartType)
+    public void RpcUpgradeDevChart(Enums.DevChartType devChartType, int plyr)
     {
         int devPosition = (int)devChartType;
-        this.devFlipChart[devPosition]++;
+        GameManager.instance.getPlayer(plyr).devFlipChart[devPosition]++;
     }
 
-    public void updateResourceRatios(int[] newRatios)
+    public void updateResourceRatios(int[] newRatios, int plyr)
     {
-        resourceRatios = newRatios;
-        CmdUpdateResourceRatios(newRatios);
+        CmdUpdateResourceRatios(newRatios, plyr);
     }
 
     [Command]
-    void CmdUpdateResourceRatios(int[] newRatios)
+    void CmdUpdateResourceRatios(int[] newRatios, int plyr)
     {
-        RpcUpdateResourceRatios(newRatios);
+        RpcUpdateResourceRatios(newRatios, plyr);
     }
 
     [ClientRpc]
-    void RpcUpdateResourceRatios(int[] newRatios)
+    void RpcUpdateResourceRatios(int[] newRatios, int plyr)
     {
-        this.resourceRatios = newRatios;
+        GameManager.instance.getPlayer(plyr).resourceRatios = newRatios;
     }
 
-    public bool changeResource(ResourceType resource, int num)
+    public bool changeResource(ResourceType resource, int num, int plyr)
     {
         int resPosition = (int)resource;
-        if (resources[resPosition] + num < 0)
+        if (GameManager.instance.getPlayer(plyr).resources[resPosition] + num < 0)
         {
             return false;
         }
-        CmdChangeResource(resource, num);
+        CmdChangeResource(resource, num, plyr);
         return true;
     }
 
     [Command]
-    public void CmdChangeResource(ResourceType resourceType, int num)
+    public void CmdChangeResource(ResourceType resourceType, int num, int plyr)
     {
-        RpcChangeResource(resourceType, num);
+        RpcChangeResource(resourceType, num, plyr);
     }
 
     [ClientRpc]
-    public void RpcChangeResource(ResourceType resourceType, int num)
+    public void RpcChangeResource(ResourceType resourceType, int num, int plyr)
     {
         int resP = (int)resourceType;
-        this.resources[resP] += num;
+        GameManager.instance.getPlayer(plyr).resources[resP] += num;
     }
 
-    public void addProgressCard(ProgressCardName cardName)
+    public void addProgressCard(ProgressCardName cardName, int plyr)
     {
-        CmdAddProgressCard(cardName);
+        CmdAddProgressCard(cardName, plyr);
     }
 
     [Command]
-    public void CmdAddProgressCard(ProgressCardName cardName)
+    public void CmdAddProgressCard(ProgressCardName cardName, int plyr)
     {
-        RpcAddProgressCard(cardName);
+        RpcAddProgressCard(cardName, plyr);
     }
 
     [ClientRpc]
-    public void RpcAddProgressCard(ProgressCardName cardName)
+    public void RpcAddProgressCard(ProgressCardName cardName, int plyr)
     {
-        this.progressCards.Add(cardName);
+        GameManager.instance.getPlayer(plyr).progressCards.Add(cardName);
     }
 
     public void changeSafeCardCount(int count)
@@ -1135,83 +1134,83 @@ public class Player : NetworkBehaviour {
         this.safeCardCount += count;
     }
 
-    public bool changeCityWallCount(int num)
+    public bool changeCityWallCount(int num, int plyr)
     {
-        if (this.cityWallsLeft <= 0)
+        if (GameManager.instance.getPlayer(plyr).cityWallsLeft <= 0)
         {
             return false;
         }
-        CmdChangeCityWalls(num);
+        CmdChangeCityWalls(num, plyr);
         return true;
     }
 
     [Command]
-    public void CmdChangeCityWalls(int num)
+    public void CmdChangeCityWalls(int num, int plyr)
     {
-        this.cityWallsLeft += num;
+        GameManager.instance.getPlayer(plyr).cityWallsLeft += num;
     }
 
-    public void updateResourceRatio(ResourceType resourceType, int newRatio)
+    public void updateResourceRatio(ResourceType resourceType, int newRatio, int plyr)
     {
-        CmdUpdateResourceRatio(resourceType, newRatio);
+        CmdUpdateResourceRatio(resourceType, newRatio, plyr);
         return;
     }
 
     [Command]
-    public void CmdUpdateResourceRatio(ResourceType resourceType, int newRatio)
+    public void CmdUpdateResourceRatio(ResourceType resourceType, int newRatio, int plyr)
     {
-        RpcUpdateResourceRatio(resourceType, newRatio);
+        RpcUpdateResourceRatio(resourceType, newRatio, plyr);
     }
 
     [ClientRpc]
-    public void RpcUpdateResourceRatio(ResourceType resourceType, int newRatio)
+    public void RpcUpdateResourceRatio(ResourceType resourceType, int newRatio, int plyr)
     {
         int resP = (int)resourceType;
-        this.resourceRatios[resP] = newRatio;
+        GameManager.instance.getPlayer(plyr).resourceRatios[resP] = newRatio;
     }
 
-    public void updateCommodityRatio(CommodityType commodity, int newRatio)
+    public void updateCommodityRatio(CommodityType commodity, int newRatio, int plyr)
     {
-        CmdUpdateCommodityRatio(commodity, newRatio);
+        CmdUpdateCommodityRatio(commodity, newRatio, plyr);
         return;
     }
 
     [Command]
-    public void CmdUpdateCommodityRatio(CommodityType commodityType, int newRatio)
+    public void CmdUpdateCommodityRatio(CommodityType commodityType, int newRatio, int plyr)
     {
-        RpcUpdateCommodityRatio(commodityType, newRatio);
+        RpcUpdateCommodityRatio(commodityType, newRatio, plyr);
     }
 
     [ClientRpc]
-    public void RpcUpdateCommodityRatio(CommodityType commodityType, int newRatio)
+    public void RpcUpdateCommodityRatio(CommodityType commodityType, int newRatio, int plyr)
     {
         int comP = (int)commodityType;
-        this.commodityRatios[comP] = newRatio;
+        GameManager.instance.getPlayer(plyr).commodityRatios[comP] = newRatio;
     }
     
 
-    public bool changeCommodity(CommodityType commodityType, int num)
+    public bool changeCommodity(CommodityType commodityType, int num, int plyr)
     {
         int comPosition = (int)commodityType;
-        if (commodities[comPosition] + num < 0)//check if there are enough commodities
+        if (GameManager.instance.getPlayer(plyr).commodities[comPosition] + num < 0)//check if there are enough commodities
         {
             return false;//if there arent return false to denote an error
         }
-        CmdChangeCommodity(commodityType, num);
+        CmdChangeCommodity(commodityType, num, plyr);
         return true;
     }
 
     [Command]
-    public void CmdChangeCommodity(CommodityType commodityType, int num)
+    public void CmdChangeCommodity(CommodityType commodityType, int num, int plyr)
     {
-        RpcChangeCommodity(commodityType, num);
+        RpcChangeCommodity(commodityType, num, plyr);
     }
 
     [ClientRpc]
-    public void RpcChangeCommodity(CommodityType commodityType, int num)
+    public void RpcChangeCommodity(CommodityType commodityType, int num, int plyr)
     {
         int comP = (int)commodityType;
-        this.commodities[comP] += num;
+        GameManager.instance.getPlayer(plyr).commodities[comP] += num;
     }
 
     public void endTurn() {
