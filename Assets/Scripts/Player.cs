@@ -330,6 +330,7 @@ public class Player : NetworkBehaviour {
                     Debug.Log("robber3");
 					CmdMoveRobber (h.transform.position);
 
+                    bool stealable = false;
                     foreach (Vertex vert in h.getVertices()){
                         GamePiece vertPiece = vert.getOccupyingPiece();
                         if (!Object.ReferenceEquals(vertPiece, null)) {
