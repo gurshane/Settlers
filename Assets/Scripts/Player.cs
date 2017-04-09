@@ -330,23 +330,17 @@ public class Player : NetworkBehaviour {
                     Debug.Log("robber3");
 					CmdMoveRobber (h.transform.position);
 
-                    bool stealable = false;
-                    foreach (Hex hex in BoardState.instance.hexPosition.Values) {
-                        GamePiece hexPiece = hex.getOccupyingPiece();
-                        if (!Object.ReferenceEquals(hexPiece, null)) {
-                            if (hexPiece.getPieceType() == PieceType.ROBBER) {
-                                foreach (Vertex vert in hex.getVertices()){
-                                    GamePiece vertPiece = vert.getOccupyingPiece();
-                                    if (!Object.ReferenceEquals(vertPiece, null)) {
-                                        if (vertPiece.getColor() != myColor){
-                                            if (vertPiece.getPieceType() == PieceType.CITY ||
-                                                vertPiece.getPieceType() == PieceType.SETTLEMENT) {
+                    foreach (Vertex vert in h.getVertices()){
+                        GamePiece vertPiece = vert.getOccupyingPiece();
+                        if (!Object.ReferenceEquals(vertPiece, null)) {
+                            Debug.Log("step2");
+                            if (vertPiece.getColor() != myColor){
+                                Debug.Log("step3");
+                                if (vertPiece.getPieceType() == PieceType.CITY ||
+                                    vertPiece.getPieceType() == PieceType.SETTLEMENT) {
 
-                                                stealable = true;
-                                                break;
-                                            }
-                                        }
-                                    }
+                                    stealable = true;
+                                    break;
                                 }
                             }
                         }
