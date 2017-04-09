@@ -319,6 +319,14 @@ public class Player : NetworkBehaviour {
 			}
 
             if (special == Enums.Special.MOVE_ROBBER) {
+
+                setSpecial(Special.NONE, getID());
+                foreach(Player p in GameManager.instance.getPlayers()) {
+                    GameManager.instance.getPersonalPlayer().setMoveType(MoveType.NONE, p.getID());
+                }
+                revertTurn();
+                endPhaseOne();
+
                 Debug.Log("robber1");
                 if (!pieceHit.tag.Equals("MainHex") && !pieceHit.tag.Equals("IslandHex")) {
 					return;
