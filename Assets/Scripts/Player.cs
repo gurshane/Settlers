@@ -372,26 +372,14 @@ public class Player : NetworkBehaviour {
                         if (!Object.ReferenceEquals(edgePiece, null)) {
                             if (edgePiece.getPieceType() == PieceType.ROAD && ((Road)edgePiece).getIsShip()) {
                                 Hex leftHex = edge.getLeftHex();
-                                if (!Object.ReferenceEquals(leftHex, null)) {
-                                    GamePiece leftHexPiece = leftHex.getOccupyingPiece();
-                                    if (!Object.ReferenceEquals(leftHexPiece, null)) {
-                                        if (leftHexPiece.getPieceType() == PieceType.PIRATE) {
-
-                                            stealable = true;
-                                            break;
-                                        }
-                                    }
+                                if (Object.ReferenceEquals(leftHex, h)) {
+                                    stealable = true;
+                                    break;
                                 }
                                 Hex rightHex = edge.getRightHex();
                                 if (!Object.ReferenceEquals(rightHex, null)) {
-                                    GamePiece rightHexPiece = rightHex.getOccupyingPiece();
-                                    if (!Object.ReferenceEquals(rightHexPiece, null)) {
-                                        if (rightHexPiece.getPieceType() == PieceType.PIRATE) {
-
-                                            stealable = true;
-                                            break;
-                                        }
-                                    }
+                                    stealable = true;
+                                    break;
                                 }
                             }
                         }
