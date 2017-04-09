@@ -443,7 +443,7 @@ public class GameManager : NetworkBehaviour {
         foreach (Player p2 in players) {
             p2.setMoveType(MoveType.SPECIAL);
         }
-        p.setSpecialTurn(old);
+        getPlayer(old).setSpecialTurn(old);
         getPlayer(old).setSpecial(Special.CHOOSE_PIRATE_OR_ROBBER);
     }
 
