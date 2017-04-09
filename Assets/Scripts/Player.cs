@@ -1267,7 +1267,8 @@ public class Player : NetworkBehaviour {
         if ((GameManager.instance.getGamePhase() == GamePhase.SETUP_ONE ||
                 GameManager.instance.getGamePhase() == GamePhase.SETUP_TWO) &&
                 (moveType != MoveType.PLACE_INITIAL_ROAD &&
-                moveType != MoveType.PLACE_INITIAL_SHIP)) { return; }
+                moveType != MoveType.PLACE_INITIAL_SHIP &&
+                moveType != MoveType.NONE)) { return; }
 
         moveType = Enums.MoveType.NONE;
 
