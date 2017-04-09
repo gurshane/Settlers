@@ -38,6 +38,12 @@ public class UIPlayerInfoPanel : UIElement {
 	private Image _ScienceProgressImage;
 
 	/// <summary>
+	/// Image showing the colour of the player
+	/// </summary>
+	[SerializeField]
+	private Image _FillCircle;
+
+	/// <summary>
 	/// Array containing player development chart information.
 	/// Each index corresponds to a different area
 	/// </summary>
@@ -78,6 +84,9 @@ public class UIPlayerInfoPanel : UIElement {
 		// Update the victory points displayed for this player
 		_VictoryPoints.text = "" + p_Player.getVictoryCounts ();
 
+		// Update color of the fill circle
+		updateFillCircleColor (p_Player);
+
 		// Get Player's devChart
 		int[] devChart = p_Player.getDevFlipChart ();
 
@@ -100,6 +109,44 @@ public class UIPlayerInfoPanel : UIElement {
 		_DevChartImages [0] = _TradeProgressImage;
 		_DevChartImages [1] = _PoliticsProgressImage;
 		_DevChartImages [2] = _ScienceProgressImage;
+	}
+
+
+	public void updateFillCircleColor(Player p_Player)
+	{
+		// Get the color of the player from its Highlighter Component
+		Color playerColor = enumToColor( p_Player.getColor() );
+
+		_FillCircle.color = playerColor;
+	}
+
+
+	/// <summary>
+	/// Convert the specified p_Color Enum into a Color for an image to use
+	/// </summary>
+	/// <param name="p_Color">P color.</param>
+	private Color enumToColor(Enums.Color p_Color)
+	{
+		Color rColor = new Color (0, 0, 0);
+		switch (p_Color) 
+		{
+		case Enums.Color.BLUE:
+			rColor = Color.blue;
+			break;
+		case Enums.Color.ORANGE:
+			rColor = Color.green;//new Color32(0xF6, 0xA1,0x09,0xFF);
+			break;
+		case Enums.Color.RED:
+			rColor = Color.red;
+			break;
+		case Enums.Color.WHITE:
+			rColor = Color.white;
+			break;
+		default:
+			break;
+		}
+
+		return rColor;
 	}
 
 
