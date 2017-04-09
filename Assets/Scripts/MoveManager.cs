@@ -497,7 +497,7 @@ public class MoveManager : NetworkBehaviour {
     {
 		Vertex source = BoardState.instance.vertexPosition[location];
 		GameObject spawnedKnight = Instantiate<GameObject>(PrefabHolder.instance.levelOneKnight, location, Quaternion.identity);
-        fixPieceRotationAndPosition(spawnedKnight);
+        spawnedKnight.transform.position += new Vector3(0f, 10f, 0f);
 		BoardState.instance.spawnedObjects.Add(location, spawnedKnight);
 
 		Player current = GameManager.instance.getCurrentPlayer();
@@ -1005,7 +1005,7 @@ public class MoveManager : NetworkBehaviour {
 			knight = null;
 			break;
 		}
-        fixPieceRotationAndPosition(knight);
+        knight.transform.position += new Vector3(0f, 10f, 0f);
         return knight;
 	}
 		
