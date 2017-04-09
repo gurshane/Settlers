@@ -311,6 +311,11 @@ public class GameManager : NetworkBehaviour {
         return this.players;
     }
 
+    public Player getPersonalPlayer() {
+        return GameObject.Find(Network.player.ipAddress).GetComponent<Player>();
+
+    }
+
     public Player getPlayer(int id)
     {
         if (id < 0 || id >= players.Count)
@@ -442,11 +447,11 @@ public class GameManager : NetworkBehaviour {
         foreach (Player p2 in players) {
             p2.setMoveType(MoveType.SPECIAL);
         }
-        getPlayer(old).setSpecialTurn(old);
+        getCurrentPlayer().setSpecialTurn(old);
         Debug.Log("im here");
-        getPlayer(old).setSpecial(Special.CHOOSE_PIRATE_OR_ROBBER);
+        getCurrentPlayer().setSpecial(Special.CHOOSE_PIRATE_OR_ROBBER);
         foreach (Player p2 in players) {
-            if(!Object.ReferenceEquals(getPlayer(old), p2)) p2.setSpecial(Special.NONE);
+            if(!Object.ReferenceEquals(getCurrentPlayer(), p2)) p2.setSpecial(Special.NONE);
         }
     }
 
