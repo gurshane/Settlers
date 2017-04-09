@@ -27,7 +27,7 @@ public class Player : NetworkBehaviour {
     private int goldCount;
 
     [SyncVar]
-    private int numFish;
+    public int numFish;
 
     [SyncVar]
     private int safeCardCount;

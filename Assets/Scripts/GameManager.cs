@@ -666,7 +666,7 @@ public class GameManager : NetworkBehaviour {
 
             Enums.ResourceType res = getResourceFromHex(hType);
             Enums.CommodityType com = getCommodityFromHex(hType);
-            if (res == Enums.ResourceType.NONE)
+            if (res == Enums.ResourceType.NONE && hType != Enums.HexType.DESERT)
             {
                 continue;
             }
@@ -686,7 +686,13 @@ public class GameManager : NetworkBehaviour {
                     Debug.Log("Hex type: " + h.getHexType() + ", enough: " + enoughRes[res]);
                     Enums.Color ownerColor = current.getColor();
                     Player p = getPlayer(ownerColor);
-                    if (res != Enums.ResourceType.NONE && enoughRes[res])
+                    if(hType == Enums.HexType.DESERT)
+                    {
+                        Debug.Log("single fish");
+                        int numFish = Bank.instance.getFishToken(p.isServer);
+                        getPersonalPlayer().changeFishCount(numFish, p.getID());
+                    }
+                    else if (res != Enums.ResourceType.NONE && enoughRes[res])
                     {
                         Bank.instance.withdrawResource(res, 1, p.isServer);
                         getPersonalPlayer().changeResource(res, 1, p.getID());
@@ -702,6 +708,12 @@ public class GameManager : NetworkBehaviour {
                 {
                     Enums.Color ownerColor = current.getColor();
                     Player p = getPlayer(ownerColor);
+                    if(hType == Enums.HexType.DESERT)
+                    {
+                        Debug.Log("fish");
+                        int numFish = Bank.instance.getFishTokens(p.isServer);
+                        getPersonalPlayer().changeFishCount(numFish, p.getID());
+                    }
                     if (com != Enums.CommodityType.NONE)
                     {
                         if (enoughRes[res])
