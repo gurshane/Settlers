@@ -145,9 +145,7 @@ public class GameManager : NetworkBehaviour {
 
     public void setSpecialTurn(int turn, bool server) {
         // Assign client authority
-        assignAuthority(server);
         playerTurn = turn;
-        removeAuthority(server);
     }
 	
     // Move to next turn based on game phase

@@ -855,18 +855,21 @@ public class Player : NetworkBehaviour {
 
     public void setSpecial(Enums.Special spec) {
         CmdSetSpecial(spec);
+        Debug.Log("spec1");
     }
 
     [Command]
     public void CmdSetSpecial(Enums.Special spec)
     {
         RpcSetSpecial(spec);
+        Debug.Log("spec2");
     }
 
     [ClientRpc]
     public void RpcSetSpecial(Enums.Special spec)
     {
         this.special = spec;
+        Debug.Log("spec3");
     }
 
     public int getOldTurn()
