@@ -868,6 +868,7 @@ public class Player : NetworkBehaviour {
     [ClientRpc]
     public void RpcSetSpecial(Enums.Special spec)
     {
+        Debug.Log(spec);
         this.special = spec;
         Debug.Log("spec3");
     }
