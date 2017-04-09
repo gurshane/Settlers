@@ -48,8 +48,7 @@ public class MoveManager : NetworkBehaviour {
         Vertex sourcePiece = BoardState.instance.vertexPosition[source];
         Vertex targetPiece = BoardState.instance.vertexPosition[target];
 
-		GameObject knight = getKnightFromLevel (level, target);
-		knight.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
+		GameObject knight = getKnightFromLevel (level, target, color);
 		Destroy (BoardState.instance.spawnedObjects [source]);
 
 		BoardState.instance.spawnedObjects.Add(target, knight);
@@ -151,8 +150,7 @@ public class MoveManager : NetworkBehaviour {
 			targetKnight.notActivatedThisTurn();
 		}
 
-		GameObject targetKnightObject = getKnightFromLevel (targetLevel, displacedLocation);
-		targetKnightObject.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
+		GameObject targetKnightObject = getKnightFromLevel (targetLevel, displacedLocation, color);
 
 		BoardState.instance.spawnedObjects.Add(displacedLocation, targetKnightObject);
 
@@ -177,8 +175,7 @@ public class MoveManager : NetworkBehaviour {
 		Destroy (BoardState.instance.spawnedObjects [source]);
 		Destroy (BoardState.instance.spawnedObjects [target]);
 
-		GameObject sourceKnightObject = getKnightFromLevel (sourceLevel, target);
-		sourceKnightObject.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
+		GameObject sourceKnightObject = getKnightFromLevel (sourceLevel, target, color);
 
 		BoardState.instance.spawnedObjects.Remove(target);
 		BoardState.instance.spawnedObjects.Remove(source);
@@ -230,8 +227,7 @@ public class MoveManager : NetworkBehaviour {
     {
 		Vertex source = BoardState.instance.vertexPosition[v];
 
-		GameObject newKnight = getKnightFromLevel (level + 1, v);
-		newKnight.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
+		GameObject newKnight = getKnightFromLevel (level + 1, v, color);
 		BoardState.instance.spawnedObjects.Add(v, newKnight);
 
 		// Upgrade the knight
@@ -502,7 +498,6 @@ public class MoveManager : NetworkBehaviour {
 		Vertex source = BoardState.instance.vertexPosition[location];
 		GameObject spawnedKnight = Instantiate<GameObject>(PrefabHolder.instance.levelOneKnight, location, Quaternion.identity);
         fixPieceRotationAndPosition(spawnedKnight);
-        spawnedKnight.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
 		BoardState.instance.spawnedObjects.Add(location, spawnedKnight);
 
 		Player current = GameManager.instance.getCurrentPlayer();
@@ -985,18 +980,27 @@ public class MoveManager : NetworkBehaviour {
 	
 
 	// Instantiate a knight of the given level at the given location 
-	private GameObject getKnightFromLevel(int level, Vector3 location) {
+	private GameObject getKnightFromLevel(int level, Vector3 location, Enums.Color color) {
 		GameObject knight;
 		switch (level) {
 		case 1:
 			knight = Instantiate<GameObject> (PrefabHolder.instance.levelOneKnight, location, Quaternion.identity);
-			break;
+            knight.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
+            break;
 		case 2:
 			knight = Instantiate<GameObject> (PrefabHolder.instance.levelTwoKnight, location, Quaternion.identity);
+            foreach(MeshRenderer meshRend in knight.GetComponentsInChildren<MeshRenderer>())
+            {
+                meshRend.material.SetColor("_Color", translateColor(color));
+            }
 			break;
 		case 3:
 			knight = Instantiate<GameObject> (PrefabHolder.instance.levelThreeKnight, location, Quaternion.identity);
-			break;
+            foreach (MeshRenderer meshRend in knight.GetComponentsInChildren<MeshRenderer>())
+            {
+                meshRend.material.SetColor("_Color", translateColor(color));
+            }
+            break;
 		default:
 			knight = null;
 			break;
