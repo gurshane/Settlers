@@ -721,7 +721,7 @@ public class MoveManager : NetworkBehaviour {
 		}
 
 		GameObject newRobber = Instantiate<GameObject>(PrefabHolder.instance.robber, target, Quaternion.identity);
-        fixPieceRotationAndPosition(newRobber);
+        newRobber.transform.position += new Vector3(0f, 10f, 0f);
 		BoardState.instance.spawnedObjects.Add(target, newRobber);
 
 		if (!Object.ReferenceEquals(piece, null)) {
@@ -770,7 +770,7 @@ public class MoveManager : NetworkBehaviour {
 		}
 
 		GameObject newPirate = Instantiate<GameObject>(PrefabHolder.instance.pirate, target, Quaternion.identity);
-        fixPieceRotationAndPosition(newPirate);
+        newPirate.transform.position += new Vector3(0f, 10f, 0f);
 		BoardState.instance.spawnedObjects.Add(target, newPirate);
 
 		if (source != null) {
