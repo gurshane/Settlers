@@ -328,7 +328,7 @@ public class Player : NetworkBehaviour {
                 Debug.Log("robber2");
                 if (ma.canMoveRobber(h)) {
                     Debug.Log("robber3");
-					//CmdMoveRobber (h.transform.position);
+					CmdMoveRobber (h.transform.position);
 
                     bool stealable = false;
                     foreach (Hex hex in BoardState.instance.hexPosition.Values) {
@@ -353,13 +353,7 @@ public class Player : NetworkBehaviour {
                     }
 
                     if (stealable) {
-                        setSpecial(Special.NONE, getID());
-                        foreach(Player p in GameManager.instance.getPlayers()) {
-                            GameManager.instance.getPersonalPlayer().setMoveType(MoveType.NONE, p.getID());
-                        }
-                        revertTurn();
-                        endPhaseOne();
-                        //setSpecial(Special.STEAL_RESOURCES_ROBBER, getID());
+                        setSpecial(Special.STEAL_RESOURCES_ROBBER, getID());
                     } else {
                         setSpecial(Special.NONE, getID());
                         foreach(Player p in GameManager.instance.getPlayers()) {
