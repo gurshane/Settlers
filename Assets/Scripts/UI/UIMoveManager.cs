@@ -293,7 +293,6 @@ public class UIMoveManager : MonoBehaviour {
 		// close panel, revert turn back to the player who rolled 7
 		if (_CurrentPlayer.getHandSize () <= (originalPlayerHandSum - originalPlayerHandSum / 2)) 
 		{
-			//_CurrentPlayer.setSpecial (Special.NONE);
 			int temp = GameManager.instance.getPlayerTurn ();
 
 			Debug.Log ("Revert Turn" + GameManager.instance.getPlayerTurn ());
@@ -315,7 +314,6 @@ public class UIMoveManager : MonoBehaviour {
 		// close panel, revert turn back to the player who rolled 7
 		if (_CurrentPlayer.getHandSize () <= originalPlayerHandSum - originalPlayerHandSum / 2) 
 		{
-			//_CurrentPlayer.setSpecial (Special.NONE);
 			int temp = GameManager.instance.getPlayerTurn ();
 
 			// Goes to the next player to discard

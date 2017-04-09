@@ -431,6 +431,9 @@ public class GameManager : NetworkBehaviour {
                 Debug.Log("old turn" + p.getOldTurn());
 
                 p.setSpecial(Special.DISCARD_RESOURCE_SEVEN);
+                foreach (Player p2 in players) {
+                    if(!Object.ReferenceEquals(p, p2)) p2.setSpecial(Special.NONE);
+                }
                 p.setSpecialTurn(p.getID());
                 return;
             }
@@ -442,6 +445,9 @@ public class GameManager : NetworkBehaviour {
         getPlayer(old).setSpecialTurn(old);
         Debug.Log("im here");
         getPlayer(old).setSpecial(Special.CHOOSE_PIRATE_OR_ROBBER);
+        foreach (Player p2 in players) {
+            if(!Object.ReferenceEquals(getPlayer(old), p2)) p2.setSpecial(Special.NONE);
+        }
     }
 
     private void resolveBarbarian()
