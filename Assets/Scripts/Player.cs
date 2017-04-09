@@ -1264,6 +1264,10 @@ public class Player : NetworkBehaviour {
         if (GameManager.instance.getPlayerTurn() != iD) { return; }
         if (GameManager.instance.getGamePhase() == GamePhase.PHASE_ONE) { return; }
         if (moveType == MoveType.SPECIAL) { return; }
+        if ((GameManager.instance.getGamePhase() == GamePhase.SETUP_ONE ||
+                GameManager.instance.getGamePhase() == GamePhase.SETUP_TWO) &&
+                (moveType != MoveType.PLACE_INITIAL_ROAD &&
+                moveType != MoveType.PLACE_INITIAL_SHIP)) { return; }
 
         if (moveType != MoveType.PLACE_INITIAL_CITY) {
             moveType = Enums.MoveType.NONE;

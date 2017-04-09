@@ -580,6 +580,7 @@ public class GameManager : NetworkBehaviour {
     }
 
     private void barbarianLoss(int start) {
+        Debug.Log("bloss");
         int[] playerContributions = new int[players.Count];
         foreach (Vertex v in BoardState.instance.vertexPosition.Values) {
             GamePiece gp = v.getOccupyingPiece();
@@ -602,7 +603,7 @@ public class GameManager : NetworkBehaviour {
             {
                 if (gp.getPieceType() == PieceType.CITY) {
                     City c = (City)gp;
-                    if (!c.isMetropolis()) possibleDestruction[(int)c.getColor()] = false;
+                    if (!c.isMetropolis()) possibleDestruction[(int)c.getColor()] = true;
                 }
             }
         }
@@ -615,7 +616,9 @@ public class GameManager : NetworkBehaviour {
             } 
         }
 
+        Debug.Log("wp:" + worstPlayer);
         if (worstPlayer == -1) {
+            Debug.Log("wp-1");
             foreach(Player p in getPlayers()) {
                 getPersonalPlayer().setSpecial(Special.NONE, p.getID());
                 getPersonalPlayer().setMoveType(MoveType.NONE, p.getID());
