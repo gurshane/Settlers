@@ -112,7 +112,7 @@ public class MoveManager : NetworkBehaviour {
 				p.setOldTurn(currTurn);
 			}
 			Player opponent = GameManager.instance.getPlayer((int)kTarget.getColor());
-			opponent.setSpecial(Special.KNIGHT_DISPLACED);
+			GameManager.instance.getPersonalPlayer().setSpecial(Special.KNIGHT_DISPLACED, opponent.getID());
 			opponent.setI1(targetLevel);
 			opponent.setB1(kTarget.isActive());
 			opponent.setSpecialTurn((int)kTarget.getColor());

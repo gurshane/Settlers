@@ -352,9 +352,9 @@ public class Player : NetworkBehaviour {
                     }
 
                     if (stealable) {
-                        setSpecial(Special.STEAL_RESOURCES_ROBBER);
+                        setSpecial(Special.STEAL_RESOURCES_ROBBER, getID());
                     } else {
-                        setSpecial(Special.NONE);
+                        setSpecial(Special.NONE, getID());
                         foreach(Player p in GameManager.instance.getPlayers()) {
                             setMoveType(MoveType.NONE);
                         }
@@ -403,9 +403,9 @@ public class Player : NetworkBehaviour {
                     }
 
                     if (stealable) {
-                        setSpecial(Special.STEAL_RESOURCES_PIRATE);
+                        setSpecial(Special.STEAL_RESOURCES_PIRATE, getID());
                     } else {
-                        setSpecial(Special.NONE);
+                        setSpecial(Special.NONE, getID());
                         foreach(Player p in GameManager.instance.getPlayers()) {
                             setMoveType(MoveType.NONE);
                         }
@@ -441,7 +441,7 @@ public class Player : NetworkBehaviour {
                                 }
                             }
                         }
-                        setSpecial(Special.NONE);
+                        setSpecial(Special.NONE, getID());
                         foreach(Player p in GameManager.instance.getPlayers()) {
                             setMoveType(MoveType.NONE);
                         }
@@ -476,7 +476,7 @@ public class Player : NetworkBehaviour {
                                 }
                             }
                         }
-                        setSpecial(Special.NONE);
+                        setSpecial(Special.NONE, getID());
                         foreach(Player p in GameManager.instance.getPlayers()) {
                             setMoveType(MoveType.NONE);
                         }
@@ -853,23 +853,23 @@ public class Player : NetworkBehaviour {
         return this.special; 
     }
 
-    public void setSpecial(Enums.Special spec) {
-        CmdSetSpecial(spec);
+    public void setSpecial(Enums.Special spec, int plyr) {
+        CmdSetSpecial(spec, plyr);
         Debug.Log("spec1");
     }
 
     [Command]
-    public void CmdSetSpecial(Enums.Special spec)
+    public void CmdSetSpecial(Enums.Special spec, int plyr)
     {
-        RpcSetSpecial(spec);
+        RpcSetSpecial(spec, plyr);
         Debug.Log("spec2");
     }
 
     [ClientRpc]
-    public void RpcSetSpecial(Enums.Special spec)
+    public void RpcSetSpecial(Enums.Special spec, int plyr)
     {
         Debug.Log(spec);
-        this.special = spec;
+        GameManager.instance.getPlayer(plyr).special = spec;
         Debug.Log("spec3");
     }
 

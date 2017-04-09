@@ -435,11 +435,11 @@ public class GameManager : NetworkBehaviour {
 
                 Debug.Log("old turn" + p.getOldTurn());
 
-                p.setSpecial(Special.DISCARD_RESOURCE_SEVEN);
+                getPersonalPlayer().setSpecial(Special.DISCARD_RESOURCE_SEVEN, p.getID());
                 foreach (Player p2 in players) {
-                    if(!Object.ReferenceEquals(p, p2)) p2.setSpecial(Special.NONE);
+                    if(!Object.ReferenceEquals(p, p2)) getPersonalPlayer().setSpecial(Special.NONE, p2.getID());
                 }
-                p.setSpecialTurn(p.getID());
+                getPersonalPlayer().setSpecialTurn(p.getID());
                 return;
             }
         }
@@ -447,11 +447,11 @@ public class GameManager : NetworkBehaviour {
         foreach (Player p2 in players) {
             p2.setMoveType(MoveType.SPECIAL);
         }
-        getCurrentPlayer().setSpecialTurn(old);
+        getPersonalPlayer().setSpecialTurn(old);
         Debug.Log("im here");
-        getCurrentPlayer().setSpecial(Special.CHOOSE_PIRATE_OR_ROBBER);
+        getPersonalPlayer().setSpecial(Special.CHOOSE_PIRATE_OR_ROBBER, old);
         foreach (Player p2 in players) {
-            if(!Object.ReferenceEquals(getCurrentPlayer(), p2)) p2.setSpecial(Special.NONE);
+            if(!Object.ReferenceEquals(getPlayer(old), p2)) getPersonalPlayer().setSpecial(Special.NONE, p2.getID());
         }
     }
 
