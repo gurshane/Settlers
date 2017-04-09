@@ -135,7 +135,7 @@ public class BoardGenerator : NetworkBehaviour {
         {
             GameObject targetSpawn = (spawnPositions[UnityEngine.Random.Range(0, spawnPositions.Count)]);
             Transform targetTransform = targetSpawn.transform;
-            GameObject spawnedHex = Instantiate(hexToSpawn, targetTransform.position, hexToSpawn.transform.rotation, targetTransform);
+            GameObject spawnedHex = Instantiate(hexToSpawn, targetTransform.position, Quaternion.identity, targetTransform);
 
             Hex hex = targetSpawn.gameObject.GetComponent<Hex>();
             string name = hexToSpawn.name;
