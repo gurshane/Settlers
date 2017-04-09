@@ -145,7 +145,9 @@ public class GameManager : NetworkBehaviour {
 
     public void setSpecialTurn(int turn, bool server) {
         // Assign client authority
+        assignAuthority(server);
         playerTurn = turn;
+        removeAuthority(server);
     }
 	
     // Move to next turn based on game phase
@@ -243,8 +245,10 @@ public class GameManager : NetworkBehaviour {
 		return pirateLocation;
 	}
 
-    public void setGamePhase(GamePhase gPhase) {
+    public void setGamePhase(GamePhase gPhase, bool server) {
+        assignAuthority(server);
         this.gamePhase = gPhase;
+        removeAuthority(server);
     }
 
 	public Hex getRobberLocation() {

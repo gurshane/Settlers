@@ -968,18 +968,18 @@ public class Player : NetworkBehaviour {
     }
 
     public void endPhaseOne() {
-        CmdEndPhaseOne();
+        CmdEndPhaseOne(isServer);
     }
 
     [Command]
-    public void CmdEndPhaseOne()
+    public void CmdEndPhaseOne(bool server)
     {
-        RpcEndPhaseOne();
+        RpcEndPhaseOne(server);
     }
 
     [ClientRpc]
-    public void RpcEndPhaseOne() {
-        GameManager.instance.setGamePhase(GamePhase.PHASE_TWO);
+    public void RpcEndPhaseOne(bool server) {
+        GameManager.instance.setGamePhase(GamePhase.PHASE_TWO, server);
     }
 
     public void SetV1(Vertex vReplace)
