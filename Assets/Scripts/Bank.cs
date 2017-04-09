@@ -130,7 +130,7 @@ public class Bank : NetworkBehaviour {
         fishTokens.Add(new FishToken(false, 3));
 
 
-
+        fishTokens.Add(new FishToken(true, 1));
     }
 
     public int getResourceAmount(Enums.ResourceType res)

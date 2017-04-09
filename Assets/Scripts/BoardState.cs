@@ -63,8 +63,12 @@ public class BoardState : NetworkBehaviour
         {
             hexPosition.Add(hex.transform.position, hex.GetComponent<Hex>());
         }
-            
-            
-	}
+        foreach (GameObject hex in GameObject.FindGameObjectsWithTag("FishHex"))
+        {
+            hexPosition.Add(hex.transform.position, hex.GetComponent<Hex>());
+        }
+
+
+    }
 
 }
