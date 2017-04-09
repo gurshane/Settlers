@@ -373,9 +373,7 @@ public class GameManager : NetworkBehaviour {
     }
 
     public void sevenShortcut(int start){
-        assignAuthority(isServer);
         resolveSeven(start);
-        removeAuthority(isServer);
     }
    
 
@@ -444,6 +442,7 @@ public class GameManager : NetworkBehaviour {
             p2.setMoveType(MoveType.SPECIAL);
         }
         getPlayer(old).setSpecialTurn(old);
+        Debug.Log("im here");
         getPlayer(old).setSpecial(Special.CHOOSE_PIRATE_OR_ROBBER);
     }
 
