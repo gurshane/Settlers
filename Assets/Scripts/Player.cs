@@ -358,6 +358,8 @@ public class Player : NetworkBehaviour {
                         foreach(Player p in GameManager.instance.getPlayers()) {
                             setMoveType(MoveType.NONE);
                         }
+                        revertTurn();
+                        endPhaseOne();
                     }
 				}
             } else if (special == Enums.Special.MOVE_PIRATE) {
@@ -407,6 +409,8 @@ public class Player : NetworkBehaviour {
                         foreach(Player p in GameManager.instance.getPlayers()) {
                             setMoveType(MoveType.NONE);
                         }
+                        revertTurn();
+                        endPhaseOne();
                     }
 				}
             } else if (special == Enums.Special.STEAL_RESOURCES_ROBBER) { 
@@ -441,6 +445,8 @@ public class Player : NetworkBehaviour {
                         foreach(Player p in GameManager.instance.getPlayers()) {
                             setMoveType(MoveType.NONE);
                         }
+                        revertTurn();
+                        endPhaseOne();
                     }
 				}
             } else if (special == Enums.Special.STEAL_RESOURCES_PIRATE) { 
@@ -474,6 +480,8 @@ public class Player : NetworkBehaviour {
                         foreach(Player p in GameManager.instance.getPlayers()) {
                             setMoveType(MoveType.NONE);
                         }
+                        revertTurn();
+                        endPhaseOne();
                     }
 				} 
             }
@@ -938,6 +946,21 @@ public class Player : NetworkBehaviour {
     public void RpcRevertTurn() {
         GameManager.instance.setSpecialTurn(oldTurn, isServer);
         Debug.Log("prevert" + GameManager.instance.getPlayerTurn()); 
+    }
+
+    public void endPhaseOne() {
+        CmdEndPhaseOne();
+    }
+
+    [Command]
+    public void CmdEndPhaseOne()
+    {
+        RpcEndPhaseOne();
+    }
+
+    [ClientRpc]
+    public void RpcEndPhaseOne() {
+        GameManager.instance.setGamePhase(GamePhase.PHASE_TWO);
     }
 
     public void SetV1(Vertex vReplace)

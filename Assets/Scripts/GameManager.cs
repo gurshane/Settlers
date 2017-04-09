@@ -245,6 +245,10 @@ public class GameManager : NetworkBehaviour {
 		return pirateLocation;
 	}
 
+    public void setGamePhase(GamePhase gPhase) {
+        this.gamePhase = gPhase;
+    }
+
 	public Hex getRobberLocation() {
 		return robberLocation;
 	}
@@ -383,6 +387,7 @@ public class GameManager : NetworkBehaviour {
         if (firstDie + secondDie == 7)
         {
             coloredEventDie();
+            getCurrentPlayer().setOldTurn(playerTurn);
             resolveSeven(0);
         }
         else
@@ -424,7 +429,6 @@ public class GameManager : NetworkBehaviour {
 
                 foreach (Player p2 in players) {
                     p2.setMoveType(MoveType.SPECIAL);
-                    p2.setOldTurn(playerTurn);
                 }
 
                 Debug.Log("old turn" + p.getOldTurn());
@@ -437,7 +441,6 @@ public class GameManager : NetworkBehaviour {
 
         foreach (Player p2 in players) {
             p2.setMoveType(MoveType.SPECIAL);
-            p2.setOldTurn(playerTurn);
         }
         getCurrentPlayer().setSpecial(Special.CHOOSE_PIRATE_OR_ROBBER);
     }
