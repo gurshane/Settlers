@@ -41,7 +41,7 @@ public class GameManager : NetworkBehaviour {
     public bool barbarianHasAttacked;
 
     [SyncVar]
-    private int barbarianPos;
+    public int barbarianPos;
 
     private Hex pirateLocation;
 	private Hex robberLocation;
@@ -126,6 +126,7 @@ public class GameManager : NetworkBehaviour {
         longestRouteLength = 0;
         merchantController = -1;
         longestRouteController = -1;
+        playerTurn = 0;
 
         metropolises = new Dictionary<DevChartType, Vertex>();
         metropolises.Add(Enums.DevChartType.POLITICS, null);
@@ -133,6 +134,7 @@ public class GameManager : NetworkBehaviour {
         metropolises.Add(Enums.DevChartType.SCIENCE, null);
 
         barbarianHasAttacked = false;
+        barbarianPos = 1;
         graph = new Graph();
 
         Init();
@@ -250,6 +252,10 @@ public class GameManager : NetworkBehaviour {
 	public Hex getRobberLocation() {
 		return robberLocation;
 	}
+
+    public int getBarbarianPosition() {
+        return this.barbarianPos;
+    }
 
 	public bool hasBarbarianAttacked() {
 		return barbarianHasAttacked;
@@ -376,7 +382,7 @@ public class GameManager : NetworkBehaviour {
     }
 
     public void sevenShortcut(int start){
-        resolveSeven(start);
+        resolveSeven(start, getPersonalPlayer().getB1());
     }
    
 
@@ -384,21 +390,39 @@ public class GameManager : NetworkBehaviour {
     private void resolveDice()
     {
 
+        bool attack = false;
+        if ((eventDie == EventDie.BARBARIAN) && (barbarianPos + 1 == 7)) attack = true;
+
         // Check if a seven was rolled
         if (firstDie + secondDie == 7)
         {
-            coloredEventDie();
-            getCurrentPlayer().setOldTurn(playerTurn);
-            resolveSeven(0);
+            if (!attack) {
+                coloredEventDie();
+                if (eventDie == EventDie.BARBARIAN) getPersonalPlayer().moveBarbarian();
+                getPersonalPlayer().setOldTurn(playerTurn);
+                resolveSeven(0, false);
+            } else {
+                coloredEventDie();
+                getPersonalPlayer().moveBarbarian();
+                getPersonalPlayer().setOldTurn(playerTurn);
+                resolveSeven(0, true);
+            }
         }
         else
         {
-            coloredEventDie();
-            distribute();
-            gamePhase = Enums.GamePhase.PHASE_TWO;
+            if (!attack) {
+                coloredEventDie();
+                distribute();
+                if (eventDie == EventDie.BARBARIAN) getPersonalPlayer().moveBarbarian();
+                gamePhase = Enums.GamePhase.PHASE_TWO;
+            } else {
+                getPersonalPlayer().moveBarbarian();
+                getPersonalPlayer().setOldTurn(playerTurn);
+                coloredEventDie();
+                distribute();
+                barbarianAttack();
+            }
         }
-
-        //Barbarian
     }
 
     private void coloredEventDie() {
@@ -414,7 +438,7 @@ public class GameManager : NetworkBehaviour {
 
 
     // Resolve a seven if it is rolled
-    private void resolveSeven(int start)
+    private void resolveSeven(int start, bool barbarianAfter)
     {
         int old = getCurrentPlayer().getOldTurn();
 
@@ -438,6 +462,8 @@ public class GameManager : NetworkBehaviour {
                 getPersonalPlayer().setSpecial(Special.DISCARD_RESOURCE_SEVEN, p.getID());
                 foreach (Player p2 in players) {
                     if(!Object.ReferenceEquals(p, p2)) getPersonalPlayer().setSpecial(Special.NONE, p2.getID());
+                    if (barbarianAfter) getPersonalPlayer().setB1(true, p2.getID());
+                    else getPersonalPlayer().setB1(false, p2.getID());
                 }
                 getPersonalPlayer().setSpecialTurn(p.getID());
                 return;
@@ -452,20 +478,12 @@ public class GameManager : NetworkBehaviour {
         getPersonalPlayer().setSpecial(Special.CHOOSE_PIRATE_OR_ROBBER, old);
         foreach (Player p2 in players) {
             if(!Object.ReferenceEquals(getPlayer(old), p2)) getPersonalPlayer().setSpecial(Special.NONE, p2.getID());
+            if (barbarianAfter) getPersonalPlayer().setB1(true, p2.getID());
+            else getPersonalPlayer().setB1(false, p2.getID());
         }
     }
 
-    private void resolveBarbarian()
-    {
-        barbarianPos++;
-        if (barbarianPos > 6)
-        {
-            barbarianPos = 0;
-            barbarianAttack();
-        }
-    }
-
-    private void barbarianAttack()
+    public void barbarianAttack()
     {
         int knightNum = 0;
         int citiesCount = 0;
@@ -473,58 +491,139 @@ public class GameManager : NetworkBehaviour {
         foreach(Vertex v in BoardState.instance.vertexPosition.Values)
         {
             GamePiece gp = v.getOccupyingPiece();
-            if(gp != null)
+            if(!Object.ReferenceEquals(gp, null))
             {
-                try
-                {
-                    City c = (City)gp;
-                    citiesCount++;
-                }
-                catch
-                {
-
-                }
+                if (gp.getPieceType() == PieceType.CITY) citiesCount++;
             }
         }
 
-        int[] pKnights = new int[4];
-        for (int i = 0; i < players.Count; i++)
+        foreach(Vertex v in BoardState.instance.vertexPosition.Values)
         {
-            pKnights[i] = 0;
-            List<GamePiece> pieces = players[i].getGamePieces();
-            for (int j = 0; j < pieces.Count; j++)
+            GamePiece gp = v.getOccupyingPiece();
+            if(!Object.ReferenceEquals(gp, null))
             {
-                Knight knight = (Knight)pieces[i];
-                if (knight != null)
-                {
-                    if (knight.isActive())
-                    {
-                        pKnights[i] += knight.getLevel();
-                        knight.deactivateKnight();
-                    }
+                if (gp.getPieceType() == PieceType.KNIGHT) {
+                    Knight k = (Knight)gp;
+                    if (k.isActive()) knightNum += k.getLevel();
                 }
             }
-            knightNum += pKnights[i];
         }
         if (knightNum >= citiesCount)
         {
-            EventBarbarianAttack(true, pKnights);
+            barbarianWin(0);
         }
         else
         {
-            EventBarbarianAttack(false, pKnights);
+            barbarianLoss(0);
         }
     }
 
-    public delegate void BarbarianAttackDelegate(bool win, int[] winners);
+    public void barbarianWinShortcut(int start) {
+        barbarianWin(start);
+    }
 
-    [SyncEvent]
-    public event BarbarianAttackDelegate EventBarbarianAttack; //event that syncs to all clients
+    private void barbarianWin(int start) {
+        int[] playerContributions = new int[players.Count];
+        foreach (Vertex v in BoardState.instance.vertexPosition.Values) {
+            GamePiece gp = v.getOccupyingPiece();
+            if(!Object.ReferenceEquals(gp, null))
+            {
+                if (gp.getPieceType() == PieceType.KNIGHT) {
+                    Knight k = (Knight)gp;
+                    if (k.isActive()) playerContributions[(int)k.getColor()] += k.getLevel();
+                }
+            }
+        }
 
-    public delegate void NextPlayerDelegate();
+        int bestPlayer = 0;
+        bool tie = false;
+        for (int i = 1; i < players.Count; i++) {
+            if (playerContributions[i] > playerContributions[bestPlayer]) {
+                bestPlayer = i;
+                tie = false;
+            } 
+            else if (playerContributions[i] == playerContributions[bestPlayer]) tie = true;
+        }
 
-    [SyncEvent]
-    public event NextPlayerDelegate EventNextPlayer;
+        if (!tie) {
+            getPersonalPlayer().changeVictoryPoints(1, bestPlayer);
+        } else {
+            for (int i = start; i < players.Count; i++)
+            {
+                if (playerContributions[i] < playerContributions[bestPlayer]) continue;
+
+                Player p = players[i];
+
+                foreach (Player p2 in players) {
+                    getPersonalPlayer().setMoveType(MoveType.SPECIAL, p2.getID());
+                }
+
+                getPersonalPlayer().setSpecial(Special.CHOOSE_PROGRESS_PILE, p.getID());
+                foreach (Player p2 in players) {
+                    if(!Object.ReferenceEquals(p, p2)) getPersonalPlayer().setSpecial(Special.NONE, p2.getID());
+                }
+                getPersonalPlayer().setSpecialTurn(p.getID());
+                return;
+            }
+        }
+
+        foreach(Player p in getPlayers()) {
+            getPersonalPlayer().setSpecial(Special.NONE, p.getID());
+            getPersonalPlayer().setMoveType(MoveType.NONE, p.getID());
+        }
+        getPersonalPlayer().revertTurn();
+        getPersonalPlayer().endPhaseOne();
+    }
+
+    public void barbarianLossShortcut(int start) {
+        barbarianLoss(start);
+    }
+
+    private void barbarianLoss(int start) {
+        int[] playerContributions = new int[players.Count];
+        foreach (Vertex v in BoardState.instance.vertexPosition.Values) {
+            GamePiece gp = v.getOccupyingPiece();
+            if(!Object.ReferenceEquals(gp, null))
+            {
+                if (gp.getPieceType() == PieceType.KNIGHT) {
+                    Knight k = (Knight)gp;
+                    if (k.isActive()) playerContributions[(int)k.getColor()] += k.getLevel();
+                }
+            }
+        }
+
+        int worstPlayer = 0;
+        for (int i = 1; i < players.Count; i++) {
+            if (playerContributions[i] < playerContributions[worstPlayer]) {
+                worstPlayer = i;
+            } 
+        }
+
+        for (int i = start; i < players.Count; i++)
+        {
+            if (playerContributions[i] > playerContributions[worstPlayer]) continue;
+
+            Player p = players[i];
+
+            foreach (Player p2 in players) {
+                getPersonalPlayer().setMoveType(MoveType.SPECIAL, p2.getID());
+            }
+
+            getPersonalPlayer().setSpecial(Special.CHOOSE_DESTROYED_CITY, p.getID());
+            foreach (Player p2 in players) {
+                if(!Object.ReferenceEquals(p, p2)) getPersonalPlayer().setSpecial(Special.NONE, p2.getID());
+            }
+            getPersonalPlayer().setSpecialTurn(p.getID());
+            return;
+        }
+
+        foreach(Player p in getPlayers()) {
+            getPersonalPlayer().setSpecial(Special.NONE, p.getID());
+            getPersonalPlayer().setMoveType(MoveType.NONE, p.getID());
+        }
+        getPersonalPlayer().revertTurn();
+        getPersonalPlayer().endPhaseOne();
+    }
 
     // Distribute the appropriate resources to all players
     private void distribute()

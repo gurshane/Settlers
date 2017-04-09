@@ -154,10 +154,11 @@ public class MoveManager : NetworkBehaviour {
 
 		BoardState.instance.spawnedObjects.Add(displacedLocation, targetKnightObject);
 
-        displacedPiece.setOccupyingPiece(targetKnight);
-
         // Deactivate the knight
-        targetKnight.putOnBoard();
+		if (!Object.ReferenceEquals(targetKnight, null)) {
+			displacedPiece.setOccupyingPiece(targetKnight);			
+			targetKnight.putOnBoard();
+		}
 
 		// Check if longest road needs to be updated
 	}
@@ -357,8 +358,10 @@ public class MoveManager : NetworkBehaviour {
         // Put a settlement on the board
         Settlement settlement = Settlement.getFreeSettlement(pieces);
 
-        source.setOccupyingPiece(settlement);
-        settlement.putOnBoard();
+		if (!Object.ReferenceEquals(settlement, null)) {
+			source.setOccupyingPiece(settlement);
+			settlement.putOnBoard();
+		}
 
         // Check if there is a port
         updatePort (source);
@@ -422,8 +425,10 @@ public class MoveManager : NetworkBehaviour {
 		List<GamePiece> pieces = current.getGamePieces();
         City city = City.getFreeCity(pieces);
 
-        source.setOccupyingPiece(city);
-        city.putOnBoard();
+		if (!Object.ReferenceEquals(city, null)) {
+			source.setOccupyingPiece(city);
+			city.putOnBoard();
+		}
     }
 
 	// Check if a city wall can be built at a vertex
@@ -504,8 +509,10 @@ public class MoveManager : NetworkBehaviour {
 		List<GamePiece> pieces = current.getGamePieces();
         Knight knight = Knight.getFreeKnight(pieces);
 
-        source.setOccupyingPiece(knight);
-        knight.putOnBoard();
+		if (!Object.ReferenceEquals(knight, null)) {
+			source.setOccupyingPiece(knight);
+			knight.putOnBoard();
+		}
     }
 
 	// Build a road at location
@@ -549,9 +556,12 @@ public class MoveManager : NetworkBehaviour {
 		List<GamePiece> pieces = current.getGamePieces();
         Road road = Road.getFreeRoad(pieces);
         
-        edge.setOccupyingPiece(road);
-        road.putOnBoard();
-        road.wasBuiltThisTurn();
+
+		if (!Object.ReferenceEquals(road, null)) {
+			edge.setOccupyingPiece(road);
+			road.putOnBoard();
+			road.wasBuiltThisTurn();
+		}
 
         //Update longest route
     }
@@ -600,9 +610,11 @@ public class MoveManager : NetworkBehaviour {
 		List<GamePiece> pieces = current.getGamePieces();
         Road ship = Road.getFreeShip(pieces);
 
-        edge.setOccupyingPiece(ship);
-        ship.putOnBoard();
-        ship.wasBuiltThisTurn();
+		if (!Object.ReferenceEquals(ship, null)) {
+			edge.setOccupyingPiece(ship);
+			ship.putOnBoard();
+			ship.wasBuiltThisTurn();
+		}
 
         //Update longest route
     }
@@ -848,8 +860,10 @@ public class MoveManager : NetworkBehaviour {
         // Put a settlement on the board
         Settlement settlement = Settlement.getFreeSettlement(pieces);
 
-        source.setOccupyingPiece(settlement);
-        settlement.putOnBoard();
+		if (!Object.ReferenceEquals(settlement, null)) {
+			source.setOccupyingPiece(settlement);
+			settlement.putOnBoard();
+		}
 
 		updatePort(source);
     }
@@ -903,8 +917,10 @@ public class MoveManager : NetworkBehaviour {
 		List<GamePiece> pieces = current.getGamePieces();
         City city = City.getFreeCity(pieces);
 
-        source.setOccupyingPiece(city);
-        city.putOnBoard();
+		if (!Object.ReferenceEquals(city, null)) {
+			source.setOccupyingPiece(city);
+			city.putOnBoard();
+		}
 
         updatePort(source);
     }
@@ -937,9 +953,11 @@ public class MoveManager : NetworkBehaviour {
 		List<GamePiece> pieces = current.getGamePieces();
         Road road = Road.getFreeRoad(pieces);
         
-        edge.setOccupyingPiece(road);
-        road.putOnBoard();
-        road.wasBuiltThisTurn();
+		if (!Object.ReferenceEquals(road, null)) {
+			edge.setOccupyingPiece(road);
+			road.putOnBoard();
+			road.wasBuiltThisTurn();
+		}
     }
 
 	 
@@ -977,8 +995,54 @@ public class MoveManager : NetworkBehaviour {
         ship.putOnBoard();
         ship.wasBuiltThisTurn();
     }
-	
 
+	// Place an initial ship
+	public bool destroyCity (Vertex v, Enums.Color color, bool server)
+    {
+		if (!ma.canDestroyCity (v, color))
+        {
+			return false;
+		}
+
+		assignAuthority(server);
+        RpcDestroyCity(v.transform.position, color);
+
+		Player current = GameManager.instance.getCurrentPlayer();
+
+		GameManager.instance.getPersonalPlayer().changeVictoryPoints(-1, current.getID());
+
+		removeAuthority(server);
+		return true;
+	}
+
+	[ClientRpc]
+	void RpcDestroyCity(Vector3 location, Enums.Color color)
+    {
+         // Remove the current settlement
+        Vertex source = BoardState.instance.vertexPosition[location];
+        GamePiece city = source.getOccupyingPiece();
+		Destroy (BoardState.instance.spawnedObjects [location]);
+		BoardState.instance.spawnedObjects.Remove(location);
+
+		GameObject spawnedSettlement = Instantiate<GameObject>(PrefabHolder.instance.settlement, location, Quaternion.identity);
+        fixPieceRotationAndPosition(spawnedSettlement);
+        spawnedSettlement.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
+
+		BoardState.instance.spawnedObjects.Add(location, spawnedSettlement);
+
+		// Remove settlement at location
+		city.takeOffBoard ();
+
+		Player current = GameManager.instance.getCurrentPlayer();
+		List<GamePiece> pieces = current.getGamePieces();
+        Settlement settlement = Settlement.getFreeSettlement(pieces);
+
+		if (!Object.ReferenceEquals(settlement, null)) {
+			source.setOccupyingPiece(settlement);
+			settlement.putOnBoard();
+		}
+    }
+	
 	// Instantiate a knight of the given level at the given location 
 	private GameObject getKnightFromLevel(int level, Vector3 location, Enums.Color color) {
 		GameObject knight;
