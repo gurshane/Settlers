@@ -517,6 +517,9 @@ public class UIMoveManager : MonoBehaviour {
 
 		switch (p_Special) 
 		{
+		case Special.CHOOSE_DESTROYED_CITY:
+			rString = "Choose City to Destroy";
+			break;
 		case Special.CHOOSE_OPPONENT_RESOURCES:
 			rString = "Choose Opponent Resources";
 			break;
@@ -525,6 +528,9 @@ public class UIMoveManager : MonoBehaviour {
 			break;
 		case Special.DISCARD_PROGRESS:
 			rString = "Discard Progress Card";
+			break;
+		case Special.CHOOSE_PROGRESS_PILE:
+			rString = "Choose Progress Pile";
 			break;
 		case Special.DISCARD_RESOURCE_SEVEN:
 			rString = "Discard Cards";

@@ -8,6 +8,11 @@ public class Hex : BoardPiece {
 
 	public List<Vertex> vertices;
 
+	/// <summary>
+	/// The hex value displayed above this instance
+	/// </summary>
+	public UIHexValue hexVal;
+
     [SyncVar]
 	public Enums.HexType hexType;
 

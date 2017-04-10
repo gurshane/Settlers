@@ -97,7 +97,29 @@ public class UIPlayerInfoPanel : UIElement {
 			// Divide by 4 because fillAmount ranges from 0 to 1
 			// There are 4 stages of development, not including the 0th stage.
 			_DevChartImages [x].fillAmount = floatVal/4f;
+			if (devChart[x] == 5)
+				changeColor (_DevChartImages[x]);
 		}
+	}
+
+	public void changeColor(Image p_Image)
+	{
+
+		if (p_Image == _TradeProgressImage) 
+		{
+			p_Image.color = Color.yellow;
+		}
+
+		if (p_Image == _PoliticsProgressImage) 
+		{
+			p_Image.color = Color.blue;
+		}
+
+		if (p_Image == _ScienceProgressImage) 
+		{
+			p_Image.color = Color.green;
+		}
+	
 	}
 
 	/// <summary>
