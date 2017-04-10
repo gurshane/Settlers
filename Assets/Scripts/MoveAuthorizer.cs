@@ -1160,4 +1160,65 @@ public class MoveAuthorizer
 
         return true;
     }
+
+    public bool canFishRoad (Edge location, int numFish,
+        List<GamePiece> pieces, Enums.Color color)
+    {
+
+        // Make sure the location is valid
+        if (!Object.ReferenceEquals(location.getOccupyingPiece(), null))
+        {
+            return false;
+        }
+        if (location.getTerrainType() == Enums.TerrainType.WATER)
+        {
+            return false;
+        }
+
+        bool nextToTown = graph.nextToMyCityOrSettlement(location, color);
+        bool nextToRoad = false;
+        if (graph.nextToMyRoad(location.getLeftVertex(), color))
+        {
+            nextToRoad = true;
+        }
+        else if (graph.nextToMyRoad(location.getRightVertex(), color))
+        {
+            nextToRoad = true;
+        }
+        if (!nextToTown && !nextToRoad)
+        {
+            return false;
+        }
+
+        // Make sure there is an available road
+        bool availablePiece = false;
+        foreach (GamePiece p in pieces)
+        {
+            if (p.getPieceType() != Enums.PieceType.ROAD)
+            {
+                continue;
+            }
+
+            Road currentRoad = (Road)p;
+            if (currentRoad.getIsShip())
+            {
+                continue;
+            }
+            if (!p.isOnBoard())
+            {
+                availablePiece = true;
+            }
+        }
+        if (!availablePiece)
+        {
+            return false;
+        }
+
+        // Make sure there are enough resources
+        if (numFish < 5)
+        {
+            return false;
+        }
+        return true;
+    }
 }

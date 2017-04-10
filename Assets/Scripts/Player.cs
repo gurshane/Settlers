@@ -745,7 +745,45 @@ public class Player : NetworkBehaviour {
                         moveType = Enums.MoveType.NONE;
                     }
                 }
-			}
+			} else if (moveType == Enums.MoveType.FISH_2) {
+
+				if (!pieceHit.tag.Equals("LandHex") && !pieceHit.tag.Equals("IslandHex") && !pieceHit.tag.Equals("WaterHex")) {
+					return;
+				}
+                Hex h = pieceHit.GetComponent<Hex>();
+
+                bool robber = false;
+                bool pirate = false;
+
+                GamePiece thief = h.getOccupyingPiece();
+                if (!Object.ReferenceEquals(thief, null)) {
+                    if (thief.getPieceType() == PieceType.ROBBER) robber = true;
+                    else if (thief.getPieceType() == PieceType.PIRATE) pirate = true;
+                }
+
+                if (numFish < 2) return;
+
+                if (robber) {
+                    CmdRemoveRobber ();
+                    moveType = Enums.MoveType.NONE;
+                } else if (pirate) {
+                    CmdRemovePirate();
+                    moveType = Enums.MoveType.NONE;
+                }
+			} else if (moveType == Enums.MoveType.FISH_5) {
+
+				if (!pieceHit.tag.Equals("Edge")) {
+					return;
+				}
+                Edge e = pieceHit.GetComponent<Edge>();
+
+                if (numFish < 5) return;
+
+                if (ma.canFishRoad(e, this.numFish, this.pieces, this.myColor)) {
+                    CmdFishRoad (e.transform.position);
+                    moveType = Enums.MoveType.NONE;
+                }
+			} 
         }
     }
     
@@ -1567,6 +1605,11 @@ public class Player : NetworkBehaviour {
 	}
 
     [Command]
+	public void CmdFishRoad(Vector3 location) {
+		MoveManager.instance.fishRoad (BoardState.instance.edgePosition [location], this.numFish, this.pieces, this.myColor, this.isServer);
+	}
+
+    [Command]
 	public void CmdMoveKnight(Vector3 location) {
 		MoveManager.instance.moveKnight(v1, BoardState.instance.vertexPosition [location], this.myColor, this.isServer);
 	}
@@ -1645,5 +1688,15 @@ public class Player : NetworkBehaviour {
     [Command]
     public void CmdChooseMetropolis (Vector3 location) {
 		MoveManager.instance.chooseMetropolis (BoardState.instance.vertexPosition [location], myColor, getMetropolis(), isServer);        
+    }
+
+    [Command]
+    public void CmdRemoveRobber () {
+		MoveManager.instance.removeRobber (isServer);        
+    }
+
+    [Command]
+    public void CmdRemovePirate () {
+		MoveManager.instance.removePirate (isServer);        
     }
 }

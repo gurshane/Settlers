@@ -359,4 +359,17 @@ public class Buildable {
 		}
 		return vertices;
 	}
+
+	public List<Edge> buildableFishRoad (int numFish,
+        List<GamePiece> pieces, Enums.Color color) {
+
+		List<Edge> edges = new List<Edge>();
+
+		foreach (Edge e in BoardState.instance.edgePosition.Values) {
+			if (ma.canFishRoad(e, numFish, pieces, color)) {
+				edges.Add(e);
+			}
+		}
+		return edges;
+	}
 }

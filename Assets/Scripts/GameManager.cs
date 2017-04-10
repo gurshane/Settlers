@@ -805,7 +805,7 @@ public class GameManager : NetworkBehaviour {
         giveAqueduct(0, barbarianAfter);
     }
 
-    public void aqueductShortcut(int start, bool barbarianAfter) {
+    public void aqueductShortcut(int start) {
         giveAqueduct(start, getPersonalPlayer().getB1());
     }
 

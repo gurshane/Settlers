@@ -678,6 +678,28 @@ public class MoveManager : NetworkBehaviour {
         return true;
 	}
 
+	public bool fishRoad(Edge location, int numFish,
+		List<GamePiece> pieces, Enums.Color color, bool server)
+    {
+
+		if (!ma.canFishRoad (location, numFish, pieces, color))
+        {
+			return false;
+		}
+
+		assignAuthority(server);
+        RpcBuildRoad(location.transform.position, color);
+
+		Player current = GameManager.instance.getCurrentPlayer();
+
+		// Spend the resources
+        GameManager.instance.getPersonalPlayer().changeFishCount( -5, current.getID());
+
+		removeAuthority(server);
+		
+        return true;
+	}
+
     [ClientRpc]
 	void RpcBuildRoad(Vector3 location, Enums.Color color)
     {
@@ -868,6 +890,7 @@ public class MoveManager : NetworkBehaviour {
 		BoardState.instance.spawnedObjects.Add(target, newRobber);
 
 		if (!Object.ReferenceEquals(piece, null)) {
+			source.setOccupyingPiece(null);
 			Destroy (BoardState.instance.spawnedObjects [source.transform.position]);
 			BoardState.instance.spawnedObjects.Remove(source.transform.position);
 		}
@@ -916,7 +939,8 @@ public class MoveManager : NetworkBehaviour {
         newPirate.transform.position += new Vector3(0f, 10f, 0f);
 		BoardState.instance.spawnedObjects.Add(target, newPirate);
 
-		if (source != null) {
+		if (!Object.ReferenceEquals(piece, null)) {
+			source.setOccupyingPiece(null);
 			Destroy (BoardState.instance.spawnedObjects [source.transform.position]);
 			BoardState.instance.spawnedObjects.Remove(source.transform.position);
 		}
@@ -1176,6 +1200,80 @@ public class MoveManager : NetworkBehaviour {
 		if (!Object.ReferenceEquals(settlement, null)) {
 			source.setOccupyingPiece(settlement);
 			settlement.putOnBoard();
+		}
+    }
+
+	public bool removeRobber(bool server)
+    {
+		assignAuthority(server);
+
+		Player current = GameManager.instance.getCurrentPlayer();
+
+        GameManager.instance.getPersonalPlayer().changeFishCount( -2, current.getID());
+
+        RpcRemoveRobber();
+		removeAuthority(server);
+		return true;
+	}
+
+    [ClientRpc]
+    void RpcRemoveRobber()
+    {
+		Hex source = null;
+		GamePiece piece = null;
+		foreach (Hex h in BoardState.instance.hexPosition.Values) {
+			piece = h.getOccupyingPiece();
+			if (!Object.ReferenceEquals(piece, null)) {
+				if (piece.getPieceType() == Enums.PieceType.ROBBER) {
+					source = h;
+					break;
+				} else {
+					piece = null;
+				}
+			}
+		}
+
+		if (!Object.ReferenceEquals(piece, null)) {
+			source.setOccupyingPiece(null);
+			Destroy (BoardState.instance.spawnedObjects [source.transform.position]);
+			BoardState.instance.spawnedObjects.Remove(source.transform.position);
+		}
+    }
+
+	public bool removePirate(bool server)
+    {
+		assignAuthority(server);
+
+		Player current = GameManager.instance.getCurrentPlayer();
+		
+        GameManager.instance.getPersonalPlayer().changeFishCount( -2, current.getID());
+
+        RpcRemovePirate();
+		removeAuthority(server);
+		return true;
+	}
+
+    [ClientRpc]
+    void RpcRemovePirate()
+    {
+		Hex source = null;
+		GamePiece piece = null;
+		foreach (Hex h in BoardState.instance.hexPosition.Values) {
+			piece = h.getOccupyingPiece();
+			if (!Object.ReferenceEquals(piece, null)) {
+				if (piece.getPieceType() == Enums.PieceType.PIRATE) {
+					source = h;
+					break;
+				} else {
+					piece = null;
+				}
+			}
+		}
+
+		if (!Object.ReferenceEquals(piece, null)) {
+			source.setOccupyingPiece(null);
+			Destroy (BoardState.instance.spawnedObjects [source.transform.position]);
+			BoardState.instance.spawnedObjects.Remove(source.transform.position);
 		}
     }
 	
