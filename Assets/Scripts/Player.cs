@@ -1501,10 +1501,6 @@ public class Player : NetworkBehaviour {
             moveType = Enums.MoveType.PLACE_INITIAL_CITY;
         }
         special = Enums.Special.NONE;
-        SetV1(null, getID());
-        SetE1(null, getID());
-        setI1(0, getID());
-        setB1(false, getID());
         movedRoad = false;
 
         if (progressCards.Count > 4) {
