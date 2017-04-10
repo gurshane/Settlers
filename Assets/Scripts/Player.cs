@@ -834,6 +834,11 @@ public class Player : NetworkBehaviour {
     [Command]
     public void CmdChangeVP(int num, int plyr)
     {
+        RpcChangeVP(num, plyr);
+    }
+
+    [ClientRpc]
+    public void RpcChangeVP(int num, int plyr) {
         GameManager.instance.getPlayer(plyr).victoryPoints += num;
     }
 
@@ -850,7 +855,12 @@ public class Player : NetworkBehaviour {
     [Command]
     public void CmdChangeFishCount(int num, int plyr)
     {
-        GameManager.instance.getPlayer(plyr).numFish += num;
+        RpcChangeFishCount(num, plyr);
+    }
+
+    [ClientRpc]
+    public void RpcChangeFishCount(int num, int plyr) {
+         GameManager.instance.getPlayer(plyr).numFish += num;       
     }
 
     public int getGoldCount()//return gold count
@@ -871,6 +881,11 @@ public class Player : NetworkBehaviour {
     [Command]
     public void CmdChangeGold(int num, int plyr)
     {
+        RpcChangeGold(num, plyr);
+    }
+
+    [ClientRpc]
+    public void RpcChangeGold(int num, int plyr) {
         GameManager.instance.getPlayer(plyr).goldCount += num;
     }
 
@@ -949,6 +964,11 @@ public class Player : NetworkBehaviour {
     [Command]
     public void CmdSetOldTurn(int turn)
     {
+        RpcSetOldTurn(turn);
+    }
+
+    [ClientRpc]
+    public void RpcSetOldTurn(int turn) {
         foreach (Player p in GameManager.instance.getPlayers()) {
             p.oldTurn = turn;
          }
@@ -966,6 +986,11 @@ public class Player : NetworkBehaviour {
     [Command]
     public void CmdSetI1(int i, int plyr)
     {
+        RpcSetI1(i, plyr);
+    }
+
+    [ClientRpc]
+    public void RpcSetI1(int i, int plyr) {
         GameManager.instance.getPlayer(plyr).i1 = i;
     }
 
@@ -979,6 +1004,12 @@ public class Player : NetworkBehaviour {
 
     [Command]
     public void CmdSetMetropolis(Enums.DevChartType d, int plyr)
+    {
+        RpcSetMetropolis(d, plyr);
+    }
+
+    [ClientRpc]
+    public void RpcSetMetropolis(Enums.DevChartType d, int plyr)
     {
         GameManager.instance.getPlayer(plyr).metropType = d;
     }
@@ -995,6 +1026,12 @@ public class Player : NetworkBehaviour {
     [Command]
     public void CmdSetOpponent(int i, int plyr)
     {
+        RpcSetOpponent(i, plyr);
+    }
+
+     [ClientRpc]
+    public void RpcSetOpponent(int i, int plyr)
+    {
         GameManager.instance.getPlayer(plyr).opponent = i;
     }
 
@@ -1009,6 +1046,12 @@ public class Player : NetworkBehaviour {
 
     [Command]
     public void CmdSetB1(bool b, int plyr)
+    {
+        RpcSetB1(b, plyr);
+    }
+
+    [ClientRpc]
+    public void RpcSetB1(bool b, int plyr)
     {
         GameManager.instance.getPlayer(plyr).b1 = b;
     }
@@ -1112,8 +1155,8 @@ public class Player : NetworkBehaviour {
 
     [ClientRpc]
     public void RpcMoveBarbarian() {
-        if (GameManager.instance.getBarbarianPosition() == 7) {
-            GameManager.instance.barbarianPos = 1;
+        if (GameManager.instance.getBarbarianPosition() + 1 == 7) {
+            GameManager.instance.barbarianPos = 0;
             GameManager.instance.barbarianHasAttacked = true;
         } else {
             GameManager.instance.barbarianPos++;
@@ -1200,9 +1243,38 @@ public class Player : NetworkBehaviour {
         return this.aqueduct;
     }
 
-    public void makeAqueduct()
+     public void makeAqueduct(int plyr)
     {
-        this.aqueduct = true;
+        CmdMakeAqueduct(plyr);
+    }
+
+    [Command]
+    void CmdMakeAqueduct(int plyr)
+    {
+        RpcMakeAqueduct(plyr);
+    }
+
+    [ClientRpc]
+    void RpcMakeAqueduct(int plyr)
+    {
+        GameManager.instance.getPlayer(plyr).aqueduct = true;
+    }
+
+    public void createAqueductArray(bool[] array)
+    {
+        CmdCreateAqueductArray(array);
+    }
+
+    [Command]
+    void CmdCreateAqueductArray(bool[] array)
+    {
+        RpcCreateAqueductArray(array);
+    }
+
+    [ClientRpc]
+    void RpcCreateAqueductArray(bool[] array)
+    {
+        GameManager.instance.aqueducts = array;
     }
 
     public void upgradeDevChart(Enums.DevChartType devChartType, int plyr)
@@ -1300,6 +1372,11 @@ public class Player : NetworkBehaviour {
     [Command]
     public void CmdChangeCityWalls(int num, int plyr)
     {
+        RpcChangeCityWalls(num, plyr);
+    }
+
+    [ClientRpc]
+    public void RpcChangeCityWalls(int num, int plyr) {
         GameManager.instance.getPlayer(plyr).cityWallsLeft += num;
     }
 

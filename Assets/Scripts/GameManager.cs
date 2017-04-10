@@ -45,7 +45,9 @@ public class GameManager : NetworkBehaviour {
 
     private Hex pirateLocation;
 	private Hex robberLocation;
-	private Dictionary<Enums.DevChartType, Vertex> metropolises;
+	public Dictionary<Enums.DevChartType, Vertex> metropolises;
+
+    public bool[] aqueducts;
 
 	private const int numCommodities = 3;
 	private const int numResources = 5;
@@ -134,7 +136,7 @@ public class GameManager : NetworkBehaviour {
         metropolises.Add(Enums.DevChartType.SCIENCE, null);
 
         barbarianHasAttacked = false;
-        barbarianPos = 1;
+        barbarianPos = 0;
         graph = new Graph();
 
         Init();
@@ -401,34 +403,24 @@ public class GameManager : NetworkBehaviour {
         bool attack = false;
         if ((eventDie == EventDie.BARBARIAN) && (barbarianPos + 1 == 7)) attack = true;
 
-        // Check if a seven was rolled
+        getPersonalPlayer().setOldTurn(playerTurn);
+        if (eventDie == EventDie.BARBARIAN) getPersonalPlayer().moveBarbarian();
+        coloredEventDie();
+
         if (firstDie + secondDie == 7)
         {
-            if (!attack) {
-                coloredEventDie();
-                if (eventDie == EventDie.BARBARIAN) getPersonalPlayer().moveBarbarian();
-                getPersonalPlayer().setOldTurn(playerTurn);
+            if (!attack) {                
                 resolveSeven(0, false);
             } else {
-                coloredEventDie();
-                getPersonalPlayer().moveBarbarian();
-                getPersonalPlayer().setOldTurn(playerTurn);
                 resolveSeven(0, true);
             }
         }
         else
         {
             if (!attack) {
-                coloredEventDie();
-                distribute();
-                if (eventDie == EventDie.BARBARIAN) getPersonalPlayer().moveBarbarian();
-                gamePhase = Enums.GamePhase.PHASE_TWO;
+                distribute(false);
             } else {
-                getPersonalPlayer().moveBarbarian();
-                getPersonalPlayer().setOldTurn(playerTurn);
-                coloredEventDie();
-                distribute();
-                barbarianAttack();
+                distribute(true);
             }
         }
     }
@@ -453,7 +445,12 @@ public class GameManager : NetworkBehaviour {
         // If the barbarian has not attacked, nothing happens
         if (!barbarianHasAttacked)
         {
-            //return;
+            if (!getPersonalPlayer().getB1()) {
+                getPersonalPlayer().endPhaseOne();
+            } else {
+                GameManager.instance.barbarianAttack();
+            }
+            return;
         }
 
         for (int i = start; i < players.Count; i++)
@@ -670,13 +667,19 @@ public class GameManager : NetworkBehaviour {
     }
 
     // Distribute the appropriate resources to all players
-    private void distribute()
+    private void distribute(bool barbarianAfter)
     {
         int num = firstDie + secondDie;
 
         // Make sure there are enough resources and commodities in the bank
         Dictionary<Enums.ResourceType, bool> enoughRes = new Dictionary<Enums.ResourceType, bool>();
         Dictionary<Enums.CommodityType, bool> enoughComs = new Dictionary<Enums.CommodityType, bool>();
+        
+        bool[] playerAqueducts = new bool[players.Count];
+        for (int i = 0; i < players.Count; i++) {
+            if (getPlayer(i).getAqueduct()) playerAqueducts[i] = true;
+            else playerAqueducts[i] = false;
+        }
 
         for (int i = 0; i < numResources; i++)
         {
@@ -735,15 +738,18 @@ public class GameManager : NetworkBehaviour {
                         Debug.Log("single fish");
                         int numFish = Bank.instance.getFishToken(p.isServer);
                         getPersonalPlayer().changeFishCount(numFish, p.getID());
+                        playerAqueducts[p.getID()] = false;
                     }
                     else if (res != Enums.ResourceType.NONE && enoughRes[res])
                     {
                         Bank.instance.withdrawResource(res, 1, p.isServer);
                         getPersonalPlayer().changeResource(res, 1, p.getID());
+                        playerAqueducts[p.getID()] = false;
                     }
                     else if (gold)
                     {
                         getPersonalPlayer().changeGoldCount(2, p.getID());
+                        playerAqueducts[p.getID()] = false;
                     }
                 }
 
@@ -757,6 +763,7 @@ public class GameManager : NetworkBehaviour {
                         Debug.Log("fish");
                         int numFish = Bank.instance.getFishTokens(p.isServer);
                         getPersonalPlayer().changeFishCount(numFish, p.getID());
+                        playerAqueducts[p.getID()] = false;
                     }
                     if (com != Enums.CommodityType.NONE)
                     {
@@ -764,31 +771,76 @@ public class GameManager : NetworkBehaviour {
                         {
                             Bank.instance.withdrawResource(res, 1, p.isServer);
                             getPersonalPlayer().changeResource(res, 1, p.getID());
+                            playerAqueducts[p.getID()] = false;
                         }
                         if (enoughComs[com])
                         {
                             Bank.instance.withdrawCommodity(com, 1, p.isServer);
                             getPersonalPlayer().changeCommodity(com, 1, p.getID());
+                            playerAqueducts[p.getID()] = false;
                         }
                     }
                     else if (res == Enums.ResourceType.BRICK && enoughRes[res])
                     {
                         Bank.instance.withdrawResource(res, 2, p.isServer);
                         getPersonalPlayer().changeResource(res, 2, p.getID());
+                        playerAqueducts[p.getID()] = false;
                     }
                     else if (res == Enums.ResourceType.GRAIN && enoughRes[res])
                     {
                         Bank.instance.withdrawResource(res, 2, p.isServer);
                         getPersonalPlayer().changeResource(res, 2, p.getID());
+                        playerAqueducts[p.getID()] = false;
                     }
                     else if (gold)
                     {
-                        getPersonalPlayer().changeGoldCount(2, p.getID());
+                        getPersonalPlayer().changeGoldCount(4, p.getID());
+                        playerAqueducts[p.getID()] = false;
                     }
                 }
             }
         }
-        //Distribute aqueduct cards
+        getPersonalPlayer().createAqueductArray(playerAqueducts);
+        aqueducts = playerAqueducts;
+        giveAqueduct(0, barbarianAfter);
+    }
+
+    public void aqueductShortcut(int start, bool barbarianAfter) {
+        giveAqueduct(start, getPersonalPlayer().getB1());
+    }
+
+    private void giveAqueduct(int start, bool barbarianAfter) {
+
+        for (int i = start; i < players.Count; i++)
+        {
+            if (!aqueducts[i]) continue;
+
+            Player p = players[i];
+
+            foreach (Player p2 in players) {
+                getPersonalPlayer().setMoveType(MoveType.SPECIAL, p2.getID());
+            }
+
+            getPersonalPlayer().setSpecial(Special.AQUEDUCT, p.getID());
+            foreach (Player p2 in players) {
+                if(!Object.ReferenceEquals(p, p2)) getPersonalPlayer().setSpecial(Special.NONE, p2.getID());
+                if (barbarianAfter) getPersonalPlayer().setB1(true, p2.getID());
+                else getPersonalPlayer().setB1(false, p2.getID());
+            }
+            getPersonalPlayer().setSpecialTurn(p.getID());
+            return;
+        }
+
+        if (!barbarianAfter) {
+            foreach(Player p in GameManager.instance.getPlayers()) {
+                getPersonalPlayer().setMoveType(MoveType.NONE, p.getID());
+                getPersonalPlayer().setSpecial(Special.NONE, p.getID());
+            }
+            getPersonalPlayer().revertTurn();
+            getPersonalPlayer().endPhaseOne();
+        } else {
+            GameManager.instance.barbarianAttack();
+        }
     }
 
     // get a resource from a hex

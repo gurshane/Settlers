@@ -300,7 +300,7 @@ public class MoveManager : NetworkBehaviour {
 					GameManager.instance.getPersonalPlayer().updateCommodityRatio((CommodityType)i, 2, current.getID());
 				}
 			} else if (dev == Enums.DevChartType.SCIENCE) {
-				current.makeAqueduct();
+				GameManager.instance.getPersonalPlayer().makeAqueduct(current.getID());
 			}
 		} 
 		
