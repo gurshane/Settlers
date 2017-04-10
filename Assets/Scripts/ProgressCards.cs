@@ -130,8 +130,6 @@ public class ProgressCards : NetworkBehaviour {
 		return true;
 	}
 
-	
-
 	// Assign client authority
 	private void assignAuthority(bool server) {
         if (!server) {
