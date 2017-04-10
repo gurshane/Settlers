@@ -72,10 +72,10 @@ public class MoveManager : NetworkBehaviour {
 		Debug.Log("displaceKnight: ");
 		Debug.Log(source + " " + target);
 		// Check if the knight can displace
-		if (!ma.canKnightDisplace (source, target, color))
-        {
-			return false;
-		}
+		//if (!ma.canKnightDisplace (source, target, color))
+        //{
+			//return false;
+		//}
 
 		Knight kSource = (Knight)source.getOccupyingPiece ();
 		int sourceLevel = kSource.getLevel ();
