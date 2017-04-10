@@ -134,7 +134,7 @@ public class GameManager : NetworkBehaviour {
         metropolises.Add(Enums.DevChartType.SCIENCE, null);
 
         barbarianHasAttacked = false;
-        barbarianPos = 6;
+        barbarianPos = 1;
         graph = new Graph();
 
         Init();
@@ -184,9 +184,9 @@ public class GameManager : NetworkBehaviour {
     public void DiceRolled(bool server)
     {
         assignAuthority(server);
-        firstDie = 3;//UnityEngine.Random.Range(1, 7);
-        secondDie = 4;// UnityEngine.Random.Range(1, 7);
-        int thirdDie = 1;//UnityEngine.Random.Range(0, 2);//eventDie
+        firstDie = UnityEngine.Random.Range(1, 7);
+        secondDie = UnityEngine.Random.Range(1, 7);
+        int thirdDie = UnityEngine.Random.Range(0, 2);//eventDie
         if (thirdDie == 1) {
             eventDie = Enums.EventDie.BARBARIAN;
         } else {
