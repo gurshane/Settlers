@@ -331,23 +331,27 @@ public class UIMoveManager : MonoBehaviour {
 	#region Progress Card Methods
 	public void revealAqueductPanel()
 	{
-		/*if (_CurrentPlayer.getSpecial ()) 
+		if (_CurrentPlayer.getSpecial () == Special.AQUEDUCT) 
 		{
-			_ResourceDiscardPanel.gameObject.SetActive (true);
-
-			// If originalHandSum hasn't been modified at all, then set it to Player's current hand size
-			if (originalPlayerHandSum == 0) {
-				originalPlayerHandSum = _CurrentPlayer.getHandSize ();
-			}
+			_AqueductPanel.gameObject.SetActive (true);
 		} 
 
 		else {
-			_ResourceDiscardPanel.gameObject.SetActive (false);
-		}*/
+			_AqueductPanel.gameObject.SetActive (false);
+		}
 	}
-	public void aqueductPickResource()
+
+	/// <summary>
+	/// Increments the resource chosen due to the aqueduct progress card
+	/// </summary>
+	/// <param name="p_Resource">P resource.</param>
+	public void aqueductPickResource(int p_Resource)
 	{
-		
+		_CurrentPlayer.changeResource ((ResourceType)p_Resource, 1, _CurrentPlayer.getID());
+
+		int temp = GameManager.instance.getPlayerTurn ();
+		GameManager.instance.aqueductShortcut(temp+1);
+
 	}
 
 
