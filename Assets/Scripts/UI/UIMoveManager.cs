@@ -56,6 +56,11 @@ public class UIMoveManager : MonoBehaviour {
 	[SerializeField]
 	private Transform _AqueductPanel;
 
+	[SerializeField]
+	private Transform _ChooseProgressCardPanel;
+
+	[SerializeField]
+	private Transform _UpgradeDevChartPanel;
 	#endregion
 
 	// -------------------------
@@ -72,6 +77,8 @@ public class UIMoveManager : MonoBehaviour {
 		_BuildingPanel.gameObject.SetActive (false);
 		_PirateRobberChoosePanel.gameObject.SetActive (false);
 		_AqueductPanel.gameObject.SetActive (false);
+		_ChooseProgressCardPanel.gameObject.SetActive (false);
+		_UpgradeDevChartPanel.gameObject.SetActive (false);
 
 		buildingToggle = false;
 		knightToggle = false;
@@ -328,7 +335,78 @@ public class UIMoveManager : MonoBehaviour {
 
 	#endregion
 
-	#region Progress Card Methods
+
+
+	#region Development Chart Methods
+	/// <summary>
+	/// Reveals the choose progress card panel at the proper player state
+	/// and hides otherwise
+	/// </summary>
+	public void revealChooseProgressCardPanel()
+	{
+		if (_CurrentPlayer.getSpecial () == Special.CHOOSE_PROGRESS_PILE) 
+		{
+			_ChooseProgressCardPanel.gameObject.SetActive (true);
+		} 
+
+		else {
+			_ChooseProgressCardPanel.gameObject.SetActive (false);
+		}
+	}
+
+	/// <summary>
+	/// Reveals the upgrade dev chart at the right time
+	/// hides otherwise
+	/// </summary>
+	public void revealUpgradeDevChart()
+	{
+		if (_CurrentPlayer.getMoveType() == MoveType.UPGRADE_DEVELOPMENT_CHART) 
+		{
+			_UpgradeDevChartPanel.gameObject.SetActive (true);
+		} 
+
+		else {
+			_UpgradeDevChartPanel.gameObject.SetActive (false);
+		}
+	}
+
+	/// <summary>
+	/// Upgrades the dev chart bsaed on parameter passed
+	/// </summary>
+	/// <param name="p_ChartType">P chart type.</param>
+	public void upgradeDevChart(int p_ChartType)
+	{
+		_CurrentPlayer.upgradeDevChart((DevChartType) p_ChartType, _CurrentPlayer.getID ());
+
+		// Set movetype to none afterwards
+		_CurrentPlayer.setMoveType (MoveType.NONE, _CurrentPlayer.getID ());
+
+	}
+
+	/// <summary>
+	/// For the close button of any menu to close
+	/// </summary>
+	public void setNoneMoveType()
+	{
+		_CurrentPlayer.setMoveType (MoveType.NONE, _CurrentPlayer.getID ());
+	}
+
+	/// <summary>
+	/// Picks the progress card corresponding to the int parameter provided
+	/// </summary>
+	/// <param name="p_ChartType">P chart type.</param>
+	public void pickProgressCard(int p_ChartType)
+	{
+		Bank.instance.withdrawProgressCard ((DevChartType) p_ChartType, _CurrentPlayer.getID ());
+
+		int temp = GameManager.instance.getPlayerTurn ();
+		GameManager.instance.barbarianWinShortcut (temp + 1);
+	}
+
+	#endregion
+
+
+	#region Individual Progress Card Methods
 	public void revealAqueductPanel()
 	{
 		if (_CurrentPlayer.getSpecial () == Special.AQUEDUCT) 
@@ -610,5 +688,8 @@ public class UIMoveManager : MonoBehaviour {
 		/* Show or hide Discard Resource Panel */
 		revealResourceDiscardPanel ();
 		revealChoosePirateRobberPanel ();
+		revealAqueductPanel ();
+		revealUpgradeDevChart ();
+		revealChooseProgressCardPanel ();
 	}
 }
