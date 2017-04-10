@@ -118,6 +118,7 @@ public class MoveManager : NetworkBehaviour {
 			GameManager.instance.getPersonalPlayer().setSpecial(Special.KNIGHT_DISPLACED, opponent.getID());
 			GameManager.instance.getPersonalPlayer().setI1(targetLevel, opponent.getID());
 			GameManager.instance.getPersonalPlayer().setB1(kTarget.isActive(), opponent.getID());
+			GameManager.instance.getPersonalPlayer().SetV1(target, opponent.getID());
 			GameManager.instance.getPersonalPlayer().setSpecialTurn((int)kTarget.getColor());
 		}
 		assignAuthority(server);
