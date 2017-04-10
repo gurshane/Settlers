@@ -187,11 +187,11 @@ public class Player : NetworkBehaviour {
         }
 
         if (moveType != MoveType.MOVE_KNIGHT && moveType != MoveType.DISPLACE_KNIGHT && moveType != MoveType.CHASE_ROBBER) {
-            v1 = null;
+            SetV1(null, getID());
         }
 
         if (moveType != MoveType.MOVE_SHIP) {
-            e1 = null;
+            SetE1(null, getID());
         }
 
 		Ray ray;
@@ -618,8 +618,8 @@ public class Player : NetworkBehaviour {
 				}
                 Vertex v = pieceHit.GetComponent<Vertex>();
 
-                if (v1 == null) {
-                    v1 = v;
+                if (Object.ReferenceEquals(v1, null)) {
+                    SetV1(v, getID());
                 } else {
                     if (ma.canKnightMove(v1, v, this.myColor)) {
                         CmdMoveKnight (v.transform.position);
@@ -633,8 +633,8 @@ public class Player : NetworkBehaviour {
 				}
                 Vertex v = pieceHit.GetComponent<Vertex>();
 
-                if (v1 == null) {
-                    v1 = v;
+                if (Object.ReferenceEquals(v1, null)) {
+                    SetV1(v, getID());
                 } else {
                     if (ma.canKnightDisplace(v1, v, this.myColor)) {
                         CmdDisplaceKnight (v.transform.position);
@@ -713,12 +713,12 @@ public class Player : NetworkBehaviour {
 				}
 			} else if (moveType == Enums.MoveType.CHASE_ROBBER) {
 
-                if (v1 == null) {
+                if (Object.ReferenceEquals(v1, null)) {
                     if (!pieceHit.tag.Equals("Vertex")) {
                         return;
                     }
                     Vertex v = pieceHit.GetComponent<Vertex>();
-                    v1 = v;
+                    SetV1(v, getID());
                 } else {
                     if (!pieceHit.tag.Equals("MainHex") && !pieceHit.tag.Equals("MainHex")) {
                         return;
@@ -736,8 +736,8 @@ public class Player : NetworkBehaviour {
 				}
                 Edge e = pieceHit.GetComponent<Edge>();
 
-                if (e1 == null) {
-                    e1 = e;
+                if (Object.ReferenceEquals(e1, null)) {
+                    SetE1(e, getID());
                 } else {
                     if (ma.canShipMove(e1, e, this.myColor)) {
                         Debug.Log("heywhatsup");
@@ -1212,38 +1212,38 @@ public class Player : NetworkBehaviour {
         }
     }
 
-    public void SetV1(Vertex vReplace)
+    public void SetV1(Vertex vReplace, int plyr)
     {
-        CmdSetV1(vReplace.transform.position);
+        CmdSetV1(vReplace.transform.position, plyr);
     }
 
     [Command]
-    public void CmdSetV1(Vector3 vReplace)
+    public void CmdSetV1(Vector3 vReplace, int plyr)
     {
-        RpcSetV1(vReplace);
+        RpcSetV1(vReplace, plyr);
     }
 
     [ClientRpc]
-    public void RpcSetV1(Vector3 vReplace)
+    public void RpcSetV1(Vector3 vReplace, int plyr)
     {
-        v1 = BoardState.instance.vertexPosition[vReplace];
+        GameManager.instance.getPlayer(plyr).v1 = BoardState.instance.vertexPosition[vReplace];
     }
 
-    public void SetE1(Edge eReplace)
+    public void SetE1(Edge eReplace, int plyr)
     {
-        CmdSetE1(eReplace.transform.position);
+        CmdSetE1(eReplace.transform.position, plyr);
     }
 
     [Command]
-    public void CmdSetE1(Vector3 eReplace)
+    public void CmdSetE1(Vector3 eReplace, int plyr)
     {
-        RpcSetE1(eReplace);
+        RpcSetE1(eReplace, plyr);
     }
 
     [ClientRpc]
-    public void RpcSetE1(Vector3 eReplace)
+    public void RpcSetE1(Vector3 eReplace, int plyr)
     {
-        e1 = BoardState.instance.edgePosition[eReplace];
+        GameManager.instance.getPlayer(plyr).e1 = BoardState.instance.edgePosition[eReplace];
     }
 
     public void setStatus(Status newStatus)
@@ -1532,10 +1532,10 @@ public class Player : NetworkBehaviour {
             moveType = Enums.MoveType.PLACE_INITIAL_CITY;
         }
         special = Enums.Special.NONE;
-        v1 = null;
-        e1 = null;
-        i1 = 0;
-        b1 = false;
+        SetV1(null, getID());
+        SetE1(null, getID());
+        setI1(0, getID());
+        setB1(false, getID());
         movedRoad = false;
 
         if (progressCards.Count > 4) {
