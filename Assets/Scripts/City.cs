@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class City : GamePiece {
 
-	private bool metropolis;
+	public bool metropolis;
 
     public City() : base(Enums.PieceType.CITY)
     {

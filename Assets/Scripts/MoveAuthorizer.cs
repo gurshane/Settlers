@@ -253,7 +253,7 @@ public class MoveAuthorizer
         {
             level = devChart[(int)Enums.DevChartType.TRADE];
             coms = commodities[(int)Enums.CommodityType.CLOTH];
-            if (coms < level)
+            if (coms < level+1)
             {
                 return false;
             }
@@ -266,7 +266,7 @@ public class MoveAuthorizer
         {
             level = devChart[(int)Enums.DevChartType.POLITICS];
             coms = commodities[(int)Enums.CommodityType.COIN];
-            if (coms < level)
+            if (coms < level+1)
             {
                 return false;
             }
@@ -279,7 +279,7 @@ public class MoveAuthorizer
         {
             level = devChart[(int)Enums.DevChartType.SCIENCE];
             coms = commodities[(int)Enums.CommodityType.PAPER];
-            if (coms < level)
+            if (coms < level+1)
             {
                 return false;
             }

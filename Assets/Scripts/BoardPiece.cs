@@ -6,7 +6,7 @@ using UnityEngine.Networking;
 
 public class BoardPiece : NetworkBehaviour {
 
-	private GamePiece occupyingPiece;
+	public GamePiece occupyingPiece;
 	public Enums.TerrainType terrainType;
 
 	public BoardPiece (Enums.TerrainType terrain)

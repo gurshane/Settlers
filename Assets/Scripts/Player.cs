@@ -151,9 +151,9 @@ public class Player : NetworkBehaviour {
         status = Enums.Status.ACTIVE;
 
         this.resources = new int[5] { 10, 10, 10, 10, 10 };
-        this.commodities = new int[3] { 0, 0, 0 };
+        this.commodities = new int[3] { 10, 10, 10 };
         this.goldCount = 0;
-        this.devFlipChart = new int[3] { 1, 1, 1 };
+        this.devFlipChart = new int[3] { 0, 0, 0 };
         this.resourceRatios = new int[5] { 4, 4, 4, 4, 4 };
         this.commodityRatios = new int[3] { 4, 4, 4 };
         this.myColor = Enums.Color.NONE;
@@ -502,6 +502,10 @@ public class Player : NetworkBehaviour {
         // Main game phase two
 		if (GameManager.instance.getGamePhase () == Enums.GamePhase.PHASE_TWO) {
             // Get mouse click
+
+            if (Input.GetKeyDown(KeyCode.Alpha4)) {
+                setMoveType(MoveType.UPGRADE_DEVELOPMENT_CHART, getID());
+            }
 
             if (moveType == MoveType.UPGRADE_DEVELOPMENT_CHART) {
                 if (Input.GetKeyDown(KeyCode.Alpha1)) {
@@ -900,7 +904,12 @@ public class Player : NetworkBehaviour {
     [Command]
     public void CmdSetMoveType(Enums.MoveType mType, int plyr)
     {
-        GameManager.instance.getPlayer(plyr).moveType = mType; 
+        RpcSetMoveType(mType, plyr);
+    }
+
+    [ClientRpc]
+    public void RpcSetMoveType(Enums.MoveType mType, int plyr) {
+        GameManager.instance.getPlayer(plyr).moveType = mType;         
     }
 
     public Enums.Special getSpecial()
