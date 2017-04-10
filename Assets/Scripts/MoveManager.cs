@@ -85,7 +85,7 @@ public class MoveManager : NetworkBehaviour {
 		bool gone = true;
 		foreach (Vertex v in BoardState.instance.vertexPosition.Values)
         {
-			if (graph.areConnectedVertices (v, target, color))
+			if (graph.areConnectedVertices (v, target, kTarget.getColor()))
             {
 				if (!Object.ReferenceEquals (v.getOccupyingPiece (), null))
                 {
@@ -105,16 +105,17 @@ public class MoveManager : NetworkBehaviour {
 
 		if (!gone) {
 			int currTurn = GameManager.instance.getPlayerTurn();
+			GameManager.instance.getPersonalPlayer().setOldTurn(currTurn);
 
 			foreach (Player p in GameManager.instance.players) {
 				GameManager.instance.getPersonalPlayer().setMoveType(MoveType.SPECIAL, p.getID());
-				p.setOldTurn(currTurn);
 			}
+
 			Player opponent = GameManager.instance.getPlayer((int)kTarget.getColor());
 			GameManager.instance.getPersonalPlayer().setSpecial(Special.KNIGHT_DISPLACED, opponent.getID());
 			GameManager.instance.getPersonalPlayer().setI1(targetLevel, opponent.getID());
 			GameManager.instance.getPersonalPlayer().setB1(kTarget.isActive(), opponent.getID());
-			opponent.setSpecialTurn((int)kTarget.getColor());
+			GameManager.instance.getPersonalPlayer().setSpecialTurn((int)kTarget.getColor());
 		}
 		assignAuthority(server);
 		RpcDisplaceKnight(source.transform.position, target.transform.position, 
