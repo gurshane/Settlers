@@ -249,6 +249,14 @@ public class GameManager : NetworkBehaviour {
         this.gamePhase = gPhase;
     }
 
+    public void setMetropolisPlayer(Enums.DevChartType dev, Vertex v) {
+        this.metropolises[dev] = v;
+    }
+
+    public Vertex getMetropolisAt(Enums.DevChartType dev) {
+		return metropolises[dev];
+	}
+
 	public Hex getRobberLocation() {
 		return robberLocation;
 	}
@@ -474,8 +482,8 @@ public class GameManager : NetworkBehaviour {
             getPersonalPlayer().setMoveType(MoveType.SPECIAL, p2.getID());
         }
         getPersonalPlayer().setSpecialTurn(old);
-        Debug.Log("im here");
         getPersonalPlayer().setSpecial(Special.CHOOSE_PIRATE_OR_ROBBER, old);
+
         foreach (Player p2 in players) {
             if(!Object.ReferenceEquals(getPlayer(old), p2)) getPersonalPlayer().setSpecial(Special.NONE, p2.getID());
             if (barbarianAfter) getPersonalPlayer().setB1(true, p2.getID());
@@ -656,6 +664,7 @@ public class GameManager : NetworkBehaviour {
             getPersonalPlayer().setSpecial(Special.NONE, p.getID());
             getPersonalPlayer().setMoveType(MoveType.NONE, p.getID());
         }
+        getPersonalPlayer().deactivateKnights();
         getPersonalPlayer().revertTurn();
         getPersonalPlayer().endPhaseOne();
     }

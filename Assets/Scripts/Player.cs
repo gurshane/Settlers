@@ -55,6 +55,9 @@ public class Player : NetworkBehaviour {
     [SyncVar]
     public int oldTurn;
 
+    [SyncVar]
+    public Enums.DevChartType metropType;
+
     private Dictionary<Vector3, GamePiece> spawnedPieces;
 
     //For moves
@@ -499,6 +502,34 @@ public class Player : NetworkBehaviour {
         // Main game phase two
 		if (GameManager.instance.getGamePhase () == Enums.GamePhase.PHASE_TWO) {
             // Get mouse click
+
+            if (moveType == MoveType.UPGRADE_DEVELOPMENT_CHART) {
+                if (Input.GetKeyDown(KeyCode.Alpha1)) {
+
+                    if (ma.canUpgradeDevChart (DevChartType.TRADE, this.commodities, this.pieces, this.devFlipChart)) {
+                        CmdUpgradeDevelopmentChart (DevChartType.TRADE);
+                        moveType = Enums.MoveType.NONE;
+                    }
+                }
+
+                if (Input.GetKeyDown(KeyCode.Alpha2)) {
+
+                    if (ma.canUpgradeDevChart (DevChartType.POLITICS, this.commodities, this.pieces, this.devFlipChart)) {
+                        CmdUpgradeDevelopmentChart (DevChartType.POLITICS);
+                        moveType = Enums.MoveType.NONE;
+                    }
+                }
+
+                if (Input.GetKeyDown(KeyCode.Alpha3)) {
+
+                    if (ma.canUpgradeDevChart (DevChartType.SCIENCE, this.commodities, this.pieces, this.devFlipChart)) {
+                        CmdUpgradeDevelopmentChart (DevChartType.SCIENCE);
+                        moveType = Enums.MoveType.NONE;
+                    }
+                }
+            }
+            
+
 			if (Input.GetButtonDown ("Fire1")) {
 				ray = Camera.main.ScreenPointToRay (Input.mousePosition);
 				if (Physics.Raycast (ray, out impact)) {
@@ -534,10 +565,25 @@ public class Player : NetworkBehaviour {
                     revertTurn();
                     moveType = Enums.MoveType.NONE;
 				}
-            }
+            } else if (special == Enums.Special.CHOOSE_METROPOLIS) {
 
-            // Must place first settlement if it hasn't been placed yet
-			if (moveType == Enums.MoveType.BUILD_SETTLEMENT) {
+				if (!pieceHit.tag.Equals("Vertex")) {
+					return;
+				}
+				Vertex v = pieceHit.GetComponent<Vertex>();
+
+				if (ma.canChooseMetropolis (v, this.myColor)) {
+
+                    setSpecial(Special.NONE, getID());
+                    foreach(Player p in GameManager.instance.getPlayers()) {
+                        GameManager.instance.getPersonalPlayer().setMoveType(MoveType.NONE, p.getID());
+                    }
+
+					CmdChooseMetropolis (v.transform.position);
+				}
+
+            // Otherwise place first road
+			} else if (moveType == Enums.MoveType.BUILD_SETTLEMENT) {
 
 				if (!pieceHit.tag.Equals("Vertex")) {
 					return;
@@ -914,6 +960,20 @@ public class Player : NetworkBehaviour {
         GameManager.instance.getPlayer(plyr).i1 = i;
     }
 
+    public Enums.DevChartType getMetropolis() {
+        return this.metropType;
+    }
+
+    public void setMetropolis(Enums.DevChartType d, int plyr) {
+        CmdSetMetropolis(d, plyr);
+    }
+
+    [Command]
+    public void CmdSetMetropolis(Enums.DevChartType d, int plyr)
+    {
+        GameManager.instance.getPlayer(plyr).metropType = d;
+    }
+
     public int getOpponent()
     {
         return this.opponent; 
@@ -957,6 +1017,43 @@ public class Player : NetworkBehaviour {
     [ClientRpc]
     public void RpcSetSpecialTurn(int turn) {
         GameManager.instance.setSpecialTurn(turn, isServer);
+    }
+
+    public void setMetropolisPlayer(Enums.DevChartType d, Vertex v) {
+        CmdSetMetropolisPlayer(d, v.transform.position);
+    }
+
+    [Command]
+    public void CmdSetMetropolisPlayer(Enums.DevChartType d, Vector3 v)
+    {
+        RpcSetMetropolisPlayer(d, v);
+    }
+
+    [ClientRpc]
+    public void RpcSetMetropolisPlayer(Enums.DevChartType d, Vector3 v) {
+        GameManager.instance.setMetropolisPlayer(d, BoardState.instance.vertexPosition[v]);
+    }
+
+    public void deactivateKnights() {
+        CmdDeactivateKnights();
+    }
+
+    [Command]
+    public void CmdDeactivateKnights()
+    {
+        RpcDeactivateKnights();
+    }
+
+    [ClientRpc]
+    public void RpcDeactivateKnights() {
+        foreach (Player p in GameManager.instance.getPlayers()) {
+            foreach (GamePiece piece in p.getGamePieces()) {
+                if (piece.getPieceType() == PieceType.KNIGHT) {
+                    Knight k = (Knight)piece;
+                    k.deactivateKnight();
+                }
+            }
+        }
     }
 
     public void revertTurn() {
@@ -1457,5 +1554,10 @@ public class Player : NetworkBehaviour {
     [Command]
     public void CmdDestroyCity (Vector3 location) {
 		MoveManager.instance.destroyCity (BoardState.instance.vertexPosition [location], myColor, isServer);        
+    }
+
+    [Command]
+    public void CmdChooseMetropolis (Vector3 location) {
+		MoveManager.instance.chooseMetropolis (BoardState.instance.vertexPosition [location], myColor, getMetropolis(), isServer);        
     }
 }

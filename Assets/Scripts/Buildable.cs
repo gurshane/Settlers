@@ -349,4 +349,14 @@ public class Buildable {
 		}
 		return vertices;
 	}
+
+	public List<Vertex> buildableCanChooseMetropolis(Enums.Color color) {
+		List<Vertex> vertices = new List<Vertex>();
+		foreach (Vertex v in BoardState.instance.vertexPosition.Values) {
+			if (ma.canChooseMetropolis(v, color)) {
+				vertices.Add(v);
+			}
+		}
+		return vertices;
+	}
 }

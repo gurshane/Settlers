@@ -302,9 +302,48 @@ public class MoveManager : NetworkBehaviour {
 			} else if (dev == Enums.DevChartType.SCIENCE) {
 				current.makeAqueduct();
 			}
+		} else if (newLevel == 4 && Object.ReferenceEquals(GameManager.instance.getMetropolisAt(dev), null)) {
+
+			foreach (Player p2 in GameManager.instance.getPlayers()) {
+				GameManager.instance.getPersonalPlayer().setMoveType(MoveType.SPECIAL, p2.getID());
+			}
+			int ident = GameManager.instance.getCurrentPlayer().getID();
+
+			GameManager.instance.getPersonalPlayer().setSpecialTurn(ident);
+			GameManager.instance.getPersonalPlayer().setSpecial(Special.CHOOSE_METROPOLIS, ident);
+			GameManager.instance.getPersonalPlayer().setMetropolis(dev, ident);
+			
+			foreach (Player p2 in GameManager.instance.getPlayers()) {
+				if(!Object.ReferenceEquals(GameManager.instance.getPlayer(ident), p2)) GameManager.instance.getPersonalPlayer().setSpecial(Special.NONE, p2.getID());
+			}
 		}
 
-		// Metropolis
+		bool check1 = (newLevel == 5);
+		bool check2 = Object.ReferenceEquals(GameManager.instance.getMetropolisAt(dev), null);
+		bool check3 = false;
+		Vertex currentMet = GameManager.instance.getMetropolisAt(dev);
+		if (!Object.ReferenceEquals(currentMet, null)) {
+			GamePiece c = currentMet.getOccupyingPiece();
+			int i = (int)c.getColor(); 
+			int[] oppDevChart = GameManager.instance.getPlayer(i).getDevFlipChart();
+			if (oppDevChart[(int)dev] < 5) check3 = true;
+		}
+
+		if (check1 && (check2 || check3)) {
+			foreach (Player p2 in GameManager.instance.getPlayers()) {
+				GameManager.instance.getPersonalPlayer().setMoveType(MoveType.SPECIAL, p2.getID());
+			}
+			int ident = GameManager.instance.getCurrentPlayer().getID();
+
+			GameManager.instance.getPersonalPlayer().setSpecialTurn(ident);
+			GameManager.instance.getPersonalPlayer().setSpecial(Special.CHOOSE_METROPOLIS, ident);
+			GameManager.instance.getPersonalPlayer().setMetropolis(dev, ident);
+			
+			foreach (Player p2 in GameManager.instance.getPlayers()) {
+				if(!Object.ReferenceEquals(GameManager.instance.getPlayer(ident), p2)) GameManager.instance.getPersonalPlayer().setSpecial(Special.NONE, p2.getID());
+			}
+		}
+
 
 		return true;
 	}
@@ -431,6 +470,75 @@ public class MoveManager : NetworkBehaviour {
 		if (!Object.ReferenceEquals(city, null)) {
 			source.setOccupyingPiece(city);
 			city.putOnBoard();
+		}
+    }
+
+	public bool chooseMetropolis (Vertex location, Enums.Color color, Enums.DevChartType dev, bool server)
+    {
+
+		if (!ma.canChooseMetropolis (location, color))
+        {
+			return false;
+		}
+
+		assignAuthority(server);
+        RpcChooseMetropolis(location.transform.position, color, dev);
+
+		Player current = GameManager.instance.getCurrentPlayer();
+
+		// Add an appropriate amount of victory points
+        GameManager.instance.getPersonalPlayer().changeVictoryPoints(2, current.getID());
+
+		Vertex before = GameManager.instance.getMetropolisAt(dev);
+		if (!Object.ReferenceEquals(before, null)) {
+
+			int p = (int)before.getOccupyingPiece().getColor();
+
+			GameManager.instance.getPersonalPlayer().changeVictoryPoints(-2, p);
+
+		}
+		GameManager.instance.getPersonalPlayer().changeVictoryPoints(2, current.getID());
+
+		removeAuthority(server);
+
+        return true;
+	}
+
+	[ClientRpc]
+	void RpcChooseMetropolis(Vector3 location, Enums.Color color, Enums.DevChartType dev)
+    {
+        // Remove the current settlement
+        Vertex source = BoardState.instance.vertexPosition[location];
+        City city = (City)source.getOccupyingPiece();
+
+		GameObject spawnedMetropolis = Instantiate<GameObject>(PrefabHolder.instance.metropolis, location, Quaternion.identity);
+        fixPieceRotationAndPosition(spawnedMetropolis);
+
+		switch (dev) {
+			case DevChartType.TRADE : 
+				spawnedMetropolis.GetComponent<MeshRenderer>().material.SetColor("_Color", UnityEngine.Color.yellow);
+				break;
+			case DevChartType.POLITICS :
+				spawnedMetropolis.GetComponent<MeshRenderer>().material.SetColor("_Color", UnityEngine.Color.blue);
+				break;
+			default:
+				spawnedMetropolis.GetComponent<MeshRenderer>().material.SetColor("_Color", UnityEngine.Color.green);
+				break;
+		}
+
+		BoardState.instance.spawnedObjects.Add(location, spawnedMetropolis);
+
+		city.makeMetropolis();
+
+		Vertex before = GameManager.instance.getMetropolisAt(dev);
+		if (!Object.ReferenceEquals(before, null)) {
+
+			City beforePiece = (City)before.getOccupyingPiece();
+
+			beforePiece.removeMetropolis();
+
+			Destroy (BoardState.instance.spawnedObjects [before.transform.position]);
+			BoardState.instance.spawnedObjects.Remove(before.transform.position);
 		}
     }
 

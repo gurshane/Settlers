@@ -1145,4 +1145,19 @@ public class MoveAuthorizer
 
         return true;
     }
+
+    public bool canChooseMetropolis(Vertex v, Enums.Color color) {
+        GamePiece city = v.getOccupyingPiece();
+        if (Object.ReferenceEquals(city, null)) return false;
+
+        if (city.getPieceType() != PieceType.CITY) return false;
+
+        if (city.getColor() != color) return false;
+
+        City  c = (City)city;
+
+        if (c.isMetropolis()) return false;
+
+        return true;
+    }
 }
