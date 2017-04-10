@@ -495,14 +495,6 @@ public class Player : NetworkBehaviour {
 		if (GameManager.instance.getGamePhase () == Enums.GamePhase.PHASE_TWO) {
             // Get mouse click
 
-            if (moveType != MoveType.MOVE_KNIGHT && moveType != MoveType.DISPLACE_KNIGHT && moveType != MoveType.CHASE_ROBBER) {
-                ResetV1(getID());
-            }
-
-            if (moveType != MoveType.MOVE_SHIP) {
-                ResetE1(getID());
-            }
-
 			if (Input.GetButtonDown ("Fire1")) {
 				ray = Camera.main.ScreenPointToRay (Input.mousePosition);
 				if (Physics.Raycast (ray, out impact)) {
