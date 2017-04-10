@@ -783,6 +783,17 @@ public class Player : NetworkBehaviour {
                     CmdFishRoad (e.transform.position);
                     moveType = Enums.MoveType.NONE;
                 }
+			} else if (moveType == Enums.MoveType.BISHOP) {
+
+				if (!pieceHit.tag.Equals("Hex")) {
+					return;
+				}
+                Hex h = pieceHit.GetComponent<Hex>();
+
+                if (ma.canMoveRobber(h)) {
+                    CmdBishop (h.transform.position);
+                    moveType = Enums.MoveType.NONE;
+                }
 			} 
         }
     }
@@ -1392,6 +1403,30 @@ public class Player : NetworkBehaviour {
         GameManager.instance.getPlayer(plyr).progressCards.Add(cardName);
     }
 
+    public void removeProgressCard(ProgressCardName cardName, int plyr)
+    {
+        List<ProgressCardName> progs = GameManager.instance.getPlayer(plyr).getProgressCards();
+        bool exists = false;
+        foreach (ProgressCardName prog in progs) {
+            if (cardName == prog) exists = true;
+        }
+
+        if (!exists) return;
+        CmdRemoveProgressCard(cardName, plyr);
+    }
+
+    [Command]
+    public void CmdRemoveProgressCard(ProgressCardName cardName, int plyr)
+    {
+        RpcRemoveProgressCard(cardName, plyr);
+    }
+
+    [ClientRpc]
+    public void RpcRemoveProgressCard(ProgressCardName cardName, int plyr)
+    {
+        GameManager.instance.getPlayer(plyr).progressCards.Remove(cardName);
+    }
+
     public void changeSafeCardCount(int count)
     {
         this.safeCardCount += count;
@@ -1673,6 +1708,11 @@ public class Player : NetworkBehaviour {
     [Command]
     public void CmdMoveRobber(Vector3 location) {
 		MoveManager.instance.moveRobber (BoardState.instance.hexPosition [location], isServer);        
+    }
+
+    [Command]
+    public void CmdBishop(Vector3 location) {
+		ProgressCards.instance.bishop (BoardState.instance.hexPosition [location], this.myColor, isServer);        
     }
 
     [Command]
