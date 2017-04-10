@@ -10,6 +10,8 @@ public class UIHexValue : MonoBehaviour {
 
     public bool isFishVal;
 
+	public bool isHighlighted;
+
 	/// <summary>
 	/// The camera which this UI element updates to constantly face
 	/// </summary>
@@ -52,27 +54,21 @@ public class UIHexValue : MonoBehaviour {
 	/// </summary>
 	public void updateValue()
 	{
-		_HexNumber.text = "" + _Text;
+	
+		if (isHighlighted) {
+			_Text = "!";
+			_HexNumber.color = Color.yellow;
+		} 
+		else 
+		{
+			_Text = "" + _Hex.hexNumber;
+			_HexNumber.color = Color.white;
+			_HexNumber.text = "" + _Text;
+		}
 
 	}
 
-	/// <summary>
-	/// Changes text above hex to exclamation point to show it as highlighted
-	/// </summary>
-	public void displayHighlightedText()
-	{
-		_Text = "!";
-		_HexNumber.color = Color.yellow;
-	}
 
-	/// <summary>
-	/// Changes text above hex to hex's hexNumber
-	/// </summary>
-	public void displayHexNumberText()
-	{
-		_Text = "" + _Hex.hexNumber;
-		_HexNumber.color = Color.white;
-	}
 
 	public void updatePosition()
 	{

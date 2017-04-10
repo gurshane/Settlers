@@ -294,15 +294,7 @@ public class UIManager : NetworkBehaviour {
 		{
 			foreach (Hex h in _hToHighlight) 
 			{
-				if (p_State) 
-				{
-					h.hexVal.displayHighlightedText();
-				}
-
-				if (!p_State) 
-				{
-					h.hexVal.displayHexNumberText();
-				}
+				h.hexVal.isHighlighted = p_State;
 			}
 		}
 	}
