@@ -376,7 +376,8 @@ public class UIMoveManager : MonoBehaviour {
 	/// <param name="p_ChartType">P chart type.</param>
 	public void upgradeDevChart(int p_ChartType)
 	{
-		_CurrentPlayer.upgradeDevChart((DevChartType) p_ChartType, _CurrentPlayer.getID ());
+		//_CurrentPlayer.upgradeDevChart((DevChartType) p_ChartType, _CurrentPlayer.getID ());
+		_CurrentPlayer.CmdUpgradeDevelopmentChart((DevChartType) p_ChartType);
 
 		// Set movetype to none afterwards
 		_CurrentPlayer.setMoveType (MoveType.NONE, _CurrentPlayer.getID ());
