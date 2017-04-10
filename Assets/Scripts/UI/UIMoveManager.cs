@@ -53,6 +53,9 @@ public class UIMoveManager : MonoBehaviour {
 	[SerializeField]
 	private Transform _PirateRobberChoosePanel;
 
+	[SerializeField]
+	private Transform _AqueductPanel;
+
 	#endregion
 
 	// -------------------------
@@ -68,6 +71,7 @@ public class UIMoveManager : MonoBehaviour {
 		_KnightPanel.gameObject.SetActive (false);
 		_BuildingPanel.gameObject.SetActive (false);
 		_PirateRobberChoosePanel.gameObject.SetActive (false);
+		_AqueductPanel.gameObject.SetActive (false);
 
 		buildingToggle = false;
 		knightToggle = false;
@@ -324,6 +328,30 @@ public class UIMoveManager : MonoBehaviour {
 
 	#endregion
 
+	#region Progress Card Methods
+	public void revealAqueductPanel()
+	{
+		/*if (_CurrentPlayer.getSpecial ()) 
+		{
+			_ResourceDiscardPanel.gameObject.SetActive (true);
+
+			// If originalHandSum hasn't been modified at all, then set it to Player's current hand size
+			if (originalPlayerHandSum == 0) {
+				originalPlayerHandSum = _CurrentPlayer.getHandSize ();
+			}
+		} 
+
+		else {
+			_ResourceDiscardPanel.gameObject.SetActive (false);
+		}*/
+	}
+	public void aqueductPickResource()
+	{
+		
+	}
+
+
+	#endregion
 
 	#region Choose Pirate or Robber Panel Methods
 	public void revealChoosePirateRobberPanel()
