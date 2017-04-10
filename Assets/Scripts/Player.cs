@@ -496,11 +496,11 @@ public class Player : NetworkBehaviour {
             // Get mouse click
 
             if (moveType != MoveType.MOVE_KNIGHT && moveType != MoveType.DISPLACE_KNIGHT && moveType != MoveType.CHASE_ROBBER) {
-                SetV1(null, getID());
+                ResetV1(getID());
             }
 
             if (moveType != MoveType.MOVE_SHIP) {
-                SetE1(null, getID());
+                ResetE1(getID());
             }
 
 			if (Input.GetButtonDown ("Fire1")) {
@@ -1198,6 +1198,23 @@ public class Player : NetworkBehaviour {
         GameManager.instance.getPlayer(plyr).v1 = BoardState.instance.vertexPosition[vReplace];
     }
 
+    public void ResetV1(int plyr)
+    {
+        CmdResetV1(plyr);
+    }
+
+    [Command]
+    public void CmdResetV1(int plyr)
+    {
+        RpcResetV1(plyr);
+    }
+
+    [ClientRpc]
+    public void RpcResetV1(int plyr)
+    {
+        GameManager.instance.getPlayer(plyr).v1 = null;
+    }
+
     public void SetE1(Edge eReplace, int plyr)
     {
         CmdSetE1(eReplace.transform.position, plyr);
@@ -1213,6 +1230,23 @@ public class Player : NetworkBehaviour {
     public void RpcSetE1(Vector3 eReplace, int plyr)
     {
         GameManager.instance.getPlayer(plyr).e1 = BoardState.instance.edgePosition[eReplace];
+    }
+
+    public void ResetE1(int plyr)
+    {
+        CmdResetE1(plyr);
+    }
+
+    [Command]
+    public void CmdResetE1(int plyr)
+    {
+        RpcResetE1(plyr);
+    }
+
+    [ClientRpc]
+    public void RpcResetE1(int plyr)
+    {
+        GameManager.instance.getPlayer(plyr).e1 = null;
     }
 
     public void setStatus(Status newStatus)
