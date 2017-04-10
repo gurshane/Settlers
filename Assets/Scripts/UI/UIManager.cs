@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Enums;
 using UnityEngine.Networking;
+using UnityEngine.UI;
 
 /// <summary>
 /// Handles update and display of all Player attributes to HUD
@@ -132,6 +133,11 @@ public class UIManager : NetworkBehaviour {
 	/// </summary>
 	private List<Edge> _eToHighlight;
 
+	/// <summary>
+	/// List of hexes to highlight
+	/// </summary>
+	private List<Hex> _hToHighlight;
+
 	private bool highlightBoardPieces;
 
 	/// <summary>
@@ -150,6 +156,7 @@ public class UIManager : NetworkBehaviour {
 		_SmartPanel.gameObject.SetActive (true);
 		_vToHighlight = new List<Vertex> ();
 		_eToHighlight = new List<Edge> ();
+		_hToHighlight = new List<Hex> ();
 		recentMove = MoveType.NONE;
 
 		_UIMoveManager = GetComponent<UIMoveManager> ();
@@ -279,6 +286,25 @@ public class UIManager : NetworkBehaviour {
 				e.GetComponent<Renderer> ().material = highlightMaterial;
 			}
 		}
+
+
+		// Special case of highlighting. Rather than changing material, modifies the text value
+		// above the hex based on the parameter of this method
+		else if (_hToHighlight.Count > 0) 
+		{
+			foreach (Hex h in _hToHighlight) 
+			{
+				if (p_State) 
+				{
+					h.hexVal.displayHighlightedText();
+				}
+
+				if (!p_State) 
+				{
+					h.hexVal.displayHexNumberText();
+				}
+			}
+		}
 	}
 		
 
@@ -295,6 +321,7 @@ public class UIManager : NetworkBehaviour {
 		// Clear both lists initially. In order for highlight() to check against if either one is empty
 		_vToHighlight.Clear();
 		_eToHighlight.Clear ();
+		_hToHighlight.Clear ();
 
 		switch (_CurrentPlayer.getMoveType()) 
 		{
@@ -355,6 +382,18 @@ public class UIManager : NetworkBehaviour {
 			if (Enums.Special.STEAL_RESOURCES_PIRATE == _CurrentPlayer.getSpecial ()) 
 			{
 				_eToHighlight = _build.buildableCanStealPirate (_CurrentPlayer.getColor ());
+			}
+			if (Enums.Special.MOVE_ROBBER == _CurrentPlayer.getSpecial ()) 
+			{
+				_hToHighlight = _build.buildableCanMoveRobber ();
+			}
+			if (Enums.Special.MOVE_PIRATE == _CurrentPlayer.getSpecial ()) 
+			{
+				_hToHighlight = _build.buildableCanMovePirate ();
+			}
+			if (Enums.Special.CHOOSE_DESTROYED_CITY == _CurrentPlayer.getSpecial ()) 
+			{
+				_vToHighlight = _build.buildableCanDestroyCity (_CurrentPlayer.getColor ());
 			}
 			break;
 		case Enums.MoveType.NONE:

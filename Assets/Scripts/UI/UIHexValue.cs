@@ -27,12 +27,18 @@ public class UIHexValue : MonoBehaviour {
 	[SerializeField]
 	private Hex _Hex;
 
+	private string _Text;
 
 	// Use this for initialization
 	void Start () {
 
 		_Camera = Camera.main;
 		_HexNumber = GetComponent<TextMesh>();
+
+		_Hex.hexVal = this;
+
+		// On start, set display text to the hex's hexNumber
+		_Text = "" + _Hex.hexNumber;
 
         if(isFishVal)
         {
@@ -46,8 +52,26 @@ public class UIHexValue : MonoBehaviour {
 	/// </summary>
 	public void updateValue()
 	{
-		_HexNumber.text = "" + _Hex.hexNumber;
+		_HexNumber.text = "" + _Text;
 
+	}
+
+	/// <summary>
+	/// Changes text above hex to exclamation point to show it as highlighted
+	/// </summary>
+	public void displayHighlightedText()
+	{
+		_Text = "!";
+		_HexNumber.color = Color.yellow;
+	}
+
+	/// <summary>
+	/// Changes text above hex to hex's hexNumber
+	/// </summary>
+	public void displayHexNumberText()
+	{
+		_Text = "" + _Hex.hexNumber;
+		_HexNumber.color = Color.white;
 	}
 
 	public void updatePosition()
