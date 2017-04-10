@@ -186,14 +186,6 @@ public class Player : NetworkBehaviour {
 			return;   
         }
 
-        if (moveType != MoveType.MOVE_KNIGHT && moveType != MoveType.DISPLACE_KNIGHT && moveType != MoveType.CHASE_ROBBER) {
-            SetV1(null, getID());
-        }
-
-        if (moveType != MoveType.MOVE_SHIP) {
-            SetE1(null, getID());
-        }
-
 		Ray ray;
 		RaycastHit impact;
 		GameObject pieceHit = null;
@@ -503,36 +495,13 @@ public class Player : NetworkBehaviour {
 		if (GameManager.instance.getGamePhase () == Enums.GamePhase.PHASE_TWO) {
             // Get mouse click
 
-            if (Input.GetKeyDown(KeyCode.Alpha4)) {
-                setMoveType(MoveType.UPGRADE_DEVELOPMENT_CHART, getID());
+            if (moveType != MoveType.MOVE_KNIGHT && moveType != MoveType.DISPLACE_KNIGHT && moveType != MoveType.CHASE_ROBBER) {
+                SetV1(null, getID());
             }
 
-            if (moveType == MoveType.UPGRADE_DEVELOPMENT_CHART) {
-                if (Input.GetKeyDown(KeyCode.Alpha1)) {
-
-                    if (ma.canUpgradeDevChart (DevChartType.TRADE, this.commodities, this.pieces, this.devFlipChart)) {
-                        CmdUpgradeDevelopmentChart (DevChartType.TRADE);
-                        moveType = Enums.MoveType.NONE;
-                    }
-                }
-
-                if (Input.GetKeyDown(KeyCode.Alpha2)) {
-
-                    if (ma.canUpgradeDevChart (DevChartType.POLITICS, this.commodities, this.pieces, this.devFlipChart)) {
-                        CmdUpgradeDevelopmentChart (DevChartType.POLITICS);
-                        moveType = Enums.MoveType.NONE;
-                    }
-                }
-
-                if (Input.GetKeyDown(KeyCode.Alpha3)) {
-
-                    if (ma.canUpgradeDevChart (DevChartType.SCIENCE, this.commodities, this.pieces, this.devFlipChart)) {
-                        CmdUpgradeDevelopmentChart (DevChartType.SCIENCE);
-                        moveType = Enums.MoveType.NONE;
-                    }
-                }
+            if (moveType != MoveType.MOVE_SHIP) {
+                SetE1(null, getID());
             }
-            
 
 			if (Input.GetButtonDown ("Fire1")) {
 				ray = Camera.main.ScreenPointToRay (Input.mousePosition);
