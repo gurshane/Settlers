@@ -69,7 +69,8 @@ public class MoveManager : NetworkBehaviour {
 	// Displace a knight at target with knight at source
 	public bool displaceKnight(Vertex source, Vertex target, Enums.Color color, bool server)
     {
-		
+		Debug.Log("displaceKnight: ");
+		Debug.Log(source + " " + target);
 		// Check if the knight can displace
 		if (!ma.canKnightDisplace (source, target, color))
         {

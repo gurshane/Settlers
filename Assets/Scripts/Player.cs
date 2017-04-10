@@ -606,6 +606,8 @@ public class Player : NetworkBehaviour {
                     SetV1(v, getID());
                 } else {
                     if (ma.canKnightDisplace(v1, v, this.myColor)) {
+                        Debug.Log("knight displaced");
+                        Debug.Log(v1 + " " + v);
                         CmdDisplaceKnight (v.transform.position);
                         moveType = Enums.MoveType.NONE;
                     }
