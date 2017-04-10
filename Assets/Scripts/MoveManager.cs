@@ -103,6 +103,8 @@ public class MoveManager : NetworkBehaviour {
 			}
 		}
 
+		Debug.Log("gone: " + gone);
+
 		if (!gone) {
 			int currTurn = GameManager.instance.getPlayerTurn();
 			GameManager.instance.getPersonalPlayer().setOldTurn(currTurn);
