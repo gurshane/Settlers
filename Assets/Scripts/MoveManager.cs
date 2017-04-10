@@ -49,6 +49,7 @@ public class MoveManager : NetworkBehaviour {
         Vertex targetPiece = BoardState.instance.vertexPosition[target];
 
 		GameObject knight = getKnightFromLevel (level, target, color);
+        knight.transform.position += new Vector3(0f, 10f, 0f);
 		Destroy (BoardState.instance.spawnedObjects [source]);
 
 		BoardState.instance.spawnedObjects.Add(target, knight);
@@ -156,7 +157,7 @@ public class MoveManager : NetworkBehaviour {
 		}
 
 		GameObject targetKnightObject = getKnightFromLevel (targetLevel, displacedLocation, color);
-
+        targetKnightObject.transform.position += new Vector3(0f, 10f, 0f);
 		BoardState.instance.spawnedObjects.Add(displacedLocation, targetKnightObject);
 
         // Deactivate the knight
@@ -182,7 +183,7 @@ public class MoveManager : NetworkBehaviour {
 		Destroy (BoardState.instance.spawnedObjects [target]);
 
 		GameObject sourceKnightObject = getKnightFromLevel (sourceLevel, target, color);
-
+        sourceKnightObject.transform.position += new Vector3(0f, 10f, 0f);
 		BoardState.instance.spawnedObjects.Remove(target);
 		BoardState.instance.spawnedObjects.Remove(source);
 		BoardState.instance.spawnedObjects.Add(target, sourceKnightObject);
@@ -238,7 +239,7 @@ public class MoveManager : NetworkBehaviour {
 		BoardState.instance.spawnedObjects.Remove(v);
 
 		GameObject newKnight = getKnightFromLevel (level + 1, v, color);
-        fixPieceRotationAndPosition(newKnight);
+        newKnight.transform.position += new Vector3(0f, 10f, 0f);
 
 		BoardState.instance.spawnedObjects.Add(v, newKnight);
 
@@ -539,13 +540,16 @@ public class MoveManager : NetworkBehaviour {
 		switch (dev) {
 			case DevChartType.TRADE : 
 				spawnedMetropolis.GetComponent<MeshRenderer>().material.SetColor("_Color", UnityEngine.Color.yellow);
+                spawnedMetropolis.GetComponentInChildren<MeshRenderer>().material.SetColor("_Color", UnityEngine.Color.yellow);
 				break;
 			case DevChartType.POLITICS :
 				spawnedMetropolis.GetComponent<MeshRenderer>().material.SetColor("_Color", UnityEngine.Color.blue);
-				break;
+                spawnedMetropolis.GetComponentInChildren<MeshRenderer>().material.SetColor("_Color", UnityEngine.Color.blue);
+                break;
 			default:
 				spawnedMetropolis.GetComponent<MeshRenderer>().material.SetColor("_Color", UnityEngine.Color.green);
-				break;
+                spawnedMetropolis.GetComponentInChildren<MeshRenderer>().material.SetColor("_Color", UnityEngine.Color.green);
+                break;
 		}
 
 		BoardState.instance.spawnedObjects.Add(location, spawnedMetropolis);
