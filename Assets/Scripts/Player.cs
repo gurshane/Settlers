@@ -11,27 +11,13 @@ public class Player : NetworkBehaviour {
 	private MoveAuthorizer ma;
     private Graph graph;
 
-    public int oreOffered;
-    public int lumberOffered;
-    public int woolOffered;
-    public int brickOffered;
-    public int grainOffered;
-
-    public int clothOffered;
-    public int coinOffered;
-    public int paperOffered;
+    public int[] resourcesOffered;
+    public int[] commoditiesOffered;
 
     public int goldOffered;
 
-    public int oreWanted;
-    public int lumberWanted;
-    public int woolWanted;
-    public int brickWanted;
-    public int grainWanted;
-
-    public int clothWanted;
-    public int coinWanted;
-    public int paperWanted;
+    public int[] resourcesWanted;
+    public int[] commoditiesWanted;
 
     public int goldWanted;
 
@@ -790,36 +776,10 @@ public class Player : NetworkBehaviour {
     public void tradeWithBank()
     {
         Trades newTrade = new Trades();
-
-        int[] resourcesOffered = new int[5];
-        resourcesOffered[0] = this.oreOffered;
-        resourcesOffered[1] = this.lumberOffered;
-        resourcesOffered[2] = this.woolOffered;
-        resourcesOffered[3] = this.brickOffered;
-        resourcesOffered[4] = this.grainOffered;
-
-        int[] commoditiesOffered = new int[3];
-        commoditiesOffered[0] = this.clothOffered;
-        commoditiesOffered[1] = this.coinOffered;
-        commoditiesOffered[2] = this.paperOffered;
-
-        int[] resourcesWanted = new int[5];
-        resourcesWanted[0] = this.oreWanted;
-        resourcesWanted[1] = this.lumberWanted;
-        resourcesWanted[2] = this.woolWanted;
-        resourcesWanted[3] = this.brickWanted;
-        resourcesWanted[4] = this.grainWanted;
-
-        int[] commoditiesWanted = new int[3];
-        commoditiesWanted[0] = this.clothWanted;
-        commoditiesWanted[1] = this.coinWanted;
-        commoditiesWanted[2] = this.paperWanted;
-
-
-        newTrade.resourcesOffered = resourcesOffered;
-        newTrade.commoditiesOffered = commoditiesOffered;
-        newTrade.resourcesWanted = resourcesWanted;
-        newTrade.commoditiesWanted = commoditiesWanted;
+        newTrade.resourcesOffered = this.resourcesOffered;
+        newTrade.commoditiesOffered = this.commoditiesOffered;
+        newTrade.resourcesWanted = this.resourcesWanted;
+        newTrade.commoditiesWanted = this.commoditiesWanted;
         newTrade.goldOffered = this.goldOffered;
         newTrade.goldWanted = this.goldWanted;
         newTrade.offering = this.iD;
@@ -865,6 +825,26 @@ public class Player : NetworkBehaviour {
     public List<ProgressCardName> getProgressCards()//return player's progress cards
     {
         return this.progressCards;
+    }
+
+    public int[] getResourcesWanted()
+    {
+        return this.resourcesWanted;
+    }
+
+    public int[] getResourcesOffered()
+    {
+        return this.resourcesOffered;
+    }
+
+    public int[] getCommoditiesWanted()
+    {
+        return this.commoditiesWanted;
+    }
+
+    public int[] getCommoditiesOffered()
+    {
+        return this.commoditiesOffered;
     }
 
     public int[] getResources()//return player's resources
@@ -1423,6 +1403,12 @@ public class Player : NetworkBehaviour {
     void RpcUpdateResourceRatios(int[] newRatios, int plyr)
     {
         GameManager.instance.getPlayer(plyr).resourceRatios = newRatios;
+    }
+
+    [Command]
+    public void CmdAlchemistRoll(int a, int b)
+    {
+        GameManager.instance.alchemistRolled(a, b, isServer);
     }
 
     public bool changeResource(ResourceType resource, int num, int plyr)
