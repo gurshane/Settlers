@@ -346,6 +346,9 @@ public class UIManager : NetworkBehaviour {
 		case Enums.MoveType.DISPLACE_KNIGHT:
 			_vToHighlight = _build.buildableDisplaceKnight (_CurrentPlayer.getColor ());
 			break;
+		case Enums.MoveType.FISH_5:
+			_eToHighlight = _build.buildableFishRoad (_CurrentPlayer.numFish, _CurrentPlayer.getGamePieces (), _CurrentPlayer.getColor ());
+			break;
 		case Enums.MoveType.MOVE_KNIGHT:
 			_vToHighlight = _build.buildableMoveKnight (_CurrentPlayer.getColor ());
 			break;
@@ -387,6 +390,10 @@ public class UIManager : NetworkBehaviour {
 			if (Enums.Special.CHOOSE_DESTROYED_CITY == _CurrentPlayer.getSpecial ()) 
 			{
 				_vToHighlight = _build.buildableCanDestroyCity (_CurrentPlayer.getColor ());
+			}
+			if (Enums.Special.CHOOSE_METROPOLIS == _CurrentPlayer.getSpecial ()) 
+			{
+				_vToHighlight = _build.buildableCanChooseMetropolis (_CurrentPlayer.getColor ());
 			}
 			break;
 		case Enums.MoveType.NONE:
