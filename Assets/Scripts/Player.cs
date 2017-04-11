@@ -161,7 +161,10 @@ public class Player : NetworkBehaviour {
 
         progressCards = new List<ProgressCardName>();
         status = Enums.Status.ACTIVE;
-
+        this.resourcesOffered = new int[5] { 0, 0, 0, 0, 0 };
+        this.resourcesWanted = new int[5] { 0, 0, 0, 0, 0, };
+        this.commoditiesOffered = new int[3] { 0, 0, 0 };
+        this.commoditiesWanted = new int[3] { 0, 0, 0 };
         this.resources = new int[5] { 10, 10, 10, 10, 10 };
         this.commodities = new int[3] { 10, 10, 10 };
         this.goldCount = 0;
