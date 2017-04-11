@@ -274,4 +274,109 @@ public class ProgressAuthroizor {
 
         return true;
 	}
+
+	public bool canMedicine(Vertex location, int[] resources,
+        List<GamePiece> pieces, Enums.Color color)
+    {
+
+        GamePiece settlement = location.getOccupyingPiece();
+
+        // Make sure the location is valid
+        if (Object.ReferenceEquals(settlement, null))
+        {
+            return false;
+        }
+        if (settlement.getPieceType() != Enums.PieceType.SETTLEMENT)
+        {
+            return false;
+        }
+        if (settlement.getColor() != color)
+        {
+            return false;
+        }
+
+        // Make sure there is an available city
+        bool availablePiece = false;
+        foreach (GamePiece p in pieces)
+        {
+            if (p.getPieceType() != Enums.PieceType.CITY)
+            {
+                continue;
+            }
+            if (!p.isOnBoard())
+            {
+                availablePiece = true;
+            }
+        }
+        if (!availablePiece)
+        {
+            return false;
+        }
+
+        // Make sure there are enough resources
+        if (resources[(int)Enums.ResourceType.GRAIN] < 1)
+        {
+            return false;
+        }
+        if (resources[(int)Enums.ResourceType.ORE] < 2)
+        {
+            return false;
+        }
+        return true;
+    }
+
+	public bool canRoadBuilding(Edge location, List<GamePiece> pieces, Enums.Color color)
+    {
+
+        // Make sure the location is valid
+        if (!Object.ReferenceEquals(location.getOccupyingPiece(), null))
+        {
+            return false;
+        }
+        if (location.getTerrainType() == Enums.TerrainType.WATER)
+        {
+            return false;
+        }
+
+        bool nextToTown = graph.nextToMyCityOrSettlement(location, color);
+        bool nextToRoad = false;
+        if (graph.nextToMyRoad(location.getLeftVertex(), color))
+        {
+            nextToRoad = true;
+        }
+        else if (graph.nextToMyRoad(location.getRightVertex(), color))
+        {
+            nextToRoad = true;
+        }
+        if (!nextToTown && !nextToRoad)
+        {
+            return false;
+        }
+
+        // Make sure there is an available road
+        bool availablePiece = false;
+        foreach (GamePiece p in pieces)
+        {
+            if (p.getPieceType() != Enums.PieceType.ROAD)
+            {
+                continue;
+            }
+
+            Road currentRoad = (Road)p;
+            if (currentRoad.getIsShip())
+            {
+                continue;
+            }
+            if (!p.isOnBoard())
+            {
+                availablePiece = true;
+            }
+        }
+        if (!availablePiece)
+        {
+            return false;
+        }
+
+        return true;
+    }
 }
