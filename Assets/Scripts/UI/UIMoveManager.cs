@@ -414,7 +414,7 @@ public class UIMoveManager : MonoBehaviour {
 		_CurrentPlayer.CmdUpgradeDevelopmentChart((DevChartType) p_ChartType);
 
 		// Set movetype to none afterwards
-		moveTypeChange(MoveType.NONE);
+		//moveTypeChange(MoveType.NONE);
 		//_CurrentPlayer.setMoveType (MoveType.NONE, _CurrentPlayer.getID ());
 
 	}
@@ -655,7 +655,7 @@ public class UIMoveManager : MonoBehaviour {
 		_CurrentPlayer.CmdUpgradeDevelopmentChart((DevChartType) p_ChartType);
 
 		// Set movetype to none afterwards
-		moveTypeChange(MoveType.NONE);
+		//moveTypeChange(MoveType.NONE);
 		//_CurrentPlayer.setMoveType (MoveType.NONE, _CurrentPlayer.getID ());
 
 	}
