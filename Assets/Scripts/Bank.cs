@@ -135,7 +135,7 @@ public class Bank : NetworkBehaviour
         fishTokens.Add(new FishToken(false, 3));
         fishTokens.Add(new FishToken(false, 3));
 
-        fishTokens.Add(new FishToken(true, 1));
+        fishTokens.Add(new FishToken(true, -7));
     }
 
     public int getFishToken(bool server)
@@ -146,7 +146,7 @@ public class Bank : NetworkBehaviour
         }
 
         int numFish = fishTokens[0].value;
-
+        
         assignAuthority(server);
         RpcWithdrawFishToken();
         removeAuthority(server);
@@ -168,7 +168,11 @@ public class Bank : NetworkBehaviour
         }
 
         int numFish = fishTokens[0].value;
-        numFish += fishTokens[1].value;
+        if(numFish != -7)
+        {
+            numFish += fishTokens[1].value;
+        }
+        else{}
 
         assignAuthority(server);
         RpcWithdrawFishTokens();

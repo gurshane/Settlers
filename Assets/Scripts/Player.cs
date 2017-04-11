@@ -44,6 +44,9 @@ public class Player : NetworkBehaviour
     public int numFish;
 
     [SyncVar]
+    public bool ownsBoot;
+
+    [SyncVar]
     private int safeCardCount;
 
     public List<GamePiece> pieces;
@@ -1252,6 +1255,23 @@ public class Player : NetworkBehaviour
     public void RpcChangeVP(int num, int plyr)
     {
         GameManager.instance.getPlayer(plyr).victoryPoints += num;
+    }
+
+    public void hasBoot(bool doesHaveBoot, int player)
+    {
+        CmdHasBoot(doesHaveBoot, player);
+    }
+
+    [Command]
+    public void CmdHasBoot(bool doesHaveBoot, int player)
+    {
+        RpcHasBoot(doesHaveBoot, player);
+    }
+
+    [ClientRpc]
+    public void RpcHasBoot(bool doesHaveBoot, int player)
+    {
+        GameManager.instance.getPlayer(player).ownsBoot = doesHaveBoot;
     }
 
     public bool changeFishCount(int num, int plyr)

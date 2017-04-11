@@ -748,7 +748,14 @@ public class GameManager : NetworkBehaviour {
                     {
                         Debug.Log("single fish");
                         int numFish = Bank.instance.getFishToken(p.isServer);
-                        getPersonalPlayer().changeFishCount(numFish, p.getID());
+                        if (numFish == -7)
+                        {
+                            getPersonalPlayer().hasBoot(true, p.getID());
+                        }
+                        else
+                        {
+                            getPersonalPlayer().changeFishCount(numFish, p.getID());
+                        }
                         playerAqueducts[p.getID()] = false;
                     }
                     else if (res != Enums.ResourceType.NONE && enoughRes[res])
@@ -773,7 +780,14 @@ public class GameManager : NetworkBehaviour {
                     {
                         Debug.Log("many fish");
                         int numFish = Bank.instance.getFishTokens(p.isServer);
-                        getPersonalPlayer().changeFishCount(numFish, p.getID());
+                        if(numFish == -7)
+                        {
+                            getPersonalPlayer().hasBoot(true, p.getID());
+                        }
+                        else
+                        {
+                            getPersonalPlayer().changeFishCount(numFish, p.getID());
+                        }
                         playerAqueducts[p.getID()] = false;
                     }
                     if (com != Enums.CommodityType.NONE)
