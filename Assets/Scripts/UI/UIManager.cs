@@ -417,12 +417,19 @@ public class UIManager : NetworkBehaviour {
 	#endregion
 
     #region Update Methods
+	/// <summary>
+	/// Displays the boot icon if player has the boot
+	/// </summary>
 	public void updateBoot()
 	{
-		//if (_CurrentPlayer)
+		if (_CurrentPlayer.ownsBoot) 
+		{
+			_Boot.gameObject.SetActive (true);
+		}
+			
 
-		//else 
-		//	_Boot.gameObject.SetActive(false);
+		else 
+			_Boot.gameObject.SetActive(false);
 	}
 
 	/// <summary>
@@ -719,6 +726,8 @@ public class UIManager : NetworkBehaviour {
                 updateMyPlayerPanel();
 				updateDiceRollPanel ();
 				updateTurnsPanel();
+
+				updateBoot ();
 
 				updatePlayerInfoPanels ();
 
