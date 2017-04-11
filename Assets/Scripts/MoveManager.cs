@@ -740,15 +740,15 @@ public class MoveManager : NetworkBehaviour {
         Edge edge = BoardState.instance.edgePosition[location];
 		GameObject spawnedRoad = Instantiate<GameObject>(PrefabHolder.instance.road, location, Quaternion.identity);
         fixPieceRotationAndPosition(spawnedRoad);
-        if (((int)edge.transform.rotation.eulerAngles.y) == (239))
+        if (edge.isRightPointing)
         {
             spawnedRoad.transform.Rotate(0f, 0f, -29f);
         }
-        else if (((int)edge.transform.rotation.eulerAngles.y) == (301))
+        else if (edge.isLeftPointing)
         {
             spawnedRoad.transform.Rotate(0f, 0f, 31f);
         }
-        else if (((int)edge.transform.rotation.eulerAngles.y) == (0))
+        else if (edge.isForwardPointing)
         {
             spawnedRoad.transform.Rotate(0f, 0f, 90f);
         }
@@ -805,17 +805,17 @@ public class MoveManager : NetworkBehaviour {
 		GameObject spawnedBoat = Instantiate<GameObject>(PrefabHolder.instance.boat, location, Quaternion.identity);
 
         spawnedBoat.transform.position += new Vector3(0f, 10f, 0f);
-        if (((int)edge.transform.rotation.eulerAngles.y) == (239))
+        if (edge.isRightPointing)
         {
-            spawnedBoat.transform.Rotate(0f, 0f, -29f);
+            spawnedBoat.transform.Rotate(0f, 60f, 0f);
         }
-        else if (((int)edge.transform.rotation.eulerAngles.y) == (301))
+        else if (edge.isLeftPointing)
         {
-            spawnedBoat.transform.Rotate(0f, 0f, 31f);
+            spawnedBoat.transform.Rotate(0f, -60f, 0f);
         }
-        else if (((int)edge.transform.rotation.eulerAngles.y) == (0))
+        else if (edge.isForwardPointing)
         {
-            spawnedBoat.transform.Rotate(0f, 0f, 90f);
+            spawnedBoat.transform.Rotate(0f, 0f, 0f);
         }
         spawnedBoat.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
 		BoardState.instance.spawnedObjects.Add(location, spawnedBoat);
@@ -859,17 +859,17 @@ public class MoveManager : NetworkBehaviour {
 
 		GameObject spawnedBoat = Instantiate<GameObject>(PrefabHolder.instance.boat, target, Quaternion.identity);
         spawnedBoat.transform.position += new Vector3(0f, 10f, 0f);
-        if (((int)targetPiece.transform.rotation.eulerAngles.y) == (239))
+        if (targetPiece.isRightPointing)
         {
-            spawnedBoat.transform.Rotate(0f, 0f, -29f);
+            spawnedBoat.transform.Rotate(0f, 60f, 0f);
         }
-        else if (((int)targetPiece.transform.rotation.eulerAngles.y) == (301))
+        else if (targetPiece.isLeftPointing)
         {
-            spawnedBoat.transform.Rotate(0f, 0f, 31f);
+            spawnedBoat.transform.Rotate(0f, -60f, 0f);
         }
-        else if (((int)targetPiece.transform.rotation.eulerAngles.y) == (0))
+        else if (targetPiece.isForwardPointing)
         {
-            spawnedBoat.transform.Rotate(0f, 0f, 90f);
+            spawnedBoat.transform.Rotate(0f, 0f, 0f);
         }
         spawnedBoat.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
 		Destroy (BoardState.instance.spawnedObjects [source]);
@@ -1175,15 +1175,15 @@ public class MoveManager : NetworkBehaviour {
         Edge edge = BoardState.instance.edgePosition[location];
 		GameObject spawnedRoad = Instantiate<GameObject>(PrefabHolder.instance.road, location, Quaternion.identity);
         fixPieceRotationAndPosition(spawnedRoad);
-        if(((int)edge.transform.rotation.eulerAngles.y) == (239))
+        if (edge.isRightPointing)
         {
             spawnedRoad.transform.Rotate(0f, 0f, -29f);
         }
-        else if(((int)edge.transform.rotation.eulerAngles.y) == (301))
+        else if (edge.isLeftPointing)
         {
             spawnedRoad.transform.Rotate(0f, 0f, 31f);
         }
-        else if(((int)edge.transform.rotation.eulerAngles.y) == (0))
+        else if (edge.isForwardPointing)
         {
             spawnedRoad.transform.Rotate(0f, 0f, 90f);
         }
@@ -1225,17 +1225,17 @@ public class MoveManager : NetworkBehaviour {
 		GameObject spawnedBoat = Instantiate<GameObject>(PrefabHolder.instance.boat, location, Quaternion.identity);
 
         spawnedBoat.transform.position += new Vector3(0f, 10f, 0f);
-        if (((int)edge.transform.rotation.eulerAngles.y) == (239))
+        if (edge.isRightPointing)
         {
-            spawnedBoat.transform.Rotate(0f, 0f, -29f);
+            spawnedBoat.transform.Rotate(0f, 60f, 0f);
         }
-        else if (((int)edge.transform.rotation.eulerAngles.y) == (301))
+        else if (edge.isLeftPointing)
         {
-            spawnedBoat.transform.Rotate(0f, 0f, 31f);
+            spawnedBoat.transform.Rotate(0f, -60f, 0f);
         }
-        else if (((int)edge.transform.rotation.eulerAngles.y) == (0))
+        else if (edge.isForwardPointing)
         {
-            spawnedBoat.transform.Rotate(0f, 0f, 90f);
+            spawnedBoat.transform.Rotate(0f, 0f, 0f);
         }
         spawnedBoat.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
 		BoardState.instance.spawnedObjects.Add(location, spawnedBoat);
