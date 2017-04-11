@@ -531,8 +531,10 @@ public class UIMoveManager : MonoBehaviour {
 			_CurrentPlayer.setMoveType (MoveType.PROGRESS_BISHOP, _CurrentPlayer.getID ());
 			break;
 		case ProgressCardName.COMMERCIALHARBOR:
+			//TODO : Yeah, no
 			break;
 		case ProgressCardName.CONSTITUTION:
+			p_Text.text = "Constitution";
 			p_Button.onClick.AddListener (ProgressCards.instance.constitution);
 			break;
 		case ProgressCardName.CRANE:
@@ -540,46 +542,76 @@ public class UIMoveManager : MonoBehaviour {
 			_CurrentPlayer.setMoveType (MoveType.PROGRESS_CRANE, _CurrentPlayer.getID ());
 			break;
 		case ProgressCardName.DESERTER:
+			//TODO: Yeah, no
 			break;
 		case ProgressCardName.DIPLOMAT:
+			p_Text.text = "Diplomat";
+			_CurrentPlayer.setMoveType (MoveType.PROGRESS_DIPLOMAT, _CurrentPlayer.getID ());
 			break;
 		case ProgressCardName.ENGINEER:
+			p_Text.text = "Engineer";
+			_CurrentPlayer.setMoveType (MoveType.PROGRESS_ENGINEER, _CurrentPlayer.getID ());
 			break;
 		case ProgressCardName.INTRIGUE:
+			p_Text.text = "Intrigue";
+			_CurrentPlayer.setMoveType (MoveType.PROGRESS_INTRIGUE, _CurrentPlayer.getID ());
 			break;
 		case ProgressCardName.INVENTOR:
+			p_Text.text = "Inventor";
+			_CurrentPlayer.setMoveType (MoveType.PROGRESS_INVENTOR, _CurrentPlayer.getID ());
 			break;
 		case ProgressCardName.IRRIGATION:
+			p_Text.text = "Irrigation";
+			p_Button.onClick.AddListener (() => {ProgressCards.instance.irrigation(_CurrentPlayer.getColor());});
 			break;
 		case ProgressCardName.MASTERMERCHANT:
+			// TODO: Yeah, no
 			break;
 		case ProgressCardName.MEDICINE:
+			p_Text.text = "Medicine";
+			_CurrentPlayer.setMoveType (MoveType.PROGRESS_MEDICINE, _CurrentPlayer.getID ());
 			break;
 		case ProgressCardName.MERCHANT:
+			//TODO: Yeah, no
 			break;
 		case ProgressCardName.MERCHANTFLEET:
+			//TODO: Yeah, no
 			break;
 		case ProgressCardName.MINING:
+			p_Text.text = "Mining";
+			p_Button.onClick.AddListener (() => {ProgressCards.instance.mining(_CurrentPlayer.getColor());});
 			break;
 		case ProgressCardName.PRINTER:
+			p_Text.text = "Printer";
+			p_Button.onClick.AddListener (ProgressCards.instance.printer);
 			break;
 		case ProgressCardName.RESOURCEMONOPOLY:
+			//TODO: Yeah, no
 			break;
 		case ProgressCardName.ROADBUILDING:
 			break;
 		case ProgressCardName.SABOTEUR:
+			//TODO: Yeah, no
 			break;
 		case ProgressCardName.SMITH:
+			//TODO: Yeah, no
 			break;
 		case ProgressCardName.SPY:
+			//TODO: Yeah, no
 			break;
 		case ProgressCardName.TRADEMONOPOLY:
+			//TODO: Yeah, no
 			break;
 		case ProgressCardName.WARLORD:
+			//TODO: Yeah, no
 			break;
 		case ProgressCardName.WEDDING:
+			//TODO: Yeah, no
 			break;
 		}
+
+		// Add this to make sure the button closes the panel afterwards
+		p_Button.onClick.AddListener (closeProgressCardPanel);
 	}
 
 
@@ -606,6 +638,24 @@ public class UIMoveManager : MonoBehaviour {
 			_CraneDevPanel.gameObject.SetActive (false);
 		}
 	}
+
+	public void craneUpgradeDevChart(int p_ChartType)
+	{
+		//_CurrentPlayer.upgradeDevChart((DevChartType) p_ChartType, _CurrentPlayer.getID ());
+		_CurrentPlayer.CmdUpgradeDevelopmentChart((DevChartType) p_ChartType);
+
+		// Set movetype to none afterwards
+		_CurrentPlayer.setMoveType (MoveType.NONE, _CurrentPlayer.getID ());
+
+	}
+
+
+
+	public void closeProgressCardPanel()
+	{
+		_ProgressCardsPanel.gameObject.SetActive (false);	
+	}
+
 	#endregion
 
 	#region Fish Methods
