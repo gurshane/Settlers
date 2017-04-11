@@ -70,6 +70,7 @@ public class UIManager : NetworkBehaviour {
 	[SerializeField]
 	private Transform _PlayerInfosPanel;
 
+
 	/// <summary>
 	/// Panel containing info of which player's turn it is and the name of the current player
 	/// </summary>
@@ -501,35 +502,7 @@ public class UIManager : NetworkBehaviour {
 			pIndex++;
 		}
 	}
-	/*
-	/// <summary>
-	/// Assigns each available Player to each available PlayerInfoPanel
-	/// </summary>
-	public void setPlayerInfoPanels()
-	{
-		// Keep track of index to assign a player to a PlayerInfoPanel
-		int pIndex = 0;
 
-		// Get the list of Player names
-		List<string> pNames = GameManager.getPlayerNames ();
-
-		// Instantiate a Player object to loop through the list of GameManager.players
-		Player _P;
-
-		// Loop through each GameManager.Players
-		// Assign the Player to the Panel
-		foreach (Transform panel in _PlayerInfosPanel) 
-		{
-			// GUsing pIndex to get the corresponding Player username
-			// Use that string to getPlayer 
-			_P = GameManager.getPlayer ( pNames [pIndex] );
-
-			// Instantiate a PlayerInfoPanel with the player _P
-			panel.GetComponent<UIPlayerInfoPanel> ().instantiate (_P);
-
-			pIndex++;
-		}
-	}*/
 
 	#endregion
 
@@ -634,6 +607,10 @@ public class UIManager : NetworkBehaviour {
 		_CurrentPlayer = p_CurrentPlayer;
 	}
 
+	public Player getCurrentPlayer()
+	{
+		return _CurrentPlayer;
+	}
 	/// <summary>
 	/// Sets the FromResource attribute of this instance of UI manager that the Player wants to give in a trade
 	/// </summary>

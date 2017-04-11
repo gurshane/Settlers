@@ -20,9 +20,16 @@ public class UIMoveManager : MonoBehaviour {
 
 	private bool buildingToggle;
 	private bool knightToggle;
+	private bool fishToggle;
+	private bool progressCardToggle;
 
 	#endregion
 
+	/// <summary>
+	/// The progress cards panel.
+	/// </summary>
+	[SerializeField]
+	private Transform _ProgressCardsPanel;
 
 	#region Moves Panels
 	/// <summary>
@@ -43,6 +50,19 @@ public class UIMoveManager : MonoBehaviour {
 	[SerializeField]
 	private Transform _BuildingPanel;
 
+	[SerializeField]
+	private Transform _FishPanel;
+
+	/// <summary>
+	/// Specific panels for the fish button chosen
+	/// </summary>
+	[SerializeField]
+	private Transform _3FishPanel;
+	[SerializeField]
+	private Transform _4FishPanel;
+	[SerializeField]
+	private Transform _7FishPanel;
+
 	/// <summary>
 	/// The resource discard panel.
 	/// </summary>
@@ -61,6 +81,9 @@ public class UIMoveManager : MonoBehaviour {
 
 	[SerializeField]
 	private Transform _UpgradeDevChartPanel;
+
+	[SerializeField]
+	private Transform _AlchemistDicePanel;
 	#endregion
 
 	// -------------------------
@@ -75,10 +98,18 @@ public class UIMoveManager : MonoBehaviour {
 
 		_KnightPanel.gameObject.SetActive (false);
 		_BuildingPanel.gameObject.SetActive (false);
+		_FishPanel.gameObject.SetActive (false);
+		_ProgressCardsPanel.gameObject.SetActive (false);
+
+		_3FishPanel.gameObject.SetActive (false);
+		_4FishPanel.gameObject.SetActive (false);
+		_7FishPanel.gameObject.SetActive (false);
+
 		_PirateRobberChoosePanel.gameObject.SetActive (false);
 		_AqueductPanel.gameObject.SetActive (false);
 		_ChooseProgressCardPanel.gameObject.SetActive (false);
 		_UpgradeDevChartPanel.gameObject.SetActive (false);
+		_AlchemistDicePanel.gameObject.SetActive (false);
 
 		buildingToggle = false;
 		knightToggle = false;
@@ -276,7 +307,7 @@ public class UIMoveManager : MonoBehaviour {
 	public void revealResourceDiscardPanel()
 	{
 
-		if (_CurrentPlayer.getSpecial () == Special.DISCARD_RESOURCE_SEVEN) 
+		if (_CurrentPlayer.getSpecial () == Special.DISCARD_RESOURCE_SEVEN && GameManager.instance.getGamePhase() == GamePhase.PHASE_TWO) 
 		{
 			_ResourceDiscardPanel.gameObject.SetActive (true);
 
@@ -344,7 +375,7 @@ public class UIMoveManager : MonoBehaviour {
 	/// </summary>
 	public void revealChooseProgressCardPanel()
 	{
-		if (_CurrentPlayer.getSpecial () == Special.CHOOSE_PROGRESS_PILE) 
+		if (_CurrentPlayer.getSpecial () == Special.CHOOSE_PROGRESS_PILE && GameManager.instance.getGamePhase() == GamePhase.PHASE_TWO) 
 		{
 			_ChooseProgressCardPanel.gameObject.SetActive (true);
 		} 
@@ -360,7 +391,7 @@ public class UIMoveManager : MonoBehaviour {
 	/// </summary>
 	public void revealUpgradeDevChart()
 	{
-		if (_CurrentPlayer.getMoveType() == MoveType.UPGRADE_DEVELOPMENT_CHART) 
+		if (_CurrentPlayer.getMoveType() == MoveType.UPGRADE_DEVELOPMENT_CHART && GameManager.instance.getGamePhase() == GamePhase.PHASE_TWO) 
 		{
 			_UpgradeDevChartPanel.gameObject.SetActive (true);
 		} 
@@ -407,10 +438,10 @@ public class UIMoveManager : MonoBehaviour {
 	#endregion
 
 
-	#region Individual Progress Card Methods
+	#region Progress Card Methods
 	public void revealAqueductPanel()
 	{
-		if (_CurrentPlayer.getSpecial () == Special.AQUEDUCT) 
+		if (_CurrentPlayer.getSpecial () == Special.AQUEDUCT && GameManager.instance.getGamePhase() == GamePhase.PHASE_TWO) 
 		{
 			_AqueductPanel.gameObject.SetActive (true);
 		} 
@@ -419,6 +450,8 @@ public class UIMoveManager : MonoBehaviour {
 			_AqueductPanel.gameObject.SetActive (false);
 		}
 	}
+
+
 
 	/// <summary>
 	/// Increments the resource chosen due to the aqueduct progress card
@@ -433,13 +466,274 @@ public class UIMoveManager : MonoBehaviour {
 
 	}
 
+	public void revealProgressCardsPanel()
+	{
+		progressCardToggle = !progressCardToggle;
+		_ProgressCardsPanel.gameObject.SetActive (progressCardToggle);
+
+		updateProgressCardButtons ();
+	}
+
+	private void updateProgressCardButtons()
+	{
+		int index = 0;
+
+		// Set all buttons to inactive to begin.
+		foreach (Transform child in _ProgressCardsPanel) 
+		{
+			child.gameObject.SetActive (false);
+		}
+
+		// Loop through buttons for as many times as there are progress Cards in the player's hand
+		foreach (Transform child in _ProgressCardsPanel) 
+		{
+			// If index exceeds number of progress cards that player may have, return immediately
+			if (index > _CurrentPlayer.getProgressCards ().Count) 
+			{
+				return;
+			}
+
+			// Get the button component of the child object
+			Button _button = child.GetComponent<Button> ();
+			List<ProgressCardName> _PCards = _CurrentPlayer.getProgressCards ();
+
+			Enums.ProgressCardName _progressCardName = _PCards [index];
+
+			// Get the child of this button child
+			Transform textChild = child.GetChild (0);
+			// Get the text component of this child of the button
+			Text _text = textChild.GetComponent<Text> ();
+
+
+			assignButtonAndText (_progressCardName, _text, _button);
+
+			index++;
+		}
+	}
+
+
+	private void assignButtonAndText(ProgressCardName _pCN, Text p_Text, Button p_Button)
+	{
+		// Remove all listeners at the beginning
+		p_Button.onClick.RemoveAllListeners ();
+
+		switch (_pCN) 
+		{
+		case ProgressCardName.ALCHEMIST:
+			break;
+		case ProgressCardName.BISHOP:
+			break;
+		case ProgressCardName.COMMERCIALHARBOR:
+			break;
+		case ProgressCardName.CONSTITUTION:
+			p_Button.onClick.AddListener ( () => {ProgressCards.instance.constitution();});
+			break;
+		case ProgressCardName.CRANE:
+			break;
+		case ProgressCardName.DESERTER:
+			break;
+		case ProgressCardName.DIPLOMAT:
+			break;
+		case ProgressCardName.ENGINEER:
+			break;
+		case ProgressCardName.INTRIGUE:
+			break;
+		case ProgressCardName.INVENTOR:
+			break;
+		case ProgressCardName.IRRIGATION:
+			break;
+		case ProgressCardName.MASTERMERCHANT:
+			break;
+		case ProgressCardName.MEDICINE:
+			break;
+		case ProgressCardName.MERCHANT:
+			break;
+		case ProgressCardName.MERCHANTFLEET:
+			break;
+		case ProgressCardName.MINING:
+			break;
+		case ProgressCardName.PRINTER:
+			break;
+		case ProgressCardName.RESOURCEMONOPOLY:
+			break;
+		case ProgressCardName.ROADBUILDING:
+			break;
+		case ProgressCardName.SABOTEUR:
+			break;
+		case ProgressCardName.SMITH:
+			break;
+		case ProgressCardName.SPY:
+			break;
+		case ProgressCardName.TRADEMONOPOLY:
+			break;
+		case ProgressCardName.WARLORD:
+			break;
+		case ProgressCardName.WEDDING:
+			break;
+		}
+	}
+
+	/*
+	private void revealAlchemistDiceRollPanel()
+	{
+		if (_CurrentPlayer.getMoveType ()  && GameManager.instance.getGamePhase() == GamePhase.PHASE_TWO) 
+		{
+			_3FishPanel.gameObject.SetActive (true);
+		} 
+
+		else {
+			_3FishPanel.gameObject.SetActive (false);
+		}
+	}*/
 
 	#endregion
+
+	#region Fish Methods
+	public void fish3StealResource(int p_ColorInt)
+	{
+		// If Player doesn't exist
+		List<Player> _Players = GameManager.instance.players;
+
+		// If the requested player color is out of bounds, assume they do not exist. 
+		// return early
+		if (p_ColorInt >= _Players.Count)
+			return;
+		
+		// If the index of currentPlayer's colour and the parameter do match, then return
+		if ((int)_CurrentPlayer.getColor () == p_ColorInt) 
+		{
+			return;
+		}
+			
+		Player oppo  = GameManager.instance.getPlayer(p_ColorInt);
+		bool taken = false;
+		for (int i = 0; i < 5; i++) {
+			if(oppo.getResources()[i] > 0) {
+				_CurrentPlayer.changeResource((ResourceType)i, -1, oppo.getID());
+				taken = true;
+				_CurrentPlayer.changeResource((ResourceType)i, 1, _CurrentPlayer.getID());
+				break;
+			}
+		}
+		if (!taken) {
+			for (int i = 0; i < 3; i++) {
+				if (oppo.getCommodities () [i] > 0) {
+					_CurrentPlayer.changeCommodity ((CommodityType)i, -1, oppo.getID ());
+					_CurrentPlayer.changeCommodity ((CommodityType)i, 1, _CurrentPlayer.getID ());
+					break;
+				}
+			}
+		}
+
+		// Set moveType back to NONE
+		_CurrentPlayer.setMoveType (MoveType.NONE, _CurrentPlayer.getID ());
+	}
+
+
+	/// <summary>
+	/// Increments the resource chosen due to the aqueduct progress card
+	/// </summary>
+	/// <param name="p_Resource">P resource.</param>
+	public void fish4PickResource(int p_Resource)
+	{
+		_CurrentPlayer.changeResource ((ResourceType)p_Resource, 1, _CurrentPlayer.getID());
+
+		_CurrentPlayer.setMoveType (MoveType.NONE, _CurrentPlayer.getID ());
+
+	}
+
+
+	/// <summary>
+	/// Picks the progress card corresponding to the int parameter provided
+	/// </summary>
+	/// <param name="p_ChartType">P chart type.</param>
+	public void fish7PickProgressCard(int p_ChartType)
+	{
+		Bank.instance.withdrawProgressCard ((DevChartType) p_ChartType, _CurrentPlayer.getID ());
+
+		_CurrentPlayer.setMoveType (MoveType.NONE, _CurrentPlayer.getID ());
+	}
+
+	/// <summary>
+	/// Reveals the fish3 panel
+	/// </summary>
+	public void revealFish3()
+	{
+		if (_CurrentPlayer.getMoveType () == MoveType.FISH_3 && GameManager.instance.getGamePhase() == GamePhase.PHASE_TWO) 
+		{
+			_3FishPanel.gameObject.SetActive (true);
+		} 
+
+		else {
+			_3FishPanel.gameObject.SetActive (false);
+		}
+	}
+
+
+
+	/// <summary>
+	/// Reveals the fish4 panel
+	/// </summary>
+	public void revealFish4()
+	{
+		if (_CurrentPlayer.getMoveType () == MoveType.FISH_4 && GameManager.instance.getGamePhase() == GamePhase.PHASE_TWO) 
+		{
+			_4FishPanel.gameObject.SetActive (true);
+		} 
+
+		else 
+		{
+			_4FishPanel.gameObject.SetActive (false);
+		}
+	}
+
+	/// <summary>
+	/// Reveals the fish7 panel
+	/// </summary>
+	public void revealFish7()
+	{
+		if (_CurrentPlayer.getMoveType () == MoveType.FISH_7 && GameManager.instance.getGamePhase() == GamePhase.PHASE_TWO) 
+		{
+			_7FishPanel.gameObject.SetActive (true);
+		} 
+
+		else 
+		{
+			_7FishPanel.gameObject.SetActive (false);
+		}
+	}
+
+	public void uiFish(int p_FishNumber)
+	{
+		switch (p_FishNumber) 
+		{
+		case 2:
+			_CurrentPlayer.setMoveType (MoveType.FISH_2, _CurrentPlayer.getID());
+			break;
+		case 3:
+			_CurrentPlayer.setMoveType (MoveType.FISH_3, _CurrentPlayer.getID());
+			break;
+		case 4:
+			_CurrentPlayer.setMoveType (MoveType.FISH_4, _CurrentPlayer.getID());
+			break;
+		case 5:
+			_CurrentPlayer.setMoveType (MoveType.FISH_5, _CurrentPlayer.getID());
+			break;
+		case 7:
+			_CurrentPlayer.setMoveType (MoveType.FISH_7, _CurrentPlayer.getID());
+			break;
+		default:
+			break;
+		}
+	}
+
+	#endregion
+
 
 	#region Choose Pirate or Robber Panel Methods
 	public void revealChoosePirateRobberPanel()
 	{
-		if (_CurrentPlayer.getSpecial () == Special.CHOOSE_PIRATE_OR_ROBBER) 
+		if (_CurrentPlayer.getSpecial () == Special.CHOOSE_PIRATE_OR_ROBBER && GameManager.instance.getGamePhase() == GamePhase.PHASE_TWO) 
 		{
 			_PirateRobberChoosePanel.gameObject.SetActive (true);
 
@@ -496,6 +790,7 @@ public class UIMoveManager : MonoBehaviour {
 		buildingToggle = !buildingToggle;
 		_BuildingPanel.gameObject.SetActive (buildingToggle);
 		_KnightPanel.gameObject.SetActive (false);
+		_FishPanel.gameObject.SetActive (false);
 	}
 
 	public void toggleKnightsPanel()
@@ -505,6 +800,18 @@ public class UIMoveManager : MonoBehaviour {
 		
 		knightToggle = !knightToggle;
 		_KnightPanel.gameObject.SetActive (knightToggle);
+		_BuildingPanel.gameObject.SetActive (false);
+		_FishPanel.gameObject.SetActive (false);
+	}
+
+	public void toggleFishPanel()
+	{
+		if (GameManager.instance.getGamePhase () == GamePhase.SETUP_ONE || GameManager.instance.getGamePhase () == GamePhase.SETUP_TWO)
+			return;
+
+		fishToggle = !fishToggle;
+		_FishPanel.gameObject.SetActive (fishToggle);
+		_KnightPanel.gameObject.SetActive (false);
 		_BuildingPanel.gameObject.SetActive (false);
 	}
 
@@ -692,5 +999,9 @@ public class UIMoveManager : MonoBehaviour {
 		revealAqueductPanel ();
 		revealUpgradeDevChart ();
 		revealChooseProgressCardPanel ();
+
+		revealFish3 ();
+		revealFish4 ();
+		revealFish7 ();
 	}
 }
