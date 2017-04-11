@@ -144,6 +144,9 @@ public class UIMoveManager : MonoBehaviour {
 		{
 			_ResetButton.gameObject.SetActive (true);
 		}
+
+		else
+			_ResetButton.gameObject.SetActive (false);
 	}
 
 	/// <summary>
