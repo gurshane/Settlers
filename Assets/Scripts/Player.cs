@@ -938,7 +938,7 @@ public class Player : NetworkBehaviour
             else if (moveType == Enums.MoveType.FISH_2)
             {
 
-                if (!pieceHit.tag.Equals("LandHex") && !pieceHit.tag.Equals("IslandHex") && !pieceHit.tag.Equals("WaterHex"))
+                if (!pieceHit.tag.Equals("MainHex") && !pieceHit.tag.Equals("LandHex") && !pieceHit.tag.Equals("IslandHex") && !pieceHit.tag.Equals("WaterHex"))
                 {
                     return;
                 }
@@ -948,10 +948,12 @@ public class Player : NetworkBehaviour
                 bool pirate = false;
 
                 GamePiece thief = h.getOccupyingPiece();
+                Debug.Log("thief");
                 if (!Object.ReferenceEquals(thief, null))
                 {
                     if (thief.getPieceType() == PieceType.ROBBER) robber = true;
                     else if (thief.getPieceType() == PieceType.PIRATE) pirate = true;
+                    Debug.Log("robber " + robber + " pirate " + pirate + " thief " + thief.getPieceType());
                 }
 
                 if (numFish < 2) return;
@@ -1751,13 +1753,13 @@ public class Player : NetworkBehaviour
 
     public void ResetH1(int plyr)
     {
-        CmdResetV1(plyr);
+        CmdResetH1(plyr);
     }
 
     [Command]
     public void CmdResetH1(int plyr)
     {
-        RpcResetV1(plyr);
+        RpcResetH1(plyr);
     }
 
     [ClientRpc]
