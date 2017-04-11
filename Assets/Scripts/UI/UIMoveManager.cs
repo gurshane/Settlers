@@ -98,6 +98,9 @@ public class UIMoveManager : MonoBehaviour {
 
 	[SerializeField]
 	private Transform _TradeMonopolyPanel;
+
+	[SerializeField]
+	private Transform _SaboteurPanel;
 	#endregion
 
 	// -------------------------
@@ -127,6 +130,7 @@ public class UIMoveManager : MonoBehaviour {
 		_UpgradeDevChartPanel.gameObject.SetActive (false);
 		_AlchemistDicePanel.gameObject.SetActive (false);
 		_CraneDevPanel.gameObject.SetActive (false);
+		_SaboteurPanel.gameObject.SetActive (false);
 
 		_ResourceMonopolyPanel.gameObject.SetActive (false);
 		_TradeMonopolyPanel.gameObject.SetActive (false);
@@ -769,6 +773,7 @@ public class UIMoveManager : MonoBehaviour {
 			moveTypeChange(MoveType.PROGRESS_ROAD_BUILDING_1);
 			break;
 		case ProgressCardName.SABOTEUR:
+			ProgressCards.instance.saboteur ();
 			//TODO: Yeah, no
 			break;
 		case ProgressCardName.SMITH:
@@ -781,7 +786,7 @@ public class UIMoveManager : MonoBehaviour {
 			//TODO: Yeah, no
 			break;
 		case ProgressCardName.WARLORD:
-			//TODO: Yeah, no
+			ProgressCards.instance.WarLord ();
 			break;
 		case ProgressCardName.WEDDING:
 			//TODO: Yeah, no
@@ -931,6 +936,58 @@ public class UIMoveManager : MonoBehaviour {
 	}
 
 
+	private void revealSaboteurPanel()
+	{
+		if (_CurrentPlayer.getSpecial () == Special.DISCARD_RESOURCE_SABOTEUR  && GameManager.instance.getGamePhase() == GamePhase.PHASE_TWO ) 
+		{
+			_SaboteurPanel.gameObject.SetActive (true);
+		} 
+
+		else {
+			_SaboteurPanel.gameObject.SetActive (false);
+		}
+	}
+
+	/// <summary>
+	/// Saboteurs player's p_resource by 1
+	/// </summary>
+	/// <param name="p_Resource">P resource.</param>
+	public void saboteurPlayerResource(int p_Resource)
+	{
+		_CurrentPlayer.changeResource ((ResourceType)p_Resource, -1, _CurrentPlayer.getID());
+
+		// If handsize goes lower than half the original hand size when discard began,
+		// close panel, revert turn back to the player who rolled 7
+		if (_CurrentPlayer.getHandSize () <= (originalPlayerHandSum - originalPlayerHandSum / 2)) 
+		{
+			int temp = GameManager.instance.getPlayerTurn ();
+
+			//Debug.Log ("Revert Turn" + GameManager.instance.getPlayerTurn ());
+
+			// Goes to the next player to discard
+			GameManager.instance.sevenShortcut (temp+1);
+		}
+	}
+
+	/// <summary>
+	/// Decrements player's pCommodity by 1
+	/// </summary>
+	/// <param name="p_Commodity">P commodity.</param>
+	public void saboteurPlayerCommodity(int p_Commodity)
+	{
+		_CurrentPlayer.changeCommodity ((CommodityType)p_Commodity, -1, _CurrentPlayer.getID());
+
+		// If handsize goes lower than half the original hand size when discard began,
+		// close panel, revert turn back to the player who rolled 7
+		if (_CurrentPlayer.getHandSize () <= originalPlayerHandSum - originalPlayerHandSum / 2) 
+		{
+			int temp = GameManager.instance.getPlayerTurn ();
+
+			// Goes to the next player to discard
+			GameManager.instance.sevenShortcut (temp+1);
+		}
+
+	}
 
 	public void closeProgressCardPanel()
 	{
@@ -1445,5 +1502,6 @@ public class UIMoveManager : MonoBehaviour {
 		revealCraneUpgradeDevPanel ();
 		revealResourceMonopolyPanel ();
 		revealTradeMonopolyPanel ();
+		revealSaboteurPanel ();
 	}
 }
