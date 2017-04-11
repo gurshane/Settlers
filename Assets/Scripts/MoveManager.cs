@@ -951,6 +951,7 @@ public class MoveManager : NetworkBehaviour {
 			targetLocation.setOccupyingPiece(piece);
 		} else {
 			targetLocation.setOccupyingPiece(new Robber());
+			Debug.Log("ocpiece " + targetLocation.getOccupyingPiece().getPieceType());
 		}
 
 		GameObject newRobber = Instantiate<GameObject>(PrefabHolder.instance.robber, target, Quaternion.identity);
