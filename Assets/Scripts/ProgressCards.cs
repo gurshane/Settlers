@@ -20,6 +20,7 @@ public class ProgressCards : NetworkBehaviour {
     void Start()
     {
         ma = new MoveAuthorizer();
+		pa = new ProgressAuthroizor();
 		graph = new Graph ();
     }
 
@@ -152,6 +153,9 @@ public class ProgressCards : NetworkBehaviour {
 		assignAuthority(server);
         RpcDiplomat(source.transform.position, target.transform.position, color);
 
+		Player current = GameManager.instance.getCurrentPlayer();
+		GameManager.instance.getPersonalPlayer().removeProgressCard(ProgressCardName.DIPLOMAT, current.getID());
+
 		removeAuthority(server);
 		return true;
 	}
@@ -203,6 +207,7 @@ public class ProgressCards : NetworkBehaviour {
 		}
 
 		if (!gone) {
+
 			int currTurn = GameManager.instance.getPlayerTurn();
 			GameManager.instance.getPersonalPlayer().setOldTurn(currTurn);
 
@@ -217,9 +222,11 @@ public class ProgressCards : NetworkBehaviour {
 			GameManager.instance.getPersonalPlayer().SetV1(target, opponent.getID());
 			GameManager.instance.getPersonalPlayer().setSpecialTurn((int)kTarget.getColor());
 		}
+		Player current = GameManager.instance.getCurrentPlayer();
+		GameManager.instance.getPersonalPlayer().removeProgressCard(ProgressCardName.INTRIGUE, current.getID());
+
 		assignAuthority(server);
 		RpcIntrigue(target.transform.position, targetLevel, color);
-
 		removeAuthority(server);
 		return true;
 	}
@@ -238,7 +245,7 @@ public class ProgressCards : NetworkBehaviour {
 
     }
 
-	public bool Crane(Enums.DevChartType dev, int[] commodities, 
+	public bool crane(Enums.DevChartType dev, int[] commodities, 
 		List<GamePiece> pieces, int[] devChart, bool server)
     {
 		// Check if the knight can be upgraded
@@ -326,14 +333,14 @@ public class ProgressCards : NetworkBehaviour {
 			}
 		}
 
+		GameManager.instance.getPersonalPlayer().removeProgressCard(ProgressCardName.CRANE, current.getID());
 
 		return true;
 	}
 
-	public bool engineer(Vertex location, int[] resources,
-		int cityWalls, Enums.Color color, bool server)
+	public bool engineer(Vertex location, int cityWalls, Enums.Color color, bool server)
     {
-		if (!pa.canEngineer (location, resources, cityWalls, color))
+		if (!pa.canEngineer (location, cityWalls, color))
         {
 			return false;
 		}
@@ -344,6 +351,8 @@ public class ProgressCards : NetworkBehaviour {
 		Player current = GameManager.instance.getCurrentPlayer();
 
 		GameManager.instance.getPersonalPlayer().changeCityWallCount(-1, current.getID());
+
+		GameManager.instance.getPersonalPlayer().removeProgressCard(ProgressCardName.ENGINEER, current.getID());
 
 		removeAuthority(server);
 
@@ -370,6 +379,9 @@ public class ProgressCards : NetworkBehaviour {
 
 		assignAuthority(server);
         RpcInventor(source.transform.position, target.transform.position);
+
+		Player current = GameManager.instance.getCurrentPlayer();
+		GameManager.instance.getPersonalPlayer().removeProgressCard(ProgressCardName.INVENTOR, current.getID());
 		removeAuthority(server);
 
         return true;
@@ -387,6 +399,7 @@ public class ProgressCards : NetworkBehaviour {
     }
 
 	public void irrigation(Enums.Color color) {
+
 		foreach(Hex h in BoardState.instance.hexPosition.Values) {
 			if (h.getHexType() != HexType.FIELD) continue;
 			foreach (Vertex v in h.getVertices()) {
@@ -401,6 +414,8 @@ public class ProgressCards : NetworkBehaviour {
 				}
 			}
 		}
+		Player curr = GameManager.instance.getCurrentPlayer();
+		GameManager.instance.getPersonalPlayer().removeProgressCard(ProgressCardName.IRRIGATION, curr.getID());
 	}
 
 	public void mining(Enums.Color color) {
@@ -418,6 +433,9 @@ public class ProgressCards : NetworkBehaviour {
 				}
 			}
 		}
+
+		Player curr = GameManager.instance.getCurrentPlayer();
+		GameManager.instance.getPersonalPlayer().removeProgressCard(ProgressCardName.MINING, curr.getID());
 	}
 
 	// Get a unity color from an enums color
@@ -482,6 +500,8 @@ public class ProgressCards : NetworkBehaviour {
         GameManager.instance.getPersonalPlayer().changeResource(Enums.ResourceType.ORE, -2, current.getID());
         Bank.instance.depositResource(Enums.ResourceType.ORE, 2, current.isServer);
 
+		GameManager.instance.getPersonalPlayer().removeProgressCard(ProgressCardName.MEDICINE, current.getID());
+
 		removeAuthority(server);
 
         return true;
@@ -526,6 +546,9 @@ public class ProgressCards : NetworkBehaviour {
 		assignAuthority(server);
 
 		RpcRoadBuilding(location.transform.position, color);
+
+		Player current = GameManager.instance.getCurrentPlayer();
+		GameManager.instance.getPersonalPlayer().removeProgressCard(ProgressCardName.ROADBUILDING, current.getID());
 
 		removeAuthority(server);
 		

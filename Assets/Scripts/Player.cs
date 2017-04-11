@@ -9,6 +9,7 @@ public class Player : NetworkBehaviour {
     public GameObject myHud;
 
 	private MoveAuthorizer ma;
+    private ProgressAuthroizor pa;
     private Graph graph;
 
     public int[] resourcesOffered;
@@ -73,6 +74,7 @@ public class Player : NetworkBehaviour {
     //For moves
     public Vertex v1 = null;
     public Edge e1 = null;
+    public Hex h1 = null;
 
     [SyncVar]
     public int i1 = 0;
@@ -177,6 +179,7 @@ public class Player : NetworkBehaviour {
         this.opponent = -1;
 
 		this.ma = new MoveAuthorizer ();
+        this.pa = new ProgressAuthroizor();
         this.graph = new Graph();
 
 
@@ -769,7 +772,86 @@ public class Player : NetworkBehaviour {
                     CmdBishop (h.transform.position);
                     moveType = Enums.MoveType.NONE;
                 }
-			} 
+			} else if (moveType == Enums.MoveType.PROGRESS_DIPLOMAT) {
+                if (!pieceHit.tag.Equals("Edge")) {
+					return;
+				}
+                Edge e = pieceHit.GetComponent<Edge>();
+
+                if (Object.ReferenceEquals(e1, null)) {
+                    SetE1(e, getID());
+                } else {
+                    if (pa.canRoadMove(e1, e, this.myColor)) {
+                        CmdDiplomat (e.transform.position);
+                        moveType = Enums.MoveType.NONE;
+                    }
+                }
+            } else if (moveType == Enums.MoveType.PROGRESS_INTRIGUE) {
+
+				if (!pieceHit.tag.Equals("Vertex")) {
+					return;
+				}
+                Vertex v = pieceHit.GetComponent<Vertex>();
+                if (pa.canIntrigueKnight(v, this.myColor)) {
+                    CmdIntrigue (v.transform.position);
+                    moveType = Enums.MoveType.NONE;
+                }
+            } else if (moveType == Enums.MoveType.PROGRESS_ENGINEER) {
+
+				if (!pieceHit.tag.Equals("Vertex")) {
+					return;
+				}
+                Vertex v = pieceHit.GetComponent<Vertex>();
+                if (pa.canEngineer(v, this.cityWallsLeft, this.myColor)) {
+                    CmdIntrigue (v.transform.position);
+                    moveType = Enums.MoveType.NONE;
+                }
+            } else if (moveType == Enums.MoveType.PROGRESS_INVENTOR) {
+
+				if (!pieceHit.tag.Equals("Hex")) {
+					return;
+				}
+                Hex h = pieceHit.GetComponent<Hex>();
+
+                if (Object.ReferenceEquals(h1, null)) {
+                    SetH1(h, getID());
+                } else {
+                    if (pa.canInventor(h1, h)) {
+                        CmdInventor (h.transform.position);
+                        moveType = Enums.MoveType.NONE;
+                    }
+                }
+			} else if (moveType == Enums.MoveType.PROGRESS_MEDICINE) {
+
+				if (!pieceHit.tag.Equals("Vertex")) {
+					return;
+				}
+                Vertex v = pieceHit.GetComponent<Vertex>();
+                if (pa.canMedicine(v, this.resources, this.pieces, this.myColor)) {
+                    CmdMedicine (v.transform.position);
+                    moveType = Enums.MoveType.NONE;
+                }
+            } else if (moveType == Enums.MoveType.PROGRESS_ROAD_BUILDING_1) {
+
+				if (!pieceHit.tag.Equals("Edge")) {
+					return;
+				}
+                Edge e = pieceHit.GetComponent<Edge>();
+                if (pa.canRoadBuilding(e, this.pieces, this.myColor)) {
+                    CmdRoadBuilding (e.transform.position);
+                    moveType = Enums.MoveType.PROGRESS_ROAD_BUILDING_2;
+                }
+            } else if (moveType == Enums.MoveType.PROGRESS_ROAD_BUILDING_2) {
+
+				if (!pieceHit.tag.Equals("Edge")) {
+					return;
+				}
+                Edge e = pieceHit.GetComponent<Edge>();
+                if (pa.canRoadBuilding(e, this.pieces, this.myColor)) {
+                    CmdRoadBuilding (e.transform.position);
+                    moveType = Enums.MoveType.NONE;
+                }
+            }
         }
     }
 
@@ -1253,6 +1335,23 @@ public class Player : NetworkBehaviour {
     public void RpcResetV1(int plyr)
     {
         GameManager.instance.getPlayer(plyr).v1 = null;
+    }
+
+    public void SetH1(Hex hReplace, int plyr)
+    {
+        CmdSetH1(hReplace.transform.position, plyr);
+    }
+
+    [Command]
+    public void CmdSetH1(Vector3 hReplace, int plyr)
+    {
+        RpcSetH1(hReplace, plyr);
+    }
+
+    [ClientRpc]
+    public void RpcSetH1(Vector3 hReplace, int plyr)
+    {
+        GameManager.instance.getPlayer(plyr).h1 = BoardState.instance.hexPosition[hReplace];
     }
 
     public void SetE1(Edge eReplace, int plyr)
@@ -1815,6 +1914,11 @@ public class Player : NetworkBehaviour {
     }
 
     [Command]
+    public void CmdCrane(Enums.DevChartType dev) {
+        ProgressCards.instance.crane(dev, this.commodities, this.pieces, this.devFlipChart, this.isServer);
+    }
+
+    [Command]
 	public void CmdBuildCity(Vector3 location) {
         Debug.Log("hello3");
 		MoveManager.instance.buildCity (BoardState.instance.vertexPosition [location], this.resources, this.pieces, this.myColor, this.isServer);
@@ -1858,6 +1962,36 @@ public class Player : NetworkBehaviour {
     [Command]
     public void CmdBishop(Vector3 location) {
 		ProgressCards.instance.bishop (BoardState.instance.hexPosition [location], this.myColor, isServer);        
+    }
+
+    [Command]
+    public void CmdDiplomat(Vector3 location) {
+		ProgressCards.instance.diplomat (e1, BoardState.instance.edgePosition [location], this.myColor, isServer);        
+    }
+
+    [Command]
+    public void CmdRoadBuilding(Vector3 location) {
+		ProgressCards.instance.roadBuilding (BoardState.instance.edgePosition [location], this.pieces, this.myColor, isServer);        
+    }
+
+    [Command]
+    public void CmdIntrigue(Vector3 location) {
+		ProgressCards.instance.intrigue (BoardState.instance.vertexPosition [location], this.myColor, isServer);        
+    }
+
+    [Command]
+    public void CmdEngineer(Vector3 location) {
+		ProgressCards.instance.engineer (BoardState.instance.vertexPosition [location], this.cityWallsLeft, this.myColor, isServer);        
+    }
+
+    [Command]
+    public void CmdMedicine (Vector3 location) {
+		ProgressCards.instance.medicine (BoardState.instance.vertexPosition [location], this.resources, this.pieces, this.myColor, isServer);        
+    }
+
+    [Command]
+    public void CmdInventor(Vector3 location) {
+		ProgressCards.instance.inventor (h1, BoardState.instance.hexPosition [location], isServer);        
     }
 
     [Command]

@@ -224,8 +224,7 @@ public class ProgressAuthroizor {
         return true;
     }
 
-	public bool canEngineer(Vertex location, int[] resources,
-        int cityWalls, Enums.Color color)
+	public bool canEngineer(Vertex location, int cityWalls, Enums.Color color)
     {
 
         GamePiece city = location.getOccupyingPiece();
