@@ -404,7 +404,7 @@ public class ProgressCards : NetworkBehaviour {
 			if (h.getHexType() != HexType.FIELD) continue;
 			foreach (Vertex v in h.getVertices()) {
 				GamePiece piece = v.getOccupyingPiece();
-				if(Object.ReferenceEquals(piece, null)) {
+				if(!Object.ReferenceEquals(piece, null)) {
 					if (piece.getColor() == color) {
 						Player current = GameManager.instance.getCurrentPlayer();
 						GameManager.instance.getPersonalPlayer().changeResource(ResourceType.GRAIN, 2, current.getID());
@@ -423,7 +423,7 @@ public class ProgressCards : NetworkBehaviour {
 			if (h.getHexType() != HexType.MOUNTAIN) continue;
 			foreach (Vertex v in h.getVertices()) {
 				GamePiece piece = v.getOccupyingPiece();
-				if(Object.ReferenceEquals(piece, null)) {
+				if(!Object.ReferenceEquals(piece, null)) {
 					if (piece.getColor() == color) {
 						Player current = GameManager.instance.getCurrentPlayer();
 						GameManager.instance.getPersonalPlayer().changeResource(ResourceType.ORE, 2, current.getID());
