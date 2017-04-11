@@ -584,7 +584,7 @@ public class ProgressCards : NetworkBehaviour {
     public void WarLord()
     {
         Player current = GameManager.instance.getCurrentPlayer();
-        current.activateKnights();
+        current.activateKnights(current.getID());
 
         GameManager.instance.getPersonalPlayer().removeProgressCard(ProgressCardName.WARLORD, current.getID());
     }
