@@ -1386,13 +1386,15 @@ public class MoveManager : NetworkBehaviour {
             {
                 meshRend.material.SetColor("_Color", translateColor(color));
             }
-			break;
+            knight.transform.position += new Vector3(0f, 8f, 0f);
+            break;
 		case 3:
 			knight = Instantiate<GameObject> (PrefabHolder.instance.levelThreeKnight, location, Quaternion.identity);
             foreach (MeshRenderer meshRend in knight.GetComponentsInChildren<MeshRenderer>())
             {
                 meshRend.material.SetColor("_Color", translateColor(color));
             }
+            knight.transform.position += new Vector3(0f, 10f, 0f);
             break;
 		default:
 			knight = null;
