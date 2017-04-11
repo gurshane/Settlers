@@ -180,6 +180,7 @@ public class GameManager : NetworkBehaviour {
             gamePhase = Enums.GamePhase.PHASE_ONE;
 		}
 
+        GameManager.instance.getPersonalPlayer().setOldTurn(this.playerTurn);
         removeAuthority(server);
     }
 

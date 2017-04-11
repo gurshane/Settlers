@@ -581,19 +581,7 @@ public class ProgressCards : NetworkBehaviour {
         //Update longest route
     }
 
-    public void Smith()
-    {
-        Player current = GameManager.instance.getCurrentPlayer();
-    }
-
-    public void WarLord()//call this from player 
-    {//assumes all clients and servers have an up to date representation of all player's pieces 
-        CmdWarLord();
-        RpcWarLord();
-    }
-
-    [Command]
-    public void CmdWarLord()
+    public void WarLord()
     {
         Player current = GameManager.instance.getCurrentPlayer();
         List<GamePiece> pieces = current.getGamePieces();
@@ -605,20 +593,50 @@ public class ProgressCards : NetworkBehaviour {
                 n.activateKnight();
             }
         }
+
+		GameManager.instance.getPersonalPlayer().removeProgressCard(ProgressCardName.WARLORD, current.getID());
     }
 
-    public void RpcWarLord()
-    {
-        Player current = GameManager.instance.getCurrentPlayer();
-        List<GamePiece> pieces = current.getGamePieces();
-        for (int i = 0; i < pieces.Count; i++)
+	public void saboteur() {
+
+		Player current = GameManager.instance.getCurrentPlayer();
+		GameManager.instance.getPersonalPlayer().removeProgressCard(ProgressCardName.SABOTEUR, current.getID());
+
+		GameManager.instance.getPersonalPlayer().setOldTurn(GameManager.instance.getPlayerTurn());
+
+		saboteurDiscard(0);	
+	}
+
+	public void saboteurShortcut(int start) {
+		saboteurDiscard(start);
+	}
+
+	private void saboteurDiscard(int start) {
+
+		List<Player> players = GameManager.instance.getPlayers();
+
+        for (int i = start; i < players.Count; i++)
         {
-            if (pieces[i] is Knight && pieces[i].isOnBoard())
-            {
-                Knight n = (Knight)pieces[i];
-                n.activateKnight();
-            }
-        }
-    }
+            Player p = players[i];
+            if (p.getVictoryCounts() > GameManager.instance.getPlayer(GameManager.instance.getPersonalPlayer().getOldTurn()).getVictoryCounts() ){
 
+                foreach (Player p2 in players) {
+                    GameManager.instance.getPersonalPlayer().setMoveType(MoveType.SPECIAL, p2.getID());
+                }
+
+                GameManager.instance.getPersonalPlayer().setSpecial(Special.DISCARD_RESOURCE_SABOTEUR, p.getID());
+                foreach (Player p2 in players) {
+                    if(!Object.ReferenceEquals(p, p2)) GameManager.instance.getPersonalPlayer().setSpecial(Special.NONE, p2.getID());
+                }
+                GameManager.instance.getPersonalPlayer().setSpecialTurn(p.getID());
+                return;
+            }
+		}
+		
+		foreach(Player p in GameManager.instance.getPlayers()) {
+			GameManager.instance.getPersonalPlayer().setMoveType(MoveType.NONE, p.getID());
+			GameManager.instance.getPersonalPlayer().setSpecial(Special.NONE, p.getID());
+		}
+		GameManager.instance.getPersonalPlayer().revertTurn();
+	}
 }
