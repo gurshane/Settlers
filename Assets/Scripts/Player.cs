@@ -831,6 +831,7 @@ public class Player : NetworkBehaviour {
 				}
                 Vertex v = pieceHit.GetComponent<Vertex>();
                 if (pa.canMedicine(v, this.resources, this.pieces, this.myColor)) {
+                    Debug.Log("medicine " + v);
                     CmdMedicine (v.transform.position);
                     moveType = Enums.MoveType.NONE;
                 }
@@ -2053,6 +2054,8 @@ public class Player : NetworkBehaviour {
 
     [Command]
     public void CmdMedicine (Vector3 location) {
+        Debug.Log("cmdmedicine " + location);
+        Debug.Log("cmdmedicine " + BoardState.instance.vertexPosition [location]);
 		ProgressCards.instance.medicine (BoardState.instance.vertexPosition [location], this.resources, this.pieces, this.myColor, isServer);        
     }
 

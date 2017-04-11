@@ -581,4 +581,18 @@ public class ProgressCards : NetworkBehaviour {
         //Update longest route
     }
 
+    public void WarLord()
+    {
+        Player current = GameManager.instance.getCurrentPlayer();
+        List<GamePiece> pieces = current.getGamePieces();
+        for (int i = 0; i<pieces.Count; i++)
+        {
+            if (pieces[i] is Knight && pieces[i].isOnBoard())
+            {
+                Knight n = (Knight)pieces[i];
+                n.activateKnight();
+            }
+        }
+    }
+
 }

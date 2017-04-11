@@ -135,15 +135,18 @@ public class UIMoveManager : MonoBehaviour {
 
 	private void revealResetButton()
 	{
-		bool playerVCheck = GameObject.ReferenceEquals (_CurrentPlayer.v1, null);
-		bool playerECheck = GameObject.ReferenceEquals (_CurrentPlayer.e1, null);
-		bool playerHCheck = GameObject.ReferenceEquals (_CurrentPlayer.h1, null);
+		bool playerVCheck = !GameObject.ReferenceEquals (_CurrentPlayer.v1, null);
+		bool playerECheck = !GameObject.ReferenceEquals (_CurrentPlayer.e1, null);
+		bool playerHCheck = !GameObject.ReferenceEquals (_CurrentPlayer.h1, null);
 
 		// If any one of the player attributes is null, reveal the reset button
 		if (playerVCheck || playerECheck || playerHCheck) 
 		{
 			_ResetButton.gameObject.SetActive (true);
 		}
+
+		else
+			_ResetButton.gameObject.SetActive (false);
 	}
 
 	/// <summary>
