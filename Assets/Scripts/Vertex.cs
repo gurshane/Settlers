@@ -14,7 +14,7 @@ public class Vertex : BoardPiece {
 
     public bool hasWall;
     private bool adjacentToRobber;
-    private int chits;
+    public int chits;
 	private int visited;
 
 	public Vertex(Enums.TerrainType terrain) : base (terrain) {
