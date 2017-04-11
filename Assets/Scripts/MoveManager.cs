@@ -632,7 +632,10 @@ public class MoveManager : NetworkBehaviour {
 		GameObject spawnedCityWall = Instantiate<GameObject>(PrefabHolder.instance.cityWithCityWall, location, Quaternion.identity);
         fixPieceRotationAndPosition(spawnedCityWall);
         spawnedCityWall.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
-        spawnedCityWall.GetComponentInChildren<MeshRenderer>().material.SetColor("_Color", translateColor(color));
+        foreach(MeshRenderer meshRend in spawnedCityWall.GetComponentsInChildren<MeshRenderer>())
+        {
+            meshRend.material.SetColor("_Color", translateColor(color));
+        }
 
         BoardState.instance.spawnedObjects.Add(location, spawnedCityWall);
 
@@ -670,7 +673,6 @@ public class MoveManager : NetworkBehaviour {
     {
 		Vertex source = BoardState.instance.vertexPosition[location];
 		GameObject spawnedKnight = getKnightFromLevel(1, location, color);
-        spawnedKnight.transform.position += new Vector3(0f, 10f, 0f);
 		BoardState.instance.spawnedObjects.Add(location, spawnedKnight);
 
 		Player current = GameManager.instance.getCurrentPlayer();
