@@ -711,7 +711,14 @@ public class GameManager : NetworkBehaviour {
             // If a hex isn't the right number, or doesn't produce cards, continue
             if (h.getHexNumber() != num)
             {
-                continue;
+                if(h.isLake && (num == 11 || num == 12 || num == 2 || num == 3))
+                {
+                    //generate fish
+                }
+                else
+                {
+                    continue;
+                }
             }
 
             if (Object.ReferenceEquals(h, robberLocation))
