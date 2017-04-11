@@ -444,7 +444,7 @@ public class UIMoveManager : MonoBehaviour {
 	#region Progress Card Methods
 	public void revealAqueductPanel()
 	{
-		if (_CurrentPlayer.getSpecial () == Special.AQUEDUCT && GameManager.instance.getGamePhase() == GamePhase.PHASE_TWO) 
+		if (_CurrentPlayer.getSpecial () == Special.AQUEDUCT) 
 		{
 			_AqueductPanel.gameObject.SetActive (true);
 		} 
