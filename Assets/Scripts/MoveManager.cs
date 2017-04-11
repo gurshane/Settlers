@@ -496,6 +496,12 @@ public class MoveManager : NetworkBehaviour {
 		}
     }
 
+    public bool tradeWithBank()
+    {
+        return false;
+
+    }
+
 	public bool chooseMetropolis (Vertex location, Enums.Color color, Enums.DevChartType dev, bool server)
     {
 

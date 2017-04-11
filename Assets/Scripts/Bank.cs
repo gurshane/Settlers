@@ -374,9 +374,9 @@ public class Bank : NetworkBehaviour {
 		int[] resWanted = trade.getResourcesWanted();
 		int[] comOffered = trade.getCommoditiesOffered();
 		int[] comWanted = trade.getCommoditiesWanted();
-
-		Player trader = trade.getPlayerOffering();
-		int tradeId = trader.getID ();
+        
+        Player trader = GameManager.instance.getCurrentPlayer();
+        int tradeId = trader.getID ();
 		int gold = trade.getGoldOffered ();
 
 		// Update all relevent fields

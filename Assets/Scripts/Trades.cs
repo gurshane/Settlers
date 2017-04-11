@@ -4,13 +4,13 @@ using UnityEngine;
 
 public class Trades : MonoBehaviour {
 
-    private int[] resourcesOffered;
-    private int[] commoditiesOffered;
-    private int[] resourcesWanted;
-    private int[] commoditiesWanted;
-    private int goldOffered;
-    private int goldWanted;
-    private Player offering;
+    public int[] resourcesOffered;
+    public int[] commoditiesOffered;
+    public int[] resourcesWanted;
+    public int[] commoditiesWanted;
+    public int goldOffered;
+    public int goldWanted;
+    public int offering;
 
     public int [] getResourcesOffered()
     {
@@ -42,7 +42,7 @@ public class Trades : MonoBehaviour {
         return goldWanted;
     }
 
-    public Player getPlayerOffering()
+    public int getPlayerOffering()
     {
         return offering;
     }
