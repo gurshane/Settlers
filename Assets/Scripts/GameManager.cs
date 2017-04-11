@@ -736,11 +736,7 @@ public class GameManager : NetworkBehaviour {
 
             Enums.ResourceType res = getResourceFromHex(hType);
             Enums.CommodityType com = getCommodityFromHex(hType);
-            if (res == Enums.ResourceType.NONE && hType != Enums.HexType.DESERT)
-            {
-                continue;
-            }
-
+            
             // Distribute all the resources
             foreach (Vertex v in h.getVertices())
             {
@@ -783,7 +779,7 @@ public class GameManager : NetworkBehaviour {
                     Player p = getPlayer(ownerColor);
                     if(hType == Enums.HexType.DESERT)
                     {
-                        Debug.Log("fish");
+                        Debug.Log("many fish");
                         int numFish = Bank.instance.getFishTokens(p.isServer);
                         getPersonalPlayer().changeFishCount(numFish, p.getID());
                         playerAqueducts[p.getID()] = false;
