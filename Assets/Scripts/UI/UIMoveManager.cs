@@ -376,7 +376,7 @@ public class UIMoveManager : MonoBehaviour {
 	/// Reveals the choose progress card panel at the proper player state
 	/// and hides otherwise
 	/// </summary>
-	public void revealChooseProgressCardPanel()
+	public void revealChooseProgressCardPanelBarbarian()
 	{
 		if (_CurrentPlayer.getSpecial () == Special.CHOOSE_PROGRESS_PILE && GameManager.instance.getGamePhase() == GamePhase.PHASE_TWO) 
 		{
@@ -1054,8 +1054,14 @@ public class UIMoveManager : MonoBehaviour {
 
 		switch (p_Special) 
 		{
+		case Special.AQUEDUCT:
+			rString = "Aqueduct";
+			break;
 		case Special.CHOOSE_DESTROYED_CITY:
 			rString = "Choose City to Destroy";
+			break;
+		case Special.CHOOSE_METROPOLIS:
+			rString = "Choose Metropolis";
 			break;
 		case Special.CHOOSE_OPPONENT_RESOURCES:
 			rString = "Choose Opponent Resources";
@@ -1117,7 +1123,7 @@ public class UIMoveManager : MonoBehaviour {
 		revealChoosePirateRobberPanel ();
 		revealAqueductPanel ();
 		revealUpgradeDevChart ();
-		revealChooseProgressCardPanel ();
+		revealChooseProgressCardPanelBarbarian ();
 
 		revealFish3 ();
 		revealFish4 ();
