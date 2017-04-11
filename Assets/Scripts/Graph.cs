@@ -543,6 +543,75 @@ public class Graph
         return false;
     }
 
+    // Check if a ship is closed
+    public bool isClosedRoad(Edge edge, Enums.Color color)
+    {
+        Vertex left = edge.getLeftVertex();
+        Vertex right = edge.getRightVertex();
+
+        bool leftClosed = false;
+        bool rightClosed = false;
+
+        // Check if a ship is closed on its left side
+        foreach (Edge e in left.getNeighbouringEdges())
+        {
+            if (Object.ReferenceEquals(e, edge))
+            {
+                continue;
+            }
+
+            GamePiece piece = e.getOccupyingPiece();
+            if (Object.ReferenceEquals(piece, null))
+            {
+                continue;
+            }
+            if (piece.getColor() == color)
+            {
+                if (piece.getPieceType() == Enums.PieceType.ROAD)
+                {
+                    Road road = (Road)piece;
+                    if (!road.getIsShip())
+                    {
+                        leftClosed = true;
+                    }
+                }
+            }
+        }
+
+        // Check if a ship is closed on its right side
+        foreach (Edge e in right.getNeighbouringEdges())
+        {
+            if (Object.ReferenceEquals(e, edge))
+            {
+                continue;
+            }
+
+            GamePiece piece = e.getOccupyingPiece();
+            if (Object.ReferenceEquals(piece, null))
+            {
+                continue;
+            }
+            if (piece.getColor() == color)
+            {
+                if (piece.getPieceType() == Enums.PieceType.ROAD)
+                {
+                    Road road = (Road)piece;
+                    if (!road.getIsShip())
+                    {
+                        rightClosed = true;
+                    }
+                }
+            }
+        }
+
+        // If both sides are closed, the ship is closed
+        if (leftClosed && rightClosed)
+        {
+            return true;
+        }
+        return false;
+    }
+
     // Reset all the vertices
     public void edgeReset(Edge e)
     {
