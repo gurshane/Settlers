@@ -804,7 +804,7 @@ public class MoveManager : NetworkBehaviour {
         Edge edge = BoardState.instance.edgePosition[location];
 		GameObject spawnedBoat = Instantiate<GameObject>(PrefabHolder.instance.boat, location, Quaternion.identity);
 
-        spawnedBoat.transform.position += new Vector3(0f, 10f, 0f);
+        spawnedBoat.transform.position += new Vector3(0f, 5f, 0f);
         if (edge.isRightPointing)
         {
             spawnedBoat.transform.Rotate(0f, 60f, 0f);
@@ -858,7 +858,7 @@ public class MoveManager : NetworkBehaviour {
         Edge targetPiece = BoardState.instance.edgePosition [target];
 
 		GameObject spawnedBoat = Instantiate<GameObject>(PrefabHolder.instance.boat, target, Quaternion.identity);
-        spawnedBoat.transform.position += new Vector3(0f, 10f, 0f);
+        spawnedBoat.transform.position += new Vector3(0f, 5f, 0f);
         if (targetPiece.isRightPointing)
         {
             spawnedBoat.transform.Rotate(0f, 60f, 0f);
@@ -1224,7 +1224,7 @@ public class MoveManager : NetworkBehaviour {
         Edge edge = BoardState.instance.edgePosition[location];
 		GameObject spawnedBoat = Instantiate<GameObject>(PrefabHolder.instance.boat, location, Quaternion.identity);
 
-        spawnedBoat.transform.position += new Vector3(0f, 10f, 0f);
+        spawnedBoat.transform.position += new Vector3(0f, 5f, 0f);
         if (edge.isRightPointing)
         {
             spawnedBoat.transform.Rotate(0f, 60f, 0f);
@@ -1400,7 +1400,7 @@ public class MoveManager : NetworkBehaviour {
 			knight = null;
 			break;
 		}
-        knight.transform.position += new Vector3(0f, 13f, 0f);
+        knight.transform.position += new Vector3(0f, 5f, 0f);
         return knight;
 	}
 		
