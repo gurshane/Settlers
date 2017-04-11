@@ -414,7 +414,8 @@ public class UIMoveManager : MonoBehaviour {
 		_CurrentPlayer.CmdUpgradeDevelopmentChart((DevChartType) p_ChartType);
 
 		// Set movetype to none afterwards
-		_CurrentPlayer.setMoveType (MoveType.NONE, _CurrentPlayer.getID ());
+		moveTypeChange(MoveType.NONE);
+		//_CurrentPlayer.setMoveType (MoveType.NONE, _CurrentPlayer.getID ());
 
 	}
 
@@ -423,7 +424,8 @@ public class UIMoveManager : MonoBehaviour {
 	/// </summary>
 	public void setNoneMoveType()
 	{
-		_CurrentPlayer.setMoveType (MoveType.NONE, _CurrentPlayer.getID ());
+		moveTypeChange(MoveType.NONE);
+		//_CurrentPlayer.setMoveType (MoveType.NONE, _CurrentPlayer.getID ());
 	}
 
 	/// <summary>
@@ -524,11 +526,13 @@ public class UIMoveManager : MonoBehaviour {
 		{
 		case ProgressCardName.ALCHEMIST:
 			p_Text.text = "Alchemist";
-			_CurrentPlayer.setMoveType (MoveType.PROGRESS_ALCHEMIST, _CurrentPlayer.getID ());
+			moveTypeChange(MoveType.PROGRESS_ALCHEMIST);
+			//_CurrentPlayer.setMoveType (MoveType.PROGRESS_ALCHEMIST, _CurrentPlayer.getID ());
 			break;
 		case ProgressCardName.BISHOP:
 			p_Text.text = "Bishop";
-			_CurrentPlayer.setMoveType (MoveType.PROGRESS_BISHOP, _CurrentPlayer.getID ());
+			moveTypeChange(MoveType.PROGRESS_BISHOP);
+			//_CurrentPlayer.setMoveType (MoveType.PROGRESS_BISHOP, _CurrentPlayer.getID ());
 			break;
 		case ProgressCardName.COMMERCIALHARBOR:
 			//TODO : Yeah, no
@@ -539,26 +543,31 @@ public class UIMoveManager : MonoBehaviour {
 			break;
 		case ProgressCardName.CRANE:
 			p_Text.text = "Crane";
-			_CurrentPlayer.setMoveType (MoveType.PROGRESS_CRANE, _CurrentPlayer.getID ());
+			moveTypeChange(MoveType.PROGRESS_CRANE);
+			//_CurrentPlayer.setMoveType (MoveType.PROGRESS_CRANE, _CurrentPlayer.getID ());
 			break;
 		case ProgressCardName.DESERTER:
 			//TODO: Yeah, no
 			break;
 		case ProgressCardName.DIPLOMAT:
 			p_Text.text = "Diplomat";
-			_CurrentPlayer.setMoveType (MoveType.PROGRESS_DIPLOMAT, _CurrentPlayer.getID ());
+			moveTypeChange(MoveType.PROGRESS_DIPLOMAT);
+			//_CurrentPlayer.setMoveType (MoveType.PROGRESS_DIPLOMAT, _CurrentPlayer.getID ());
 			break;
 		case ProgressCardName.ENGINEER:
 			p_Text.text = "Engineer";
-			_CurrentPlayer.setMoveType (MoveType.PROGRESS_ENGINEER, _CurrentPlayer.getID ());
+			moveTypeChange(MoveType.PROGRESS_ENGINEER);
+			//_CurrentPlayer.setMoveType (MoveType.PROGRESS_ENGINEER, _CurrentPlayer.getID ());
 			break;
 		case ProgressCardName.INTRIGUE:
 			p_Text.text = "Intrigue";
-			_CurrentPlayer.setMoveType (MoveType.PROGRESS_INTRIGUE, _CurrentPlayer.getID ());
+			moveTypeChange(MoveType.PROGRESS_INTRIGUE);
+			//_CurrentPlayer.setMoveType (MoveType.PROGRESS_INTRIGUE, _CurrentPlayer.getID ());
 			break;
 		case ProgressCardName.INVENTOR:
 			p_Text.text = "Inventor";
-			_CurrentPlayer.setMoveType (MoveType.PROGRESS_INVENTOR, _CurrentPlayer.getID ());
+			moveTypeChange(MoveType.PROGRESS_INVENTOR);
+			//_CurrentPlayer.setMoveType (MoveType.PROGRESS_INVENTOR, _CurrentPlayer.getID ());
 			break;
 		case ProgressCardName.IRRIGATION:
 			p_Text.text = "Irrigation";
@@ -569,7 +578,8 @@ public class UIMoveManager : MonoBehaviour {
 			break;
 		case ProgressCardName.MEDICINE:
 			p_Text.text = "Medicine";
-			_CurrentPlayer.setMoveType (MoveType.PROGRESS_MEDICINE, _CurrentPlayer.getID ());
+			moveTypeChange(MoveType.PROGRESS_MEDICINE);
+			//_CurrentPlayer.setMoveType (MoveType.PROGRESS_MEDICINE, _CurrentPlayer.getID ());
 			break;
 		case ProgressCardName.MERCHANT:
 			//TODO: Yeah, no
@@ -645,7 +655,8 @@ public class UIMoveManager : MonoBehaviour {
 		_CurrentPlayer.CmdUpgradeDevelopmentChart((DevChartType) p_ChartType);
 
 		// Set movetype to none afterwards
-		_CurrentPlayer.setMoveType (MoveType.NONE, _CurrentPlayer.getID ());
+		moveTypeChange(MoveType.NONE);
+		//_CurrentPlayer.setMoveType (MoveType.NONE, _CurrentPlayer.getID ());
 
 	}
 
@@ -696,7 +707,8 @@ public class UIMoveManager : MonoBehaviour {
 		}
 
 		// Set moveType back to NONE
-		_CurrentPlayer.setMoveType (MoveType.NONE, _CurrentPlayer.getID ());
+		moveTypeChange(MoveType.NONE);
+		//_CurrentPlayer.setMoveType (MoveType.NONE, _CurrentPlayer.getID ());
 	}
 
 
@@ -708,7 +720,8 @@ public class UIMoveManager : MonoBehaviour {
 	{
 		_CurrentPlayer.changeResource ((ResourceType)p_Resource, 1, _CurrentPlayer.getID());
 
-		_CurrentPlayer.setMoveType (MoveType.NONE, _CurrentPlayer.getID ());
+		moveTypeChange(MoveType.NONE);
+		//_CurrentPlayer.setMoveType (MoveType.NONE, _CurrentPlayer.getID ());
 
 	}
 
@@ -721,7 +734,8 @@ public class UIMoveManager : MonoBehaviour {
 	{
 		Bank.instance.withdrawProgressCard ((DevChartType) p_ChartType, _CurrentPlayer.getID ());
 
-		_CurrentPlayer.setMoveType (MoveType.NONE, _CurrentPlayer.getID ());
+		moveTypeChange(MoveType.NONE);
+		//_CurrentPlayer.setMoveType (MoveType.NONE, _CurrentPlayer.getID ());
 	}
 
 	/// <summary>
@@ -778,19 +792,24 @@ public class UIMoveManager : MonoBehaviour {
 		switch (p_FishNumber) 
 		{
 		case 2:
-			_CurrentPlayer.setMoveType (MoveType.FISH_2, _CurrentPlayer.getID());
+			moveTypeChange(MoveType.FISH_2);
+			//_CurrentPlayer.setMoveType (MoveType.FISH_2, _CurrentPlayer.getID());
 			break;
 		case 3:
-			_CurrentPlayer.setMoveType (MoveType.FISH_3, _CurrentPlayer.getID());
+			moveTypeChange(MoveType.FISH_3);
+			//_CurrentPlayer.setMoveType (MoveType.FISH_3, _CurrentPlayer.getID());
 			break;
 		case 4:
-			_CurrentPlayer.setMoveType (MoveType.FISH_4, _CurrentPlayer.getID());
+			moveTypeChange(MoveType.FISH_4);
+			//_CurrentPlayer.setMoveType (MoveType.FISH_4, _CurrentPlayer.getID());
 			break;
 		case 5:
-			_CurrentPlayer.setMoveType (MoveType.FISH_5, _CurrentPlayer.getID());
+			moveTypeChange(MoveType.FISH_5);
+			//_CurrentPlayer.setMoveType (MoveType.FISH_5, _CurrentPlayer.getID());
 			break;
 		case 7:
-			_CurrentPlayer.setMoveType (MoveType.FISH_7, _CurrentPlayer.getID());
+			moveTypeChange(MoveType.FISH_7);
+			//_CurrentPlayer.setMoveType (MoveType.FISH_7, _CurrentPlayer.getID());
 			break;
 		default:
 			break;
