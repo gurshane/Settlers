@@ -44,6 +44,13 @@ public class UIManager : NetworkBehaviour {
 	private Enums.ResourceType _ToResource;
 	#endregion
 
+
+	#region The Boot
+	[SerializeField]
+	private Transform _Boot;
+	#endregion
+
+
 	#region UI Panels
 
 	/// <summary>
@@ -386,7 +393,8 @@ public class UIManager : NetworkBehaviour {
 			}
 			if (Enums.Special.MOVE_PIRATE == _CurrentPlayer.getSpecial ()) 
 			{
-				_hToHighlight = _build.buildableCanMovePirate ();
+				highlight (false);
+				//_hToHighlight = _build.buildableCanMovePirate ();
 			}
 			if (Enums.Special.CHOOSE_DESTROYED_CITY == _CurrentPlayer.getSpecial ()) 
 			{
@@ -409,7 +417,22 @@ public class UIManager : NetworkBehaviour {
 	#endregion
 
     #region Update Methods
-    /// <summary>
+	/// <summary>
+	/// Displays the boot icon if player has the boot
+	/// </summary>
+	public void updateBoot()
+	{
+		if (_CurrentPlayer.ownsBoot) 
+		{
+			_Boot.gameObject.SetActive (true);
+		}
+			
+
+		else 
+			_Boot.gameObject.SetActive(false);
+	}
+
+	/// <summary>
     /// Updates the resources of the currentPlayer to be displayed on the UI
     /// </summary>
     public void updateResources()
@@ -703,6 +726,8 @@ public class UIManager : NetworkBehaviour {
                 updateMyPlayerPanel();
 				updateDiceRollPanel ();
 				updateTurnsPanel();
+
+				updateBoot ();
 
 				updatePlayerInfoPanels ();
 

@@ -55,7 +55,9 @@ public class UIMoveManager : MonoBehaviour {
 
 	[SerializeField]
 	private Transform _FishPanel;
+	#endregion
 
+	#region Pop Up Regions
 	/// <summary>
 	/// Specific panels for the fish button chosen
 	/// </summary>
@@ -90,6 +92,12 @@ public class UIMoveManager : MonoBehaviour {
 
 	[SerializeField]
 	private Transform _CraneDevPanel;
+
+	[SerializeField]
+	private Transform _ResourceMonopolyPanel;
+
+	[SerializeField]
+	private Transform _TradeMonopolyPanel;
 	#endregion
 
 	// -------------------------
@@ -119,6 +127,9 @@ public class UIMoveManager : MonoBehaviour {
 		_UpgradeDevChartPanel.gameObject.SetActive (false);
 		_AlchemistDicePanel.gameObject.SetActive (false);
 		_CraneDevPanel.gameObject.SetActive (false);
+
+		_ResourceMonopolyPanel.gameObject.SetActive (false);
+		_TradeMonopolyPanel.gameObject.SetActive (false);
 
 		buildingToggle = false;
 		knightToggle = false;
@@ -476,7 +487,7 @@ public class UIMoveManager : MonoBehaviour {
 	#endregion
 
 
-	#region Progress Card Methods
+	#region Aqueduct Methods
 	public void revealAqueductPanel()
 	{
 		if (_CurrentPlayer.getSpecial () == Special.AQUEDUCT) 
@@ -503,6 +514,11 @@ public class UIMoveManager : MonoBehaviour {
 		GameManager.instance.aqueductShortcut(temp+1);
 
 	}
+
+	#endregion
+
+
+	#region Progress Cards Methods
 
 	public void revealProgressCardsPanel()
 	{
@@ -541,7 +557,7 @@ public class UIMoveManager : MonoBehaviour {
 			List<ProgressCardName> _PCards = _CurrentPlayer.getProgressCards ();
 
 			Enums.ProgressCardName _progressCardName = _PCards [index];
-			Debug.Log ("ProgessCard at index: " + _progressCardName);
+			//Debug.Log ("ProgessCard at index: " + _progressCardName);
 
 
 
@@ -750,6 +766,7 @@ public class UIMoveManager : MonoBehaviour {
 			//TODO: Yeah, no
 			break;
 		case ProgressCardName.ROADBUILDING:
+			moveTypeChange(MoveType.PROGRESS_ROAD_BUILDING_1);
 			break;
 		case ProgressCardName.SABOTEUR:
 			//TODO: Yeah, no
@@ -775,6 +792,9 @@ public class UIMoveManager : MonoBehaviour {
 
 	}
 
+	/// <summary>
+	/// Displays Alchemist Dice Roll panel at appropriate time
+	/// </summary>
 	private void revealAlchemistDiceRollPanel()
 	{
 		if (_CurrentPlayer.getMoveType () == MoveType.PROGRESS_ALCHEMIST  && GameManager.instance.getGamePhase() == GamePhase.PHASE_ONE ) 
@@ -787,6 +807,9 @@ public class UIMoveManager : MonoBehaviour {
 		}
 	}
 
+	/// <summary>
+	/// Displays crane upgradeDev panel at approrpriate time
+	/// </summary>
 	private void revealCraneUpgradeDevPanel()
 	{
 		if (_CurrentPlayer.getMoveType () == MoveType.PROGRESS_CRANE  && GameManager.instance.getGamePhase() == GamePhase.PHASE_TWO ) 
@@ -799,14 +822,111 @@ public class UIMoveManager : MonoBehaviour {
 		}
 	}
 
+	/// <summary>
+	/// Method called by crane upgradeDevChart button
+	/// </summary>
+	/// <param name="p_ChartType">P chart type.</param>
 	public void craneUpgradeDevChart(int p_ChartType)
 	{
-		//_CurrentPlayer.upgradeDevChart((DevChartType) p_ChartType, _CurrentPlayer.getID ());
-		_CurrentPlayer.CmdUpgradeDevelopmentChart((DevChartType) p_ChartType);
+		ProgressCards.instance.crane ((DevChartType)p_ChartType, _CurrentPlayer.commodities, _CurrentPlayer.pieces, _CurrentPlayer.devFlipChart, _CurrentPlayer.isServer);
+	}
 
-		// Set movetype to none afterwards
-		//moveTypeChange(MoveType.NONE);
-		//_CurrentPlayer.setMoveType (MoveType.NONE, _CurrentPlayer.getID ());
+	/// <summary>
+	/// displays resource monopoly panel at appropriate time
+	/// </summary>
+	private void revealResourceMonopolyPanel()
+	{
+		if (_CurrentPlayer.getMoveType () == MoveType.PROGRESS_RESOURCE_MONOPOLY  && GameManager.instance.getGamePhase() == GamePhase.PHASE_TWO ) 
+		{
+			_ResourceMonopolyPanel.gameObject.SetActive (true);
+		} 
+
+		else {
+			_ResourceMonopolyPanel.gameObject.SetActive (false);
+		}
+	}
+
+	/// <summary>
+	/// Picks the parameter p_Resource from each of the other players
+	/// </summary>
+	/// <param name="p_Resource">P resource.</param>
+	public void monopolyPickResource(int p_Resource)
+	{
+		List<Player> _Players = GameManager.instance.players;
+
+
+		foreach (Player p in _Players) 
+		{
+			// If the player observed as same colour as _currentPlayer of this UIMoveManager, continue
+			if (p.getColor () == _CurrentPlayer.getColor ())
+				continue;
+
+			// If the observed player has none of the resource to be taken from it, continue
+			if (p.resources [p_Resource] < 1)
+				continue;
+
+			// Take the specific resource from the observed player
+			_CurrentPlayer.changeResource ((ResourceType)p_Resource, -1, p.getID());
+
+			// Add that specific resource to this instance's _currentPlayer attribute
+			_CurrentPlayer.changeResource ((ResourceType)p_Resource, 1, _CurrentPlayer.getID());
+		}
+
+		// Remove the Resource Monopoly card from the _currentPlayer attribute
+		_CurrentPlayer.removeProgressCard (ProgressCardName.RESOURCEMONOPOLY, _CurrentPlayer.getID ());
+
+		// Set moveType to none
+		moveTypeChange (MoveType.NONE);
+
+	}
+		
+
+	/// <summary>
+	/// Reveals the trade monopoly panel.
+	/// </summary>
+	private void revealTradeMonopolyPanel()
+	{
+		if (_CurrentPlayer.getMoveType () == MoveType.PROGRESS_TRADE_MONOPOLY  && GameManager.instance.getGamePhase() == GamePhase.PHASE_TWO ) 
+		{
+			_TradeMonopolyPanel.gameObject.SetActive (true);
+		} 
+
+		else {
+			_TradeMonopolyPanel.gameObject.SetActive (false);
+		}
+	}
+
+	/// <summary>
+	/// Picks the parameter p_Commodity from each of the players
+	/// </summary>
+	/// <param name="p_Commodity">P commodity.</param>
+	public void monopolyPickCommodity(int p_Commodity)
+	{
+		List<Player> _Players = GameManager.instance.players;
+
+
+		foreach (Player p in _Players) 
+		{
+			// If the player observed as same colour as _currentPlayer of this UIMoveManager, continue
+			if (p.getColor () == _CurrentPlayer.getColor ())
+				continue;
+
+			// If the observed player has none of the resource to be taken from it, continue
+			if (p.commodities [p_Commodity] < 1)
+				continue;
+
+			// Take the specific resource from the observed player
+			_CurrentPlayer.changeCommodity ((CommodityType)p_Commodity, -1, p.getID());
+
+			// Add that specific resource to this instance's _currentPlayer attribute
+			_CurrentPlayer.changeCommodity ((CommodityType)p_Commodity, 1, _CurrentPlayer.getID());
+		}
+
+		// Remove the Resource Monopoly card from the _currentPlayer attribute
+		_CurrentPlayer.removeProgressCard (ProgressCardName.TRADEMONOPOLY, _CurrentPlayer.getID ());
+
+		// Set moveType to none
+		moveTypeChange (MoveType.NONE);
 
 	}
 
@@ -1323,5 +1443,7 @@ public class UIMoveManager : MonoBehaviour {
 
 		revealAlchemistDiceRollPanel ();
 		revealCraneUpgradeDevPanel ();
+		revealResourceMonopolyPanel ();
+		revealTradeMonopolyPanel ();
 	}
 }
