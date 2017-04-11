@@ -581,11 +581,37 @@ public class ProgressCards : NetworkBehaviour {
         //Update longest route
     }
 
-    public void WarLord()
+    public void Smith()
+    {
+        Player current = GameManager.instance.getCurrentPlayer();
+    }
+
+    public void WarLord()//call this from player 
+    {//assumes all clients and servers have an up to date representation of all player's pieces 
+        CmdWarLord();
+        RpcWarLord();
+    }
+
+    [Command]
+    public void CmdWarLord()
     {
         Player current = GameManager.instance.getCurrentPlayer();
         List<GamePiece> pieces = current.getGamePieces();
-        for (int i = 0; i<pieces.Count; i++)
+        for (int i = 0; i < pieces.Count; i++)
+        {
+            if (pieces[i] is Knight && pieces[i].isOnBoard())
+            {
+                Knight n = (Knight)pieces[i];
+                n.activateKnight();
+            }
+        }
+    }
+
+    public void RpcWarLord()
+    {
+        Player current = GameManager.instance.getCurrentPlayer();
+        List<GamePiece> pieces = current.getGamePieces();
+        for (int i = 0; i < pieces.Count; i++)
         {
             if (pieces[i] is Knight && pieces[i].isOnBoard())
             {

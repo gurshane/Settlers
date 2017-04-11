@@ -8,6 +8,8 @@ public class Player : NetworkBehaviour {
 
     public GameObject myHud;
 
+    public GameObject tradePrefab;
+
 	private MoveAuthorizer ma;
     private ProgressAuthroizor pa;
     private Graph graph;
@@ -869,9 +871,22 @@ public class Player : NetworkBehaviour {
         newTrade.goldOffered = this.goldOffered;
         newTrade.goldWanted = this.goldWanted;
         newTrade.offering = this.iD;
-
         MoveManager.instance.tradeWithBank(this.resourceRatios, this.commodityRatios, newTrade);
     }
+
+    /*
+     [Command]
+     public void CmdTradeWithBank(Enums.PortType portType)
+     {
+        for (int i = 0; i<this.resourceRatios; i++)
+        {
+            
+        }
+        Trades bankTrade = CmdSpawnTrade(resourcesOffered, resourcesDemanded, commoditiesOffered, commoditiesDemanded, goldOffered, goldDemanded, playerId);
+        MoveManager.instance.tradeWithBank(this.resourceRatios, this.commodityRatios, bankTrade);
+     }
+
+     */
 
     public int getID()
     {
@@ -2086,6 +2101,50 @@ public class Player : NetworkBehaviour {
 
     [Command]
     public void CmdRemovePirate () {
-		MoveManager.instance.removePirate (isServer);        
+		MoveManager.instance.removePirate (isServer);
     }
+
+    /*[Command]//call from Player on client to spawn a trade on all machines 
+    public Trades CmdSpawnTrade(int[] resourcesOffered, int[] resourcesDemanded, int[] commoditiesOffered, int[] commoditiesDemanded, int goldOffered, int goldDemanded, int playerId)
+    {
+        Player[] players = GameObject.FindObjectsOfType<Player>();
+        Player offering = null;
+        foreach (Player player in players)
+        {
+            if (player.iD == playerId)
+            {
+                offering = player;
+                break;
+            }
+        }
+        GameObject trade = (GameObject)GameObject.Instantiate(tradePrefab);
+        trade.GetComponent<Trades>().init(resourcesOffered, resourcesDemanded, commoditiesOffered, commoditiesDemanded, goldOffered, goldDemanded, offering);
+        NetworkServer.Spawn(trade);
+        trade.RpcSetPlayer(offering.netId);
+        return trade.GetComponent<Trades>();
+    }
+    
+    public void acceptTrade(Trades trade)
+    {
+        Player offered = trade.getPlayerOffering();
+        for (int i = 0; i < trade.getResourcesOffered().Count; i++)
+        {
+            offered.changeResource((Enums.ResourceType)i, -trade.getResourcesOffered()[i]);
+            offered.changeResource((Enums.ResourceType)i, trade.getResourcesWanted()[i]);
+            this.changeResource((Enums.ResourceType)i, trade.getResourcesOffered()[i]);
+            this.changeResource((Enums.ResourceType)i, -trade.getResourcesWanted()[i]);
+        }
+        for (int i = 0; i < trade.getCommoditiesOffered().Count; i++)
+        {
+            offered.changeCommodity((Enums.CommodityType)i, -trade.getCommoditiesOffered()[i]);
+            offered.changeCommodity((Enums.CommodityType)i, trade.getCommoditiesWanted()[i]);
+            this.changeCommodity((Enums.CommodityType)i, trade.getCommoditiesOffered()[i]);
+            this.changeCommodity((Enums.CommodityType)i, -trade.getCommoditiesWanted()[i]);
+        }
+        offered.changeGoldCount(trade.getGoldWanted() - trade.getGoldOffered());
+        this.changeGoldCount(trade.getGoldOffered() - trade.getGoldWanted());
+        trade.CmdDestroy(trade.netId);//destroy the trade 
+    }
+
+     */
 }

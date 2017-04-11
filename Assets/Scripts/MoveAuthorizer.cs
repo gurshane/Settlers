@@ -942,6 +942,7 @@ public class MoveAuthorizer
     }
 
     // Check if the merchant can be placed on a hex
+    // TODO: check if adjacent vertex has a corresponding player settlement
     public bool canPlaceMerchant(Hex target)
     {
 
