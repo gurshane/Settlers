@@ -377,7 +377,7 @@ public class ProgressCards : NetworkBehaviour {
 
 	public void irrigation(Enums.Color color) {
 		foreach(Hex h in BoardState.instance.hexPosition.Values) {
-			if (h.getHexType != HexType.FIELD) continue;
+			if (h.getHexType() != HexType.FIELD) continue;
 			foreach (Vertex v in h.getVertices()) {
 				GamePiece piece = v.getOccupyingPiece();
 				if(Object.ReferenceEquals(piece, null)) {
@@ -394,7 +394,7 @@ public class ProgressCards : NetworkBehaviour {
 
 	public void mining(Enums.Color color) {
 		foreach(Hex h in BoardState.instance.hexPosition.Values) {
-			if (h.getHexType != HexType.MOUNTAIN) continue;
+			if (h.getHexType() != HexType.MOUNTAIN) continue;
 			foreach (Vertex v in h.getVertices()) {
 				GamePiece piece = v.getOccupyingPiece();
 				if(Object.ReferenceEquals(piece, null)) {
@@ -439,6 +439,12 @@ public class ProgressCards : NetworkBehaviour {
         if (!server) {
 			objNetId.RemoveClientAuthority (connectionToClient); 
 		}
+    }
+
+	void fixPieceRotationAndPosition(GameObject go)
+    {
+        go.transform.position = go.transform.position + (new Vector3(0f, 10f, 0f));
+        go.transform.Rotate(-90f, 0f, 0f);
     }
 
 

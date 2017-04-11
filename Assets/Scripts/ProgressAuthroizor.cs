@@ -261,7 +261,7 @@ public class ProgressAuthroizor {
 		if (target.getTerrainType() == TerrainType.WATER) return false;
 
 		if (source.getHexType() == HexType.DESERT) return false;
-		if (target.getTerrainType() == HexType.DESERT) return false;
+		if (target.getHexType() == HexType.DESERT) return false;
 
 		int i = source.getHexNumber();
 		int j = target.getHexNumber();
