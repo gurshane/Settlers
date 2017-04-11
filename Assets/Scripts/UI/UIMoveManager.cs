@@ -1,4 +1,5 @@
-﻿using System.Collections;using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using Enums;
@@ -150,9 +151,9 @@ public class UIMoveManager : MonoBehaviour {
 	/// </summary>
 	public void resetButtonOnClick()
 	{
-		_CurrentPlayer.ResetV1(_CurrentPlayer.getID ());
-		_CurrentPlayer.ResetV1 (_CurrentPlayer.getID ());
-		//_CurrentPlayer
+		_CurrentPlayer.ResetV1(_CurrentPlayer.getID());
+		_CurrentPlayer.ResetE1 (_CurrentPlayer.getID ());
+		_CurrentPlayer.ResetH1 (_CurrentPlayer.getID ());
 
 	}
 
