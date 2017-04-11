@@ -987,7 +987,7 @@ public class Player : NetworkBehaviour
             else if (moveType == Enums.MoveType.PROGRESS_BISHOP)
             {
 
-                if (!pieceHit.tag.Equals("Hex"))
+                if (!pieceHit.tag.Equals("MainHex") && !pieceHit.tag.Equals("IslandHex"))
                 {
                     return;
                 }
@@ -1051,7 +1051,7 @@ public class Player : NetworkBehaviour
             else if (moveType == Enums.MoveType.PROGRESS_INVENTOR)
             {
 
-                if (!pieceHit.tag.Equals("Hex"))
+                if (!pieceHit.tag.Equals("MainHex") && !pieceHit.tag.Equals("IslandHex"))
                 {
                     return;
                 }
