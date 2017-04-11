@@ -995,6 +995,52 @@ public class Player : NetworkBehaviour {
         return true;
     }
 
+    public bool changeGoldOffered(int num, int player)
+    {
+        if (GameManager.instance.getPlayer(player).goldOffered + num < 0)
+        {
+            return false;
+        }
+
+        CmdChangeGoldOffered(num, player);
+        return true;
+    }
+
+    [Command]
+    public void CmdChangeGoldOffered(int num, int player)
+    {
+        RpcChangeGoldOffered(num, player);
+    }
+
+    [ClientRpc]
+    public void RpcChangeGoldOffered(int num, int player)
+    {
+        GameManager.instance.getPlayer(player).goldOffered += num;
+    }
+
+    public bool changeGoldWanted(int num, int player)
+    {
+        if (GameManager.instance.getPlayer(player).goldWanted + num < 0)
+        {
+            return false;
+        }
+
+        CmdChangeGoldWanted(num, player);
+        return true;
+    }
+
+    [Command]
+    public void CmdChangeGoldWanted(int num, int player)
+    {
+        RpcChangeGoldWanted(num, player);
+    }
+
+    [ClientRpc]
+    public void RpcChangeGoldWanted(int num, int player)
+    {
+        GameManager.instance.getPlayer(player).goldWanted += num;
+    }
+
     [Command]
     public void CmdChangeFishCount(int num, int plyr)
     {
