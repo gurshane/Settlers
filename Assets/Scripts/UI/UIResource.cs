@@ -9,7 +9,10 @@ using Enums;
 /// </summary>
 public class UIResource : UIElement {
 
+	[SerializeField]
 	private bool isGold;
+	[SerializeField]
+	private bool isFish;
 
 	#region Private Attributes
 	/// <summary>
@@ -21,7 +24,6 @@ public class UIResource : UIElement {
 
 	/// The text component attached to this instance
 	/// </summary>
-	[SerializeField]
 	private Text _ResourceCount;
 
 	#endregion
@@ -31,6 +33,9 @@ public class UIResource : UIElement {
 
 		if (name == "Gold_Image")
 			isGold = true;
+
+		if (name == "Fish_Image")
+			isFish = true;
 
 
 		setResourceType ();
@@ -48,6 +53,11 @@ public class UIResource : UIElement {
 		{
 			_ResourceCount.text = "x" + p_Player.getGoldCount ();
 			return;
+		}
+
+		if (isFish) 
+		{
+			_ResourceCount.text = "x" + p_Player.numFish;
 		}
 
 		// Get Player's resource list, find the index in the list

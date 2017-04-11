@@ -10,6 +10,8 @@ public class UIHexValue : MonoBehaviour {
 
     public bool isFishVal;
 
+    public bool isLake;
+
 	public bool isHighlighted;
 
 	/// <summary>
@@ -33,6 +35,11 @@ public class UIHexValue : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
+
+        if(isLake)
+        {
+            Destroy(gameObject);
+        }
 
 		_Camera = Camera.main;
 		_HexNumber = GetComponent<TextMesh>();
@@ -64,7 +71,11 @@ public class UIHexValue : MonoBehaviour {
 			_Text = "" + _Hex.hexNumber;
 			_HexNumber.color = Color.white;
 			_HexNumber.text = "" + _Text;
-		}
+            if (isFishVal)
+            {
+                _HexNumber.color = Color.cyan;
+            }
+        }
 
 	}
 
