@@ -1563,29 +1563,26 @@ public class Player : NetworkBehaviour
         GameManager.instance.setMetropolisPlayer(d, BoardState.instance.vertexPosition[v]);
     }
 
-    public void activateKnights()
+    public void activateKnights(int plyr)
     {
-        CmdActivateKnights();
+        CmdActivateKnights(plyr);
     }
 
     [Command]
-    public void CmdActivateKnights()
+    public void CmdActivateKnights(int plyr)
     {
-        RpcActivateKnights();
+        RpcActivateKnights(plyr);
     }
 
     [ClientRpc]
-    public void RpcActivateKnights()
+    public void RpcActivateKnights(int plyr)
     {
-        foreach (Player p in GameManager.instance.getPlayers())
+        foreach (GamePiece piece in GameManager.instance.getPlayer(plyr).getGamePieces())
         {
-            foreach (GamePiece piece in p.getGamePieces())
+            if (piece.getPieceType() == PieceType.KNIGHT && piece.isOnBoard())
             {
-                if (piece.getPieceType() == PieceType.KNIGHT && piece.isOnBoard())
-                {
-                    Knight k = (Knight)piece;
-                    k.activateKnight();
-                }
+                Knight k = (Knight)piece;
+                k.activateKnight();
             }
         }
     }
