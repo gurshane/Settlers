@@ -83,6 +83,9 @@ public class UIMoveManager : MonoBehaviour {
 
 	[SerializeField]
 	private Transform _AlchemistDicePanel;
+
+	[SerializeField]
+	private Transform _CraneDevPanel;
 	#endregion
 
 	// -------------------------
@@ -109,6 +112,7 @@ public class UIMoveManager : MonoBehaviour {
 		_ChooseProgressCardPanel.gameObject.SetActive (false);
 		_UpgradeDevChartPanel.gameObject.SetActive (false);
 		_AlchemistDicePanel.gameObject.SetActive (false);
+		_CraneDevPanel.gameObject.SetActive (false);
 
 		buildingToggle = false;
 		knightToggle = false;
@@ -519,15 +523,21 @@ public class UIMoveManager : MonoBehaviour {
 		switch (_pCN) 
 		{
 		case ProgressCardName.ALCHEMIST:
+			p_Text.text = "Alchemist";
+			_CurrentPlayer.setMoveType (MoveType.PROGRESS_ALCHEMIST, _CurrentPlayer.getID ());
 			break;
 		case ProgressCardName.BISHOP:
+			p_Text.text = "Bishop";
+			_CurrentPlayer.setMoveType (MoveType.PROGRESS_BISHOP, _CurrentPlayer.getID ());
 			break;
 		case ProgressCardName.COMMERCIALHARBOR:
 			break;
 		case ProgressCardName.CONSTITUTION:
-			p_Button.onClick.AddListener ( () => {ProgressCards.instance.constitution();});
+			p_Button.onClick.AddListener (ProgressCards.instance.constitution);
 			break;
 		case ProgressCardName.CRANE:
+			p_Text.text = "Crane";
+			_CurrentPlayer.setMoveType (MoveType.PROGRESS_CRANE, _CurrentPlayer.getID ());
 			break;
 		case ProgressCardName.DESERTER:
 			break;
@@ -575,7 +585,7 @@ public class UIMoveManager : MonoBehaviour {
 
 	private void revealAlchemistDiceRollPanel()
 	{
-		if (_CurrentPlayer.getMoveType () == MoveType.ALCHEMIST  && GameManager.instance.getGamePhase() == GamePhase.PHASE_ONE ) 
+		if (_CurrentPlayer.getMoveType () == MoveType.PROGRESS_ALCHEMIST  && GameManager.instance.getGamePhase() == GamePhase.PHASE_ONE ) 
 		{
 			_AlchemistDicePanel.gameObject.SetActive (true);
 		} 
@@ -585,6 +595,17 @@ public class UIMoveManager : MonoBehaviour {
 		}
 	}
 
+	private void revealCraneUpgradeDevPanel()
+	{
+		if (_CurrentPlayer.getMoveType () == MoveType.PROGRESS_CRANE  && GameManager.instance.getGamePhase() == GamePhase.PHASE_TWO ) 
+		{
+			_CraneDevPanel.gameObject.SetActive (true);
+		} 
+
+		else {
+			_CraneDevPanel.gameObject.SetActive (false);
+		}
+	}
 	#endregion
 
 	#region Fish Methods
@@ -1032,5 +1053,8 @@ public class UIMoveManager : MonoBehaviour {
 		revealFish3 ();
 		revealFish4 ();
 		revealFish7 ();
+
+		revealAlchemistDiceRollPanel ();
+		revealCraneUpgradeDevPanel ();
 	}
 }
