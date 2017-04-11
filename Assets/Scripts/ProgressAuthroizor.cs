@@ -26,8 +26,8 @@ public class ProgressAuthroizor {
             return false;
         }
 
-        Road ship = (Road)sourcePiece;
-        if (!ship.getIsShip())
+        Road road = (Road)sourcePiece;
+        if (road.getIsShip())
         {
             return false;
         }
@@ -43,87 +43,18 @@ public class ProgressAuthroizor {
         {
             return false;
         }
-        if (graph.isClosedShip(source, color))
-        {
-            return false;
-        }
-        if (ship.getBuiltThisTurn())
+        if (graph.isClosedRoad(source, color))
         {
             return false;
         }
 
-        // Make sure the source edge is not next to the pirate
-        Hex checkHex = source.getLeftHex();
-        GamePiece hexPiece;
-        if (!Object.ReferenceEquals(checkHex, null))
-        {
-            hexPiece = checkHex.getOccupyingPiece();
-            if (!Object.ReferenceEquals(hexPiece, null))
-            {
-                if (hexPiece.getPieceType() == Enums.PieceType.PIRATE)
-                {
-                    return false;
-                }
-            }
-        }
-        checkHex = source.getRightHex();
-        if (!Object.ReferenceEquals(checkHex, null))
-        {
-            hexPiece = checkHex.getOccupyingPiece();
-            if (!Object.ReferenceEquals(hexPiece, null))
-            {
-                if (hexPiece.getPieceType() == Enums.PieceType.PIRATE)
-                {
-                    return false;
-                }
-            }
-        }
-
-        // Make sure the target edge is by water and not next to the pirate
-        bool nextToWater = false;
-        checkHex = target.getLeftHex();
-        if (!Object.ReferenceEquals(checkHex, null))
-        {
-            hexPiece = checkHex.getOccupyingPiece();
-            if (!Object.ReferenceEquals(hexPiece, null))
-            {
-                if (hexPiece.getPieceType() == Enums.PieceType.PIRATE)
-                {
-                    return false;
-                }
-            }
-            if (checkHex.getTerrainType() == Enums.TerrainType.WATER)
-            {
-                nextToWater = true;
-            }
-        }
-        checkHex = target.getRightHex();
-        if (!Object.ReferenceEquals(checkHex, null))
-        {
-            hexPiece = checkHex.getOccupyingPiece();
-            if (!Object.ReferenceEquals(hexPiece, null))
-            {
-                if (hexPiece.getPieceType() == Enums.PieceType.PIRATE)
-                {
-                    return false;
-                }
-            }
-            if (checkHex.getTerrainType() == Enums.TerrainType.WATER)
-            {
-                nextToWater = true;
-            }
-        }
-        if (target.getTerrainType() == Enums.TerrainType.WATER) {
-            nextToWater = true;
-        }
-        if (!nextToWater)
-        {
+        if (target.getTerrainType() != Enums.TerrainType.LAND) {
             return false;
         }
 
         // Make sure the target edge is next to a town-piece or ship (not the one being moved)
         bool nextToTown = graph.nextToMyCityOrSettlement(target, color);
-        bool nextToShip = false;
+        bool nextToRoad = false;
         Vertex current = target.getLeftVertex();
         foreach (Edge e in current.getNeighbouringEdges())
         {
@@ -137,7 +68,7 @@ public class ProgressAuthroizor {
             {
                 continue;
             }
-            if (Object.ReferenceEquals(touchingRoad, ship))
+            if (Object.ReferenceEquals(touchingRoad, road))
             {
                 continue;
             }
@@ -150,12 +81,12 @@ public class ProgressAuthroizor {
                 continue;
             }
 
-            Road touchingShip = (Road)touchingRoad;
-            if (!touchingShip.getIsShip())
+            Road secondRoad = (Road)touchingRoad;
+            if (secondRoad.getIsShip())
             {
                 continue;
             }
-            nextToShip = true;
+            nextToRoad = true;
         }
         current = target.getRightVertex();
         foreach (Edge e in current.getNeighbouringEdges())
@@ -170,7 +101,7 @@ public class ProgressAuthroizor {
             {
                 continue;
             }
-            if (Object.ReferenceEquals(touchingRoad, ship))
+            if (Object.ReferenceEquals(touchingRoad, road))
             {
                 continue;
             }
@@ -183,18 +114,42 @@ public class ProgressAuthroizor {
                 continue;
             }
 
-            Road touchingShip = (Road)touchingRoad;
-            if (!touchingShip.getIsShip())
+            Road secondRoad = (Road)touchingRoad;
+            if (secondRoad.getIsShip())
             {
                 continue;
             }
-            nextToShip = true;
+            nextToRoad = true;
         }
-        if (!nextToTown && !nextToShip)
+        if (!nextToTown && !nextToRoad)
         {
             return false;
         }
         return true;
     }
 
+	 // Check if a knight can displace another knight
+    public bool canIntrigueKnight (Vertex target, Enums.Color color)
+    {
+
+        // Make sure there is a lower-level knight at the target vertex
+        GamePiece targetPiece = target.getOccupyingPiece();
+        if (!Object.ReferenceEquals(targetPiece, null))
+        {
+            if (targetPiece.getColor() == color)
+            {
+                return false;
+            }
+            if (targetPiece.getPieceType() != Enums.PieceType.KNIGHT)
+            {
+                return false;
+            }
+        }
+        else
+        {
+            return false;
+        }
+
+        return graph.nextToMyEdge(target, color);
+    }
 }
