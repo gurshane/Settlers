@@ -130,6 +130,17 @@ public class ProgressCards : NetworkBehaviour {
 
 	}
 
+	public void printer()
+    {
+
+		Player current = GameManager.instance.getCurrentPlayer();
+
+		GameManager.instance.getPersonalPlayer().changeVictoryPoints(1, current.getID());
+
+		GameManager.instance.getPersonalPlayer().removeProgressCard(ProgressCardName.PRINTER, current.getID());
+
+	}
+
 	// Move a knight from source to target
 	public bool diplomat(Edge source, Edge target, Enums.Color color, bool server)
     {
@@ -447,5 +458,104 @@ public class ProgressCards : NetworkBehaviour {
         go.transform.Rotate(-90f, 0f, 0f);
     }
 
+	public bool medicine(Vertex location, int[] resources,
+		List<GamePiece> pieces, Enums.Color color, bool server)
+    {
+
+		if (!pa.canMedicine (location, resources, pieces, color))
+        {
+			return false;
+		}
+
+		assignAuthority(server);
+        RpcMedicine(location.transform.position, color);
+
+		Player current = GameManager.instance.getCurrentPlayer();
+
+		// Add an appropriate amount of victory points
+        GameManager.instance.getPersonalPlayer().changeVictoryPoints(1, current.getID());
+
+        // Spend the resources
+        GameManager.instance.getPersonalPlayer().changeResource(Enums.ResourceType.GRAIN, -1, current.getID());
+        Bank.instance.depositResource(Enums.ResourceType.GRAIN, 1, current.isServer);
+
+        GameManager.instance.getPersonalPlayer().changeResource(Enums.ResourceType.ORE, -2, current.getID());
+        Bank.instance.depositResource(Enums.ResourceType.ORE, 2, current.isServer);
+
+		removeAuthority(server);
+
+        return true;
+	}
+
+    [ClientRpc]
+	void RpcMedicine(Vector3 location, Enums.Color color)
+    {
+        // Remove the current settlement
+        Vertex source = BoardState.instance.vertexPosition[location];
+        GamePiece settlement = source.getOccupyingPiece();
+		Destroy (BoardState.instance.spawnedObjects [location]);
+		BoardState.instance.spawnedObjects.Remove(location);
+
+		GameObject spawnedCity = Instantiate<GameObject>(PrefabHolder.instance.city, location, Quaternion.identity);
+        fixPieceRotationAndPosition(spawnedCity);
+        spawnedCity.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
+
+		BoardState.instance.spawnedObjects.Add(location, spawnedCity);
+
+		// Remove settlement at location
+		settlement.takeOffBoard ();
+
+		Player current = GameManager.instance.getCurrentPlayer();
+		List<GamePiece> pieces = current.getGamePieces();
+        City city = City.getFreeCity(pieces);
+
+		if (!Object.ReferenceEquals(city, null)) {
+			source.setOccupyingPiece(city);
+			city.putOnBoard();
+		}
+    }
+
+	public bool roadBuilding(Edge location, List<GamePiece> pieces, Enums.Color color, bool server)
+    {
+
+		if (!pa.canRoadBuilding (location, pieces, color))
+        {
+			return false;
+		}
+
+		assignAuthority(server);
+
+		RpcRoadBuilding(location.transform.position, color);
+
+		removeAuthority(server);
+		
+        return true;
+	}
+
+    [ClientRpc]
+	void RpcRoadBuilding(Vector3 location, Enums.Color color)
+    {
+        Edge edge = BoardState.instance.edgePosition[location];
+
+		GameObject spawnedRoad = Instantiate<GameObject>(PrefabHolder.instance.road, location, Quaternion.identity);
+
+        fixPieceRotationAndPosition(spawnedRoad);
+
+        spawnedRoad.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
+		BoardState.instance.spawnedObjects.Add(location, spawnedRoad);
+
+        // Put a road on the given edge
+		Player current = GameManager.instance.getCurrentPlayer();
+		List<GamePiece> pieces = current.getGamePieces();
+        Road road = Road.getFreeRoad(pieces);
+        
+		if (!Object.ReferenceEquals(road, null)) {
+			edge.setOccupyingPiece(road);
+			road.putOnBoard();
+			road.wasBuiltThisTurn();
+		}
+
+        //Update longest route
+    }
 
 }
