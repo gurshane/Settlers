@@ -15,6 +15,9 @@ public class UIMoveManager : MonoBehaviour {
 	[SerializeField]
 	private UIGameStateBanner _Banner;
 
+	[SerializeField]
+	private Transform _ResetButton;
+
 	#region Panel Toggle Booleans
 
 	private bool buildingToggle;
@@ -98,6 +101,8 @@ public class UIMoveManager : MonoBehaviour {
 		_ResourceDiscardPanel.gameObject.SetActive (false);
 		originalPlayerHandSum = 0;
 
+		_ResetButton.gameObject.SetActive (false);
+
 		_KnightPanel.gameObject.SetActive (false);
 		_BuildingPanel.gameObject.SetActive (false);
 		_FishPanel.gameObject.SetActive (false);
@@ -125,6 +130,30 @@ public class UIMoveManager : MonoBehaviour {
 	public void uiEndTurn()
 	{
 		_CurrentPlayer.endTurn ();
+	}
+
+	private void revealResetButton()
+	{
+		bool playerVCheck = GameObject.ReferenceEquals (_CurrentPlayer.v1, null);
+		bool playerECheck = GameObject.ReferenceEquals (_CurrentPlayer.e1, null);
+		bool playerHCheck = GameObject.ReferenceEquals (_CurrentPlayer.h1, null);
+
+		// If any one of the player attributes is null, reveal the reset button
+		if (playerVCheck || playerECheck || playerHCheck) 
+		{
+			_ResetButton.gameObject.SetActive (true);
+		}
+	}
+
+	/// <summary>
+	/// Method called when reset Button is clicked
+	/// </summary>
+	public void resetButtonOnClick()
+	{
+		_CurrentPlayer.ResetV1(_CurrentPlayer.getID ());
+		_CurrentPlayer.ResetV1 (_CurrentPlayer.getID ());
+		//_CurrentPlayer
+
 	}
 
 	/// <summary>
@@ -981,6 +1010,21 @@ public class UIMoveManager : MonoBehaviour {
 		case Enums.MoveType.DISPLACE_KNIGHT:
 			rString = "Displace Knight";
 			break;
+		case Enums.MoveType.FISH_2:
+			rString = "2 Fish";
+			break;
+		case Enums.MoveType.FISH_3:
+			rString = "3 Fish";
+			break;
+		case Enums.MoveType.FISH_4:
+			rString = "4 Fish";
+			break;
+		case Enums.MoveType.FISH_5:
+			rString = "5 Fish";
+			break;
+		case Enums.MoveType.FISH_7:
+			rString = "7 Fish";
+			break;
 		case Enums.MoveType.MOVE_KNIGHT:
 			rString = "Move Knight";
 			break;
@@ -1117,6 +1161,7 @@ public class UIMoveManager : MonoBehaviour {
 		handleInitialPhasePanelDisplay ();
 		handleBannerText ();
 
+		revealResetButton ();
 
 		/* Show or hide Discard Resource Panel */
 		revealResourceDiscardPanel ();
