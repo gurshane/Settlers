@@ -758,7 +758,7 @@ public class Player : NetworkBehaviour {
                     CmdFishRoad (e.transform.position);
                     moveType = Enums.MoveType.NONE;
                 }
-			} else if (moveType == Enums.MoveType.BISHOP) {
+			} else if (moveType == Enums.MoveType.PROGRESS_BISHOP) {
 
 				if (!pieceHit.tag.Equals("Hex")) {
 					return;
@@ -1409,6 +1409,106 @@ public class Player : NetworkBehaviour {
     public void CmdAlchemistRoll(int a, int b)
     {
         GameManager.instance.alchemistRolled(a, b, isServer);
+    }
+
+    public bool changeResourceOffer(ResourceType resource, int num, int player)
+    {
+        int resPosition = (int)resource;
+        if (GameManager.instance.getPlayer(player).resourcesOffered[resPosition] + num < 0)
+        {
+            return false;
+        }
+
+        CmdChangeResourceOffer(resource, num, player);
+        return true;
+    }
+
+    [Command]
+    public void CmdChangeResourceOffer(ResourceType resourceType, int num, int player)
+    {
+        RpcChangeResourceOffer(resourceType, num, player);
+    }
+
+    [ClientRpc]
+    public void RpcChangeResourceOffer(ResourceType resource, int num, int player)
+    {
+        int resP = (int)resource;
+        GameManager.instance.getPlayer(player).resourcesOffered[resP] += num;
+    }
+
+    public bool changeResourceWanted(ResourceType resource, int num, int player)
+    {
+        int resPosition = (int)resource;
+        if (GameManager.instance.getPlayer(player).resourcesWanted[resPosition] + num < 0)
+        {
+            return false;
+        }
+
+        CmdChangeResourceWanted(resource, num, player);
+        return true;
+    }
+
+    [Command]
+    public void CmdChangeResourceWanted(ResourceType resourceType, int num, int player)
+    {
+        RpcChangeResourceWanted(resourceType, num, player);
+    }
+
+    [ClientRpc]
+    public void RpcChangeResourceWanted(ResourceType resource, int num, int player)
+    {
+        int resP = (int)resource;
+        GameManager.instance.getPlayer(player).resourcesWanted[resP] += num;
+    }
+
+    public bool changeCommodityOffered(CommodityType commodity, int num, int player)
+    {
+        int comPosition = (int)commodity;
+        if (GameManager.instance.getPlayer(player).commoditiesOffered[comPosition] + num < 0)
+        {
+            return false;
+        }
+
+        CmdChangeCommodityOffered(commodity, num, player);
+        return true;
+    }
+
+    [Command]
+    public void CmdChangeCommodityOffered(CommodityType commodity, int num, int player)
+    {
+        RpcChangeCommodityOffered(commodity, num, player);
+    }
+
+    [ClientRpc]
+    public void RpcChangeCommodityOffered(CommodityType commodity, int num, int player)
+    {
+        int comP = (int)commodity;
+        GameManager.instance.getPlayer(player).commoditiesOffered[comP] += num;
+    }
+
+    public bool changeCommodityWanted(CommodityType commodity, int num, int player)
+    {
+        int comPosition = (int)commodity;
+        if (GameManager.instance.getPlayer(player).commoditiesWanted[comPosition] + num < 0)
+        {
+            return false;
+        }
+
+        CmdChangeCommodityWanted(commodity, num, player);
+        return true;
+    }
+
+    [Command]
+    public void CmdChangeCommodityWanted(CommodityType commodity, int num, int player)
+    {
+        RpcChangeCommodityWanted(commodity, num, player);
+    }
+
+    [ClientRpc]
+    public void RpcChangeCommodityWanted(CommodityType commodity, int num, int player)
+    {
+        int comP = (int)commodity;
+        GameManager.instance.getPlayer(player).commoditiesWanted[comP] += num;
     }
 
     public bool changeResource(ResourceType resource, int num, int plyr)
