@@ -496,10 +496,15 @@ public class MoveManager : NetworkBehaviour {
 		}
     }
 
-    public bool tradeWithBank()
+    public bool tradeWithBank(int[] resRatios, int[] commodityRatios, Trades trade)
     {
-        return false;
+        if (!Bank.instance.isValidBankTrade(resRatios, commodityRatios, trade))
+        {
+            return false;
+        }
 
+        Bank.instance.tradeWithBank(resRatios, commodityRatios, trade);
+        return true;
     }
 
 	public bool chooseMetropolis (Vertex location, Enums.Color color, Enums.DevChartType dev, bool server)
@@ -615,10 +620,6 @@ public class MoveManager : NetworkBehaviour {
         fixPieceRotationAndPosition(spawnedCityWall);
         spawnedCityWall.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
 		BoardState.instance.spawnedObjects.Add(location, spawnedCityWall);
-
-		Player current = GameManager.instance.getCurrentPlayer();
-
-        GameManager.instance.getPersonalPlayer().changeCityWallCount(-1, current.getID());
 		source.addWall();
     }
 

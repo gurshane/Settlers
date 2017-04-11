@@ -824,7 +824,7 @@ public class Player : NetworkBehaviour {
         newTrade.goldWanted = this.goldWanted;
         newTrade.offering = this.iD;
 
-        Bank.instance.tradeWithBank(this.resourceRatios, this.commodityRatios, newTrade);
+        MoveManager.instance.tradeWithBank(this.resourceRatios, this.commodityRatios, newTrade);
     }
 
     public int getID()
