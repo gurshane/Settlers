@@ -152,4 +152,126 @@ public class ProgressAuthroizor {
 
         return graph.nextToMyEdge(target, color);
     }
+
+	public bool canCrane(Enums.DevChartType dev, int[] commodities,
+        List<GamePiece> pieces, int[] devChart)
+    {
+
+        // Make sure there is a city on the board
+        bool cityOnBoard = false;
+        foreach (GamePiece p in pieces)
+        {
+            if (p.getPieceType() != Enums.PieceType.CITY)
+            {
+                continue;
+            }
+            else
+            {
+                if (p.isOnBoard())
+                {
+                    cityOnBoard = true;
+                    break;
+                }
+            }
+        }
+        if (!cityOnBoard)
+        {
+            return false;
+        }
+
+        // Make sure there are enough resources for the upgrade
+        // Or that the chart is not at maximum capacity
+        int level, coms;
+        if (dev == Enums.DevChartType.TRADE)
+        {
+            level = devChart[(int)Enums.DevChartType.TRADE];
+            coms = commodities[(int)Enums.CommodityType.CLOTH];
+            if (coms < level)
+            {
+                return false;
+            }
+            else if (level >= 5)
+            {
+                return false;
+            }
+        }
+        else if (dev == Enums.DevChartType.POLITICS)
+        {
+            level = devChart[(int)Enums.DevChartType.POLITICS];
+            coms = commodities[(int)Enums.CommodityType.COIN];
+            if (coms < level)
+            {
+                return false;
+            }
+            else if (level >= 5)
+            {
+                return false;
+            }
+        }
+        else if (dev == Enums.DevChartType.SCIENCE)
+        {
+            level = devChart[(int)Enums.DevChartType.SCIENCE];
+            coms = commodities[(int)Enums.CommodityType.PAPER];
+            if (coms < level)
+            {
+                return false;
+            }
+            else if (level >= 5)
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
+	public bool canEngineer(Vertex location, int[] resources,
+        int cityWalls, Enums.Color color)
+    {
+
+        GamePiece city = location.getOccupyingPiece();
+
+        // Make sure the location is valid
+        if (Object.ReferenceEquals(city, null))
+        {
+            return false;
+        }
+        if (city.getPieceType() != Enums.PieceType.CITY)
+        {
+            return false;
+        }
+        if (location.getHasWall())
+        {
+            return false;
+        }
+        if (city.getColor() != color)
+        {
+            return false;
+        }
+        if (cityWalls < 1)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+	public bool canInventor(Hex source, Hex target) {
+
+		if (source.getTerrainType() == TerrainType.WATER) return false;
+		if (target.getTerrainType() == TerrainType.WATER) return false;
+
+		if (source.getHexType() == HexType.DESERT) return false;
+		if (target.getTerrainType() == HexType.DESERT) return false;
+
+		int i = source.getHexNumber();
+		int j = target.getHexNumber();
+
+		if (i == 2 || i == 12 || i == 6 || i == 8) return false;
+
+		if (j == 2 || j == 12 || j == 6 || j == 8) return false;
+
+		if (Object.ReferenceEquals(source, target)) return false;
+
+        return true;
+	}
 }

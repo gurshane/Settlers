@@ -183,6 +183,22 @@ public class GameManager : NetworkBehaviour {
         removeAuthority(server);
     }
 
+    public void alchemistRolled(int a, int b, bool server)
+    {
+        assignAuthority(server);
+        firstDie = a;
+        secondDie = b;
+        int thirdDie = UnityEngine.Random.Range(0, 2);//eventDie
+        if (thirdDie == 1) {
+            eventDie = Enums.EventDie.BARBARIAN;
+        } else {
+            thirdDie = UnityEngine.Random.Range(1, 4);
+            eventDie = (Enums.EventDie)thirdDie;
+        }
+        resolveDice();
+        removeAuthority(server);
+    }
+
     public void DiceRolled(bool server)
     {
         assignAuthority(server);
