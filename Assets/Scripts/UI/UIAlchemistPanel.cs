@@ -52,9 +52,4 @@ public class UIAlchemistPanel : MonoBehaviour {
 	}
 
 
-	
-	// Update is called once per frame
-	void Update () {
-		
-	}
 }
