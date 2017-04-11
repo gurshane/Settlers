@@ -965,7 +965,7 @@ public class UIMoveManager : MonoBehaviour {
 			//Debug.Log ("Revert Turn" + GameManager.instance.getPlayerTurn ());
 
 			// Goes to the next player to discard
-			GameManager.instance.sevenShortcut (temp+1);
+			ProgressCards.instance.saboteurShortcut (temp+1);
 		}
 	}
 
@@ -984,7 +984,7 @@ public class UIMoveManager : MonoBehaviour {
 			int temp = GameManager.instance.getPlayerTurn ();
 
 			// Goes to the next player to discard
-			GameManager.instance.sevenShortcut (temp+1);
+			ProgressCards.instance.saboteurShortcut(temp+1);
 		}
 
 	}
