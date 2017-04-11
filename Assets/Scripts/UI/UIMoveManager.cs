@@ -343,7 +343,7 @@ public class UIMoveManager : MonoBehaviour {
 	public void revealResourceDiscardPanel()
 	{
 
-		if (_CurrentPlayer.getSpecial () == Special.DISCARD_RESOURCE_SEVEN && GameManager.instance.getGamePhase() == GamePhase.PHASE_TWO) 
+		if (_CurrentPlayer.getSpecial () == Special.DISCARD_RESOURCE_SEVEN && GameManager.instance.getGamePhase() == GamePhase.PHASE_ONE) 
 		{
 			_ResourceDiscardPanel.gameObject.SetActive (true);
 
@@ -411,7 +411,7 @@ public class UIMoveManager : MonoBehaviour {
 	/// </summary>
 	public void revealChooseProgressCardPanelBarbarian()
 	{
-		if (_CurrentPlayer.getSpecial () == Special.CHOOSE_PROGRESS_PILE && GameManager.instance.getGamePhase() == GamePhase.PHASE_TWO) 
+		if (_CurrentPlayer.getSpecial () == Special.CHOOSE_PROGRESS_PILE && GameManager.instance.getGamePhase() == GamePhase.PHASE_ONE) 
 		{
 			_ChooseProgressCardPanel.gameObject.SetActive (true);
 		} 
@@ -525,94 +525,214 @@ public class UIMoveManager : MonoBehaviour {
 		// Loop through buttons for as many times as there are progress Cards in the player's hand
 		foreach (Transform child in _ProgressCardsPanel) 
 		{
-			// If index exceeds number of progress cards that player may have, return immediately
-			if (index > _CurrentPlayer.getProgressCards ().Count) 
+			// If index exceeds number of progress cards that player may have, 
+			// or if the number of progress cards is 0, return immediately
+			if (index >= _CurrentPlayer.getProgressCards ().Count || _CurrentPlayer.getProgressCards ().Count == 0) 
 			{
 				return;
 			}
 
+			child.gameObject.SetActive (true);
+
 			// Get the button component of the child object
 			Button _button = child.GetComponent<Button> ();
+			UIProgressCardButton _pCardButton = child.GetComponent<UIProgressCardButton> ();
+
 			List<ProgressCardName> _PCards = _CurrentPlayer.getProgressCards ();
 
 			Enums.ProgressCardName _progressCardName = _PCards [index];
+			Debug.Log ("ProgessCard at index: " + _progressCardName);
+
+
 
 			// Get the child of this button child
 			Transform textChild = child.GetChild (0);
+
 			// Get the text component of this child of the button
 			Text _text = textChild.GetComponent<Text> ();
 
 
-			assignButtonAndText (_progressCardName, _text, _button);
+			assignButtonAndText (_progressCardName, _text, _pCardButton);
 
 			index++;
 		}
 	}
 
 
-	private void assignButtonAndText(ProgressCardName _pCN, Text p_Text, Button p_Button)
+	private void assignButtonAndText(ProgressCardName _pCN, Text p_Text, UIProgressCardButton _pCButton)
 	{
-		// Remove all listeners at the beginning
-		p_Button.onClick.RemoveAllListeners ();
-
 		switch (_pCN) 
 		{
 		case ProgressCardName.ALCHEMIST:
 			p_Text.text = "Alchemist";
-			moveTypeChange(MoveType.PROGRESS_ALCHEMIST);
-			//_CurrentPlayer.setMoveType (MoveType.PROGRESS_ALCHEMIST, _CurrentPlayer.getID ());
+			_pCButton.pCardName = ProgressCardName.ALCHEMIST;
 			break;
 		case ProgressCardName.BISHOP:
 			p_Text.text = "Bishop";
+			_pCButton.pCardName = ProgressCardName.BISHOP;
+			break;
+		case ProgressCardName.COMMERCIALHARBOR:
+			p_Text.text = "Commercial Harbor";
+			_pCButton.pCardName = ProgressCardName.COMMERCIALHARBOR;
+			//TODO : Yeah, no
+			break;
+		case ProgressCardName.CONSTITUTION:
+			p_Text.text = "Constitution";
+			_pCButton.pCardName = ProgressCardName.CONSTITUTION;
+			break;
+		case ProgressCardName.CRANE:
+			p_Text.text = "Crane";
+			_pCButton.pCardName = ProgressCardName.CRANE;
+			break;
+		case ProgressCardName.DESERTER:
+			p_Text.text = "Deserter";
+			_pCButton.pCardName = ProgressCardName.DESERTER;
+			//TODO: Yeah, no
+			break;
+		case ProgressCardName.DIPLOMAT:
+			p_Text.text = "Diplomat";
+			_pCButton.pCardName = ProgressCardName.DIPLOMAT;
+			break;
+		case ProgressCardName.ENGINEER:
+			p_Text.text = "Engineer";
+			_pCButton.pCardName = ProgressCardName.ENGINEER;
+			break;
+		case ProgressCardName.INTRIGUE:
+			p_Text.text = "Intrigue";
+			_pCButton.pCardName = ProgressCardName.INTRIGUE;
+			break;
+		case ProgressCardName.INVENTOR:
+			p_Text.text = "Inventor";
+			_pCButton.pCardName = ProgressCardName.INVENTOR;
+			break;
+		case ProgressCardName.IRRIGATION:
+			p_Text.text = "Irrigation";
+			_pCButton.pCardName = ProgressCardName.IRRIGATION;
+			break;
+		case ProgressCardName.MASTERMERCHANT:
+			p_Text.text = "Master Merchant";
+			_pCButton.pCardName = ProgressCardName.MASTERMERCHANT;
+			// TODO: Yeah, no
+			break;
+		case ProgressCardName.MEDICINE:
+			p_Text.text = "Medicine";
+			_pCButton.pCardName = ProgressCardName.MEDICINE;
+			break;
+		case ProgressCardName.MERCHANT:
+			p_Text.text = "Merchant";
+			_pCButton.pCardName = ProgressCardName.MERCHANT;
+			//TODO: Yeah, no
+			break;
+		case ProgressCardName.MERCHANTFLEET:
+			p_Text.text = "Merchant Fleet";
+			_pCButton.pCardName = ProgressCardName.MERCHANTFLEET;
+			//TODO: Yeah, no
+			break;
+		case ProgressCardName.MINING:
+			p_Text.text = "Mining";
+			_pCButton.pCardName = ProgressCardName.MINING;
+			break;
+		case ProgressCardName.PRINTER:
+			p_Text.text = "Printer";
+			_pCButton.pCardName = ProgressCardName.PRINTER;
+			break;
+		case ProgressCardName.RESOURCEMONOPOLY:
+			p_Text.text = "Resource Monopoly";
+			_pCButton.pCardName = ProgressCardName.RESOURCEMONOPOLY;
+			//TODO: Yeah, no
+			break;
+		case ProgressCardName.ROADBUILDING:
+			p_Text.text = "Road Building";
+			_pCButton.pCardName = ProgressCardName.ROADBUILDING;
+			break;
+		case ProgressCardName.SABOTEUR:
+			p_Text.text = "Saboteur";
+			_pCButton.pCardName = ProgressCardName.SABOTEUR;
+			//TODO: Yeah, no
+			break;
+		case ProgressCardName.SMITH:
+			p_Text.text = "Smith";
+			_pCButton.pCardName = ProgressCardName.SMITH;
+			//TODO: Yeah, no
+			break;
+		case ProgressCardName.SPY:
+			p_Text.text = "Spy";
+			_pCButton.pCardName = ProgressCardName.SPY;
+			//TODO: Yeah, no
+			break;
+		case ProgressCardName.TRADEMONOPOLY:
+			p_Text.text = "Trade Monopoly";
+			_pCButton.pCardName = ProgressCardName.TRADEMONOPOLY;
+			//TODO: Yeah, no
+			break;
+		case ProgressCardName.WARLORD:
+			p_Text.text = "Warlord";
+			_pCButton.pCardName = ProgressCardName.WARLORD;
+			//TODO: Yeah, no
+			break;
+		case ProgressCardName.WEDDING:
+			p_Text.text = "Wedding";
+			_pCButton.pCardName = ProgressCardName.WEDDING;
+			//TODO: Yeah, no
+			break;
+		}
+
+	
+	}
+
+
+	/// <summary>
+	/// Calls the appropriate method according to what type of progress card the calling button is.
+	/// </summary>
+	/// <param name="p_ProgressCardIndex">P progress card index.</param>
+	public void progressCardButton(int p_ProgressCardIndex)
+	{
+		// Use the parameter to get the corresponding Button to get the Text component from
+		Button _button = _ProgressCardsPanel.GetChild(p_ProgressCardIndex).GetComponent<Button>();
+
+		// Then, get the ProgressCardButton component of this button to use its name for the switch statement
+		UIProgressCardButton _pCardButton = _ProgressCardsPanel.GetChild(p_ProgressCardIndex).GetComponent<UIProgressCardButton>();
+
+		switch (_pCardButton.pCardName) 
+		{
+		case ProgressCardName.ALCHEMIST:
+			moveTypeChange(MoveType.PROGRESS_ALCHEMIST);
+			break;
+		case ProgressCardName.BISHOP:
 			moveTypeChange(MoveType.PROGRESS_BISHOP);
-			//_CurrentPlayer.setMoveType (MoveType.PROGRESS_BISHOP, _CurrentPlayer.getID ());
 			break;
 		case ProgressCardName.COMMERCIALHARBOR:
 			//TODO : Yeah, no
 			break;
 		case ProgressCardName.CONSTITUTION:
-			p_Text.text = "Constitution";
-			p_Button.onClick.AddListener (ProgressCards.instance.constitution);
+			ProgressCards.instance.constitution();
 			break;
 		case ProgressCardName.CRANE:
-			p_Text.text = "Crane";
 			moveTypeChange(MoveType.PROGRESS_CRANE);
-			//_CurrentPlayer.setMoveType (MoveType.PROGRESS_CRANE, _CurrentPlayer.getID ());
 			break;
 		case ProgressCardName.DESERTER:
 			//TODO: Yeah, no
 			break;
 		case ProgressCardName.DIPLOMAT:
-			p_Text.text = "Diplomat";
 			moveTypeChange(MoveType.PROGRESS_DIPLOMAT);
-			//_CurrentPlayer.setMoveType (MoveType.PROGRESS_DIPLOMAT, _CurrentPlayer.getID ());
 			break;
 		case ProgressCardName.ENGINEER:
-			p_Text.text = "Engineer";
 			moveTypeChange(MoveType.PROGRESS_ENGINEER);
-			//_CurrentPlayer.setMoveType (MoveType.PROGRESS_ENGINEER, _CurrentPlayer.getID ());
 			break;
 		case ProgressCardName.INTRIGUE:
-			p_Text.text = "Intrigue";
 			moveTypeChange(MoveType.PROGRESS_INTRIGUE);
-			//_CurrentPlayer.setMoveType (MoveType.PROGRESS_INTRIGUE, _CurrentPlayer.getID ());
 			break;
 		case ProgressCardName.INVENTOR:
-			p_Text.text = "Inventor";
 			moveTypeChange(MoveType.PROGRESS_INVENTOR);
-			//_CurrentPlayer.setMoveType (MoveType.PROGRESS_INVENTOR, _CurrentPlayer.getID ());
 			break;
 		case ProgressCardName.IRRIGATION:
-			p_Text.text = "Irrigation";
-			p_Button.onClick.AddListener (() => {ProgressCards.instance.irrigation(_CurrentPlayer.getColor());});
+			ProgressCards.instance.irrigation(_CurrentPlayer.getColor());
 			break;
 		case ProgressCardName.MASTERMERCHANT:
 			// TODO: Yeah, no
 			break;
 		case ProgressCardName.MEDICINE:
-			p_Text.text = "Medicine";
 			moveTypeChange(MoveType.PROGRESS_MEDICINE);
-			//_CurrentPlayer.setMoveType (MoveType.PROGRESS_MEDICINE, _CurrentPlayer.getID ());
 			break;
 		case ProgressCardName.MERCHANT:
 			//TODO: Yeah, no
@@ -621,12 +741,10 @@ public class UIMoveManager : MonoBehaviour {
 			//TODO: Yeah, no
 			break;
 		case ProgressCardName.MINING:
-			p_Text.text = "Mining";
-			p_Button.onClick.AddListener (() => {ProgressCards.instance.mining(_CurrentPlayer.getColor());});
+			ProgressCards.instance.mining(_CurrentPlayer.getColor());
 			break;
 		case ProgressCardName.PRINTER:
-			p_Text.text = "Printer";
-			p_Button.onClick.AddListener (ProgressCards.instance.printer);
+			ProgressCards.instance.printer();
 			break;
 		case ProgressCardName.RESOURCEMONOPOLY:
 			//TODO: Yeah, no
@@ -653,10 +771,9 @@ public class UIMoveManager : MonoBehaviour {
 			break;
 		}
 
-		// Add this to make sure the button closes the panel afterwards
-		p_Button.onClick.AddListener (closeProgressCardPanel);
-	}
+		Debug.Log ("Progress Card Pushed");
 
+	}
 
 	private void revealAlchemistDiceRollPanel()
 	{
@@ -712,7 +829,12 @@ public class UIMoveManager : MonoBehaviour {
 		// return early
 		if (p_ColorInt >= _Players.Count)
 			return;
-		
+
+		if (_CurrentPlayer.numFish < 3) 
+		{
+			return;
+		}
+
 		// If the index of currentPlayer's colour and the parameter do match, then return
 		if ((int)_CurrentPlayer.getColor () == p_ColorInt) 
 		{
@@ -726,6 +848,7 @@ public class UIMoveManager : MonoBehaviour {
 				_CurrentPlayer.changeResource((ResourceType)i, -1, oppo.getID());
 				taken = true;
 				_CurrentPlayer.changeResource((ResourceType)i, 1, _CurrentPlayer.getID());
+				_CurrentPlayer.changeFishCount (-3, _CurrentPlayer.getID ());
 				break;
 			}
 		}
@@ -734,10 +857,12 @@ public class UIMoveManager : MonoBehaviour {
 				if (oppo.getCommodities () [i] > 0) {
 					_CurrentPlayer.changeCommodity ((CommodityType)i, -1, oppo.getID ());
 					_CurrentPlayer.changeCommodity ((CommodityType)i, 1, _CurrentPlayer.getID ());
+					_CurrentPlayer.changeFishCount (-3, _CurrentPlayer.getID ());
 					break;
 				}
 			}
 		}
+
 
 		// Set moveType back to NONE
 		moveTypeChange(MoveType.NONE);
@@ -751,7 +876,14 @@ public class UIMoveManager : MonoBehaviour {
 	/// <param name="p_Resource">P resource.</param>
 	public void fish4PickResource(int p_Resource)
 	{
+		if (_CurrentPlayer.numFish < 4) 
+		{
+			return;
+		}
+
 		_CurrentPlayer.changeResource ((ResourceType)p_Resource, 1, _CurrentPlayer.getID());
+
+		_CurrentPlayer.changeFishCount (-4, _CurrentPlayer.getID ());
 
 		moveTypeChange(MoveType.NONE);
 		//_CurrentPlayer.setMoveType (MoveType.NONE, _CurrentPlayer.getID ());
@@ -765,7 +897,14 @@ public class UIMoveManager : MonoBehaviour {
 	/// <param name="p_ChartType">P chart type.</param>
 	public void fish7PickProgressCard(int p_ChartType)
 	{
+		if (_CurrentPlayer.numFish < 7) 
+		{
+			return;
+		}
+
 		Bank.instance.withdrawProgressCard ((DevChartType) p_ChartType, _CurrentPlayer.getID ());
+
+		_CurrentPlayer.changeFishCount (-7, _CurrentPlayer.getID ());
 
 		moveTypeChange(MoveType.NONE);
 		//_CurrentPlayer.setMoveType (MoveType.NONE, _CurrentPlayer.getID ());
@@ -820,6 +959,10 @@ public class UIMoveManager : MonoBehaviour {
 		}
 	}
 
+	/// <summary>
+	/// Methods called by Move-Fish panel
+	/// </summary>
+	/// <param name="p_FishNumber">P fish number.</param>
 	public void uiFish(int p_FishNumber)
 	{
 		switch (p_FishNumber) 
@@ -855,7 +998,7 @@ public class UIMoveManager : MonoBehaviour {
 	#region Choose Pirate or Robber Panel Methods
 	public void revealChoosePirateRobberPanel()
 	{
-		if (_CurrentPlayer.getSpecial () == Special.CHOOSE_PIRATE_OR_ROBBER && GameManager.instance.getGamePhase() == GamePhase.PHASE_TWO) 
+		if (_CurrentPlayer.getSpecial () == Special.CHOOSE_PIRATE_OR_ROBBER && GameManager.instance.getGamePhase() == GamePhase.PHASE_ONE) 
 		{
 			_PirateRobberChoosePanel.gameObject.SetActive (true);
 
