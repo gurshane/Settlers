@@ -17,6 +17,7 @@ public class PrefabHolder : MonoBehaviour {
     public GameObject robber;
     public GameObject cityWithCityWall;
     public GameObject metropolisWithCityWall;
+    public GameObject merchant;
 
     public List<Material> materials;
 
