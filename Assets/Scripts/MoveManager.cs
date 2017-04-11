@@ -803,8 +803,7 @@ public class MoveManager : NetworkBehaviour {
     {
         Edge edge = BoardState.instance.edgePosition[location];
 		GameObject spawnedBoat = Instantiate<GameObject>(PrefabHolder.instance.boat, location, Quaternion.identity);
-
-        spawnedBoat.transform.position += new Vector3(0f, 5f, 0f);
+        
         if (edge.isRightPointing)
         {
             spawnedBoat.transform.Rotate(0f, 60f, 0f);
@@ -858,7 +857,6 @@ public class MoveManager : NetworkBehaviour {
         Edge targetPiece = BoardState.instance.edgePosition [target];
 
 		GameObject spawnedBoat = Instantiate<GameObject>(PrefabHolder.instance.boat, target, Quaternion.identity);
-        spawnedBoat.transform.position += new Vector3(0f, 5f, 0f);
         if (targetPiece.isRightPointing)
         {
             spawnedBoat.transform.Rotate(0f, 60f, 0f);
@@ -1223,8 +1221,7 @@ public class MoveManager : NetworkBehaviour {
     {
         Edge edge = BoardState.instance.edgePosition[location];
 		GameObject spawnedBoat = Instantiate<GameObject>(PrefabHolder.instance.boat, location, Quaternion.identity);
-
-        spawnedBoat.transform.position += new Vector3(0f, 5f, 0f);
+        
         if (edge.isRightPointing)
         {
             spawnedBoat.transform.Rotate(0f, 60f, 0f);
@@ -1386,7 +1383,6 @@ public class MoveManager : NetworkBehaviour {
             {
                 meshRend.material.SetColor("_Color", translateColor(color));
             }
-            knight.transform.position += new Vector3(0f, 8f, 0f);
             break;
 		case 3:
 			knight = Instantiate<GameObject> (PrefabHolder.instance.levelThreeKnight, location, Quaternion.identity);
@@ -1394,7 +1390,6 @@ public class MoveManager : NetworkBehaviour {
             {
                 meshRend.material.SetColor("_Color", translateColor(color));
             }
-            knight.transform.position += new Vector3(0f, 10f, 0f);
             break;
 		default:
 			knight = null;
