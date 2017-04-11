@@ -867,9 +867,6 @@ public class UIMoveManager : MonoBehaviour {
 		case Enums.MoveType.ACTIVATE_KNIGHT:
 			rString = "Activate Knight";
 			break;
-		//case Enums.MoveType.ALCHEMIST:
-		//	rString = "My Trap Card (Alchemist)";
-		//		break;
 		case Enums.MoveType.BUILD_CITY:
 			rString = "Build City";
 			break;
@@ -901,7 +898,7 @@ public class UIMoveManager : MonoBehaviour {
 			rString = "Move Ship";
 			break;
 		case Enums.MoveType.NONE:
-			rString = "NONE";
+			rString = "Use Your Imagination (NONE)";
 			break;
 		case Enums.MoveType.PLACE_INITIAL_CITY:
 			rString = "Place Initial City";
@@ -914,6 +911,36 @@ public class UIMoveManager : MonoBehaviour {
 			break;
 		case Enums.MoveType.PLACE_INITIAL_SHIP:
 			rString = "Place Initial Ship";
+			break;
+		case Enums.MoveType.PROGRESS_ALCHEMIST:
+			rString = "TRAP CARD (Alchemist)";
+			break;
+		case Enums.MoveType.PROGRESS_BISHOP:
+			rString = "Progress Card : Bishop";
+			break;
+		case Enums.MoveType.PROGRESS_CRANE:
+			rString = "Progress Card : Crane";
+			break;
+		case Enums.MoveType.PROGRESS_DIPLOMAT:
+			rString = "Progress Card : Diplomat";
+			break;
+		case Enums.MoveType.PROGRESS_ENGINEER:
+			rString = "Progress Card : Engineer";
+			break;
+		case Enums.MoveType.PROGRESS_INTRIGUE:
+			rString = "Progress Card : Intrigue";
+			break;
+		case Enums.MoveType.PROGRESS_INVENTOR:
+			rString = "Progress Card : Inventor";
+			break;
+		case Enums.MoveType.PROGRESS_MEDICINE:
+			rString = "Progress Card : Medicine";
+			break;
+		case Enums.MoveType.PROGRESS_ROAD_BUILDING_1:
+			rString = "RoadBuilding : Place First Road";
+			break;
+		case Enums.MoveType.PROGRESS_ROAD_BUILDING_2:
+			rString = "RoadBuilding : Place Second Road";
 			break;
 		case Enums.MoveType.SPECIAL:
 			rString = "Special: " + convert(_CurrentPlayer.getSpecial());
