@@ -894,11 +894,17 @@ public class MoveAuthorizer
         }
 
         // Make sure the vertex is adjacent to the robber
-        if (!source.isAdjacentToRobber())
-        {
-            return false;
+        foreach (Hex h in BoardState.instance.hexPosition.Values) {
+            GamePiece robber = h.getOccupyingPiece();
+            if (!Object.ReferenceEquals(robber, null)) {
+                if (robber.getPieceType() == PieceType.ROBBER) {
+                    if (h.adjacentToVertex(source)) {
+                        return true;
+                    }
+                }
+            }
         }
-        return true;
+        return false;
     }
 
     // Check if the robber can be move to a nex hex
