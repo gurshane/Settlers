@@ -137,6 +137,7 @@ public class UIManager : NetworkBehaviour {
 	/// <summary>
 	/// List of hexes to highlight
 	/// </summary>
+	[SerializeField]
 	private List<Hex> _hToHighlight;
 
 	private bool highlightBoardPieces;
@@ -258,7 +259,7 @@ public class UIManager : NetworkBehaviour {
 		{
 			highlight (false);
 			getHighlightList ();
-			recentMove = _CurrentPlayer.getMoveType ();
+			//recentMove = _CurrentPlayer.getMoveType ();
 			highlight (true);
 		} 
 	

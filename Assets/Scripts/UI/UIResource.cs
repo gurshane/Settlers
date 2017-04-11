@@ -58,6 +58,7 @@ public class UIResource : UIElement {
 		if (isFish) 
 		{
 			_ResourceCount.text = "x" + p_Player.numFish;
+			return;
 		}
 
 		// Get Player's resource list, find the index in the list

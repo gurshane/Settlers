@@ -31,7 +31,7 @@ public class UIHexValue : MonoBehaviour {
 	[SerializeField]
 	private Hex _Hex;
 
-	private string _Text;
+	private string _text;
 
 	// Use this for initialization
 	void Start () {
@@ -47,7 +47,7 @@ public class UIHexValue : MonoBehaviour {
 		_Hex.hexVal = this;
 
 		// On start, set display text to the hex's hexNumber
-		_Text = "" + _Hex.hexNumber;
+		_text = "" + _Hex.hexNumber;
 
         if(isFishVal)
         {
@@ -63,14 +63,16 @@ public class UIHexValue : MonoBehaviour {
 	{
 	
 		if (isHighlighted) {
-			_Text = "!";
+			_text = "!";
+			_HexNumber.text = _text;
 			_HexNumber.color = Color.yellow;
 		} 
-		else 
+
+		else if (!isHighlighted)
 		{
-			_Text = "" + _Hex.hexNumber;
+			_text = "" + _Hex.hexNumber;
 			_HexNumber.color = Color.white;
-			_HexNumber.text = "" + _Text;
+			_HexNumber.text = _text;
             if (isFishVal)
             {
                 _HexNumber.color = Color.cyan;
@@ -105,6 +107,7 @@ public class UIHexValue : MonoBehaviour {
 
 	// Update is called once per frame
 	void Update () {
+		_Hex.hexVal = this;
 
 		faceCamera ();
 		updatePosition ();
