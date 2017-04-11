@@ -545,7 +545,9 @@ public class MoveManager : NetworkBehaviour {
 		Destroy (BoardState.instance.spawnedObjects [location]);
 		BoardState.instance.spawnedObjects.Remove(location);
 
-		GameObject spawnedMetropolis = Instantiate<GameObject>(PrefabHolder.instance.metropolis, location, Quaternion.identity);
+		GameObject spawnedMetropolis;
+		if (source.getHasWall()) spawnedMetropolis = Instantiate<GameObject>(PrefabHolder.instance.metropolis, location, Quaternion.identity);
+		else spawnedMetropolis = Instantiate<GameObject>(PrefabHolder.instance.metropolisWithCityWall, location, Quaternion.identity);
         fixPieceRotationAndPosition(spawnedMetropolis);
 
 		switch (dev) {
@@ -615,11 +617,19 @@ public class MoveManager : NetworkBehaviour {
     [ClientRpc]
 	void RpcBuildCityWall(Vector3 location, Enums.Color color)
     {
-		Vertex source = BoardState.instance.vertexPosition[location];
-		GameObject spawnedCityWall = Instantiate<GameObject>(PrefabHolder.instance.cityWall, location, Quaternion.identity);
+		// Remove the current settlement
+        Vertex source = BoardState.instance.vertexPosition[location];
+        GamePiece city = source.getOccupyingPiece();
+
+		Destroy (BoardState.instance.spawnedObjects [location]);
+		BoardState.instance.spawnedObjects.Remove(location);
+
+		GameObject spawnedCityWall = Instantiate<GameObject>(PrefabHolder.instance.cityWithCityWall, location, Quaternion.identity);
         fixPieceRotationAndPosition(spawnedCityWall);
         spawnedCityWall.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
+
 		BoardState.instance.spawnedObjects.Add(location, spawnedCityWall);
+
 		source.addWall();
     }
 
@@ -1208,6 +1218,7 @@ public class MoveManager : NetworkBehaviour {
 
 		// Remove settlement at location
 		city.takeOffBoard ();
+		source.removeWall();
 
 		Player current = GameManager.instance.getCurrentPlayer();
 		List<GamePiece> pieces = current.getGamePieces();

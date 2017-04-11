@@ -1064,6 +1064,7 @@ public class Player : NetworkBehaviour {
 
     [ClientRpc]
     public void RpcSetMoveType(Enums.MoveType mType, int plyr) {
+        Debug.Log(mType);
         GameManager.instance.getPlayer(plyr).moveType = mType;         
     }
 
@@ -1352,6 +1353,23 @@ public class Player : NetworkBehaviour {
     public void RpcSetH1(Vector3 hReplace, int plyr)
     {
         GameManager.instance.getPlayer(plyr).h1 = BoardState.instance.hexPosition[hReplace];
+    }
+
+    public void ResetH1(int plyr)
+    {
+        CmdResetV1(plyr);
+    }
+
+    [Command]
+    public void CmdResetH1(int plyr)
+    {
+        RpcResetV1(plyr);
+    }
+
+    [ClientRpc]
+    public void RpcResetH1(int plyr)
+    {
+        GameManager.instance.getPlayer(plyr).h1 = null;
     }
 
     public void SetE1(Edge eReplace, int plyr)
