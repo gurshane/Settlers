@@ -49,7 +49,6 @@ public class MoveManager : NetworkBehaviour {
         Vertex targetPiece = BoardState.instance.vertexPosition[target];
 
 		GameObject knight = getKnightFromLevel (level, target, color);
-        knight.transform.position += new Vector3(0f, 10f, 0f);
 		Destroy (BoardState.instance.spawnedObjects [source]);
 
 		BoardState.instance.spawnedObjects.Add(target, knight);
@@ -157,7 +156,6 @@ public class MoveManager : NetworkBehaviour {
 		}
 
 		GameObject targetKnightObject = getKnightFromLevel (targetLevel, displacedLocation, color);
-        targetKnightObject.transform.position += new Vector3(0f, 10f, 0f);
 		BoardState.instance.spawnedObjects.Add(displacedLocation, targetKnightObject);
 
         // Deactivate the knight
@@ -183,7 +181,6 @@ public class MoveManager : NetworkBehaviour {
 		Destroy (BoardState.instance.spawnedObjects [target]);
 
 		GameObject sourceKnightObject = getKnightFromLevel (sourceLevel, target, color);
-        sourceKnightObject.transform.position += new Vector3(0f, 10f, 0f);
 		BoardState.instance.spawnedObjects.Remove(target);
 		BoardState.instance.spawnedObjects.Remove(source);
 		BoardState.instance.spawnedObjects.Add(target, sourceKnightObject);
@@ -239,7 +236,6 @@ public class MoveManager : NetworkBehaviour {
 		BoardState.instance.spawnedObjects.Remove(v);
 
 		GameObject newKnight = getKnightFromLevel (level + 1, v, color);
-        newKnight.transform.position += new Vector3(0f, 10f, 0f);
 
 		BoardState.instance.spawnedObjects.Add(v, newKnight);
 
@@ -742,6 +738,18 @@ public class MoveManager : NetworkBehaviour {
         Edge edge = BoardState.instance.edgePosition[location];
 		GameObject spawnedRoad = Instantiate<GameObject>(PrefabHolder.instance.road, location, Quaternion.identity);
         fixPieceRotationAndPosition(spawnedRoad);
+        if (((int)edge.transform.rotation.eulerAngles.y) == (239))
+        {
+            spawnedRoad.transform.Rotate(0f, 0f, -29f);
+        }
+        else if (((int)edge.transform.rotation.eulerAngles.y) == (301))
+        {
+            spawnedRoad.transform.Rotate(0f, 0f, 31f);
+        }
+        else if (((int)edge.transform.rotation.eulerAngles.y) == (0))
+        {
+            spawnedRoad.transform.Rotate(0f, 0f, 90f);
+        }
         spawnedRoad.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
 		BoardState.instance.spawnedObjects.Add(location, spawnedRoad);
 
@@ -795,7 +803,18 @@ public class MoveManager : NetworkBehaviour {
 		GameObject spawnedBoat = Instantiate<GameObject>(PrefabHolder.instance.boat, location, Quaternion.identity);
 
         spawnedBoat.transform.position += new Vector3(0f, 10f, 0f);
-
+        if (((int)edge.transform.rotation.eulerAngles.y) == (239))
+        {
+            spawnedBoat.transform.Rotate(0f, 0f, -29f);
+        }
+        else if (((int)edge.transform.rotation.eulerAngles.y) == (301))
+        {
+            spawnedBoat.transform.Rotate(0f, 0f, 31f);
+        }
+        else if (((int)edge.transform.rotation.eulerAngles.y) == (0))
+        {
+            spawnedBoat.transform.Rotate(0f, 0f, 90f);
+        }
         spawnedBoat.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
 		BoardState.instance.spawnedObjects.Add(location, spawnedBoat);
 
@@ -837,7 +856,20 @@ public class MoveManager : NetworkBehaviour {
         Edge targetPiece = BoardState.instance.edgePosition [target];
 
 		GameObject spawnedBoat = Instantiate<GameObject>(PrefabHolder.instance.boat, target, Quaternion.identity);
-		spawnedBoat.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
+        spawnedBoat.transform.position += new Vector3(0f, 10f, 0f);
+        if (((int)targetPiece.transform.rotation.eulerAngles.y) == (239))
+        {
+            spawnedBoat.transform.Rotate(0f, 0f, -29f);
+        }
+        else if (((int)targetPiece.transform.rotation.eulerAngles.y) == (301))
+        {
+            spawnedBoat.transform.Rotate(0f, 0f, 31f);
+        }
+        else if (((int)targetPiece.transform.rotation.eulerAngles.y) == (0))
+        {
+            spawnedBoat.transform.Rotate(0f, 0f, 90f);
+        }
+        spawnedBoat.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
 		Destroy (BoardState.instance.spawnedObjects [source]);
 
 		BoardState.instance.spawnedObjects.Add(target, spawnedBoat);
@@ -1141,6 +1173,19 @@ public class MoveManager : NetworkBehaviour {
         Edge edge = BoardState.instance.edgePosition[location];
 		GameObject spawnedRoad = Instantiate<GameObject>(PrefabHolder.instance.road, location, Quaternion.identity);
         fixPieceRotationAndPosition(spawnedRoad);
+        if(((int)edge.transform.rotation.eulerAngles.y) == (239))
+        {
+            spawnedRoad.transform.Rotate(0f, 0f, -29f);
+        }
+        else if(((int)edge.transform.rotation.eulerAngles.y) == (301))
+        {
+            spawnedRoad.transform.Rotate(0f, 0f, 31f);
+        }
+        else if(((int)edge.transform.rotation.eulerAngles.y) == (0))
+        {
+            spawnedRoad.transform.Rotate(0f, 0f, 90f);
+        }
+
         spawnedRoad.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
 		BoardState.instance.spawnedObjects.Add(location, spawnedRoad);
 
@@ -1178,7 +1223,18 @@ public class MoveManager : NetworkBehaviour {
 		GameObject spawnedBoat = Instantiate<GameObject>(PrefabHolder.instance.boat, location, Quaternion.identity);
 
         spawnedBoat.transform.position += new Vector3(0f, 10f, 0f);
-
+        if (((int)edge.transform.rotation.eulerAngles.y) == (239))
+        {
+            spawnedBoat.transform.Rotate(0f, 0f, -29f);
+        }
+        else if (((int)edge.transform.rotation.eulerAngles.y) == (301))
+        {
+            spawnedBoat.transform.Rotate(0f, 0f, 31f);
+        }
+        else if (((int)edge.transform.rotation.eulerAngles.y) == (0))
+        {
+            spawnedBoat.transform.Rotate(0f, 0f, 90f);
+        }
         spawnedBoat.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
 		BoardState.instance.spawnedObjects.Add(location, spawnedBoat);
 
@@ -1340,7 +1396,7 @@ public class MoveManager : NetworkBehaviour {
 			knight = null;
 			break;
 		}
-        knight.transform.position += new Vector3(0f, 10f, 0f);
+        knight.transform.position += new Vector3(0f, 13f, 0f);
         return knight;
 	}
 		
