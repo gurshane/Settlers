@@ -584,17 +584,9 @@ public class ProgressCards : NetworkBehaviour {
     public void WarLord()
     {
         Player current = GameManager.instance.getCurrentPlayer();
-        List<GamePiece> pieces = current.getGamePieces();
-        for (int i = 0; i < pieces.Count; i++)
-        {
-            if (pieces[i] is Knight && pieces[i].isOnBoard())
-            {
-                Knight n = (Knight)pieces[i];
-                n.activateKnight();
-            }
-        }
+        current.activateKnights();
 
-		GameManager.instance.getPersonalPlayer().removeProgressCard(ProgressCardName.WARLORD, current.getID());
+        GameManager.instance.getPersonalPlayer().removeProgressCard(ProgressCardName.WARLORD, current.getID());
     }
 
 	public void saboteur() {
@@ -639,4 +631,5 @@ public class ProgressCards : NetworkBehaviour {
 		}
 		GameManager.instance.getPersonalPlayer().revertTurn();
 	}
+
 }
