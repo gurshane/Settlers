@@ -168,7 +168,20 @@ public class ProgressCards : NetworkBehaviour {
         Edge targetPiece = BoardState.instance.edgePosition [target];
 
 		GameObject spawnedRoad = Instantiate<GameObject>(PrefabHolder.instance.road, target, Quaternion.identity);
-		spawnedRoad.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
+        fixPieceRotationAndPosition(spawnedRoad);
+        if (targetPiece.isRightPointing)
+        {
+            spawnedRoad.transform.Rotate(0f, 0f, -29f);
+        }
+        else if (targetPiece.isLeftPointing)
+        {
+            spawnedRoad.transform.Rotate(0f, 0f, 31f);
+        }
+        else if (targetPiece.isForwardPointing)
+        {
+            spawnedRoad.transform.Rotate(0f, 0f, 90f);
+        }
+        spawnedRoad.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
 		Destroy (BoardState.instance.spawnedObjects [source]);
 
 		BoardState.instance.spawnedObjects.Add(target, spawnedRoad);
@@ -563,7 +576,18 @@ public class ProgressCards : NetworkBehaviour {
 		GameObject spawnedRoad = Instantiate<GameObject>(PrefabHolder.instance.road, location, Quaternion.identity);
 
         fixPieceRotationAndPosition(spawnedRoad);
-
+        if (edge.isRightPointing)
+        {
+            spawnedRoad.transform.Rotate(0f, 0f, -29f);
+        }
+        else if (edge.isLeftPointing)
+        {
+            spawnedRoad.transform.Rotate(0f, 0f, 31f);
+        }
+        else if (edge.isForwardPointing)
+        {
+            spawnedRoad.transform.Rotate(0f, 0f, 90f);
+        }
         spawnedRoad.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
 		BoardState.instance.spawnedObjects.Add(location, spawnedRoad);
 
