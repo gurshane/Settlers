@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections;using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using Enums;
@@ -573,18 +572,18 @@ public class UIMoveManager : MonoBehaviour {
 		}
 	}
 
-	/*
+
 	private void revealAlchemistDiceRollPanel()
 	{
-		if (_CurrentPlayer.getMoveType ()  && GameManager.instance.getGamePhase() == GamePhase.PHASE_TWO) 
+		if (_CurrentPlayer.getMoveType () == MoveType.ALCHEMIST  && GameManager.instance.getGamePhase() == GamePhase.PHASE_ONE ) 
 		{
-			_3FishPanel.gameObject.SetActive (true);
+			_AlchemistDicePanel.gameObject.SetActive (true);
 		} 
 
 		else {
-			_3FishPanel.gameObject.SetActive (false);
+			_AlchemistDicePanel.gameObject.SetActive (false);
 		}
-	}*/
+	}
 
 	#endregion
 
@@ -868,6 +867,9 @@ public class UIMoveManager : MonoBehaviour {
 		case Enums.MoveType.ACTIVATE_KNIGHT:
 			rString = "Activate Knight";
 			break;
+		//case Enums.MoveType.ALCHEMIST:
+		//	rString = "My Trap Card (Alchemist)";
+		//		break;
 		case Enums.MoveType.BUILD_CITY:
 			rString = "Build City";
 			break;

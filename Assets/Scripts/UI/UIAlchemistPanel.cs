@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using Enums;
 
 public class UIAlchemistPanel : MonoBehaviour {
 
@@ -43,9 +44,11 @@ public class UIAlchemistPanel : MonoBehaviour {
 		}
 	}
 
+	//Rolls the Dice, but in an Alchemist kind of way
 	public void rollAlchemistDice()
 	{
-		//_CurrentPlayer.cmdAlchemistRoll(_YellowDieSlider.value, _RedDieSlider.value);
+		_CurrentPlayer.CmdAlchemistRoll ((int)_YellowDieSlider.value, (int)_RedDieSlider.value);
+		_CurrentPlayer.setMoveType (MoveType.NONE, _CurrentPlayer.getID());
 	}
 
 
