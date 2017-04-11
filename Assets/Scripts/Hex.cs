@@ -8,6 +8,11 @@ public class Hex : BoardPiece {
 
 	public List<Vertex> vertices;
 
+	/// <summary>
+	/// The hex value displayed above this instance
+	/// </summary>
+	public UIHexValue hexVal;
+
     [SyncVar]
 	public Enums.HexType hexType;
 
@@ -16,6 +21,9 @@ public class Hex : BoardPiece {
 
     [SyncVar]
 	public int hexNumber;
+
+    [SyncVar]
+    public char hexLetter;
 
     public Hex(Enums.TerrainType terrain, Enums.HexType hexType) : base(terrain)
     {
@@ -74,14 +82,5 @@ public class Hex : BoardPiece {
 	public void setHexNumber(int hexNumber) {
 		this.hexNumber = hexNumber;
 	}
-
-    void Start()
-    {
-
-    }
-	
-	// Update is called once per frame
-	void Update () {
-		
-	}
+    
 }

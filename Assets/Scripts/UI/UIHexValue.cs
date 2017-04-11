@@ -8,6 +8,10 @@ using UnityEngine.UI;
 /// </summary>
 public class UIHexValue : MonoBehaviour {
 
+    public bool isFishVal;
+
+	public bool isHighlighted;
+
 	/// <summary>
 	/// The camera which this UI element updates to constantly face
 	/// </summary>
@@ -25,12 +29,23 @@ public class UIHexValue : MonoBehaviour {
 	[SerializeField]
 	private Hex _Hex;
 
+	private string _Text;
 
 	// Use this for initialization
 	void Start () {
 
 		_Camera = Camera.main;
 		_HexNumber = GetComponent<TextMesh>();
+
+		_Hex.hexVal = this;
+
+		// On start, set display text to the hex's hexNumber
+		_Text = "" + _Hex.hexNumber;
+
+        if(isFishVal)
+        {
+            _HexNumber.color = Color.cyan;
+        }
 	}
 
 	/// <summary>
@@ -39,9 +54,21 @@ public class UIHexValue : MonoBehaviour {
 	/// </summary>
 	public void updateValue()
 	{
-		_HexNumber.text = "" + _Hex.hexNumber;
+	
+		if (isHighlighted) {
+			_Text = "!";
+			_HexNumber.color = Color.yellow;
+		} 
+		else 
+		{
+			_Text = "" + _Hex.hexNumber;
+			_HexNumber.color = Color.white;
+			_HexNumber.text = "" + _Text;
+		}
 
 	}
+
+
 
 	public void updatePosition()
 	{

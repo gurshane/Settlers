@@ -4,30 +4,43 @@ using UnityEngine;
 
 public class City : GamePiece {
 
-	private bool metropolis;
+	public bool metropolis;
 
-	public City(Enums.Color color, bool met) :
-		base(color, Enums.PieceType.CITY) {
+    public City() : base(Enums.PieceType.CITY)
+    {
+        this.metropolis = false;
+    }
 
-		this.metropolis = met;
+    public City(Enums.Color color) :
+		base(color, Enums.PieceType.CITY)
+    {
+
+        this.metropolis = false;
 	}
 
-	public bool isMetropolis() {
+	public bool isMetropolis()
+    {
 		return this.metropolis;
 	}
 
-	public void makeMetropolis() {
+	public void makeMetropolis()
+    {
 		this.metropolis = true;
 	}
 
-	public void removeMetropolis() {
+	public void removeMetropolis()
+    {
 		this.metropolis = false;
 	}
 
-	public static City getFreeCity(List<GamePiece> pieces) {
-		foreach (GamePiece p in pieces) {
-			if (p.getPieceType () == Enums.PieceType.CITY) {
-				if (!p.isOnBoard ()) {
+	public static City getFreeCity(List<GamePiece> pieces)
+    {
+		foreach (GamePiece p in pieces)
+        {
+			if (p.getPieceType () == Enums.PieceType.CITY)
+            {
+				if (!p.isOnBoard ())
+                {
 					return (City)p;
 				}
 			}

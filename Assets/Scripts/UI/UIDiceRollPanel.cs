@@ -8,6 +8,7 @@ using UnityEngine.UI;
 /// </summary>
 public class UIDiceRollPanel : UIElement {
 
+
 	/// <summary>
 	/// Text displaying FirstDie's value
 	/// </summary>
@@ -34,8 +35,8 @@ public class UIDiceRollPanel : UIElement {
 
 	// Use this for initialization
 	void Start () {
-		
 	}
+			
 
 
 	/// <summary>
@@ -45,12 +46,11 @@ public class UIDiceRollPanel : UIElement {
 	/// <param name="p_GameManager">P game manager.</param>
 	public override void uiUpdate(Player p_Player)
 	{
+		//HighLighter _PlayerHighlighter = p_Player.GetComponent<HighLighter> ();
 
-		HighLighter _PlayerHighlighter = p_Player.GetComponent<HighLighter> ();
-
-		_FirstDieText.text = "" + _PlayerHighlighter.firstDieNum;
-		_SecondDieText.text = "" + _PlayerHighlighter.secondDieNum;
-		//_EventDieText.text = convert (_PlayerHighlighter.resourceDieNum );
+		_FirstDieText.text = "" + GameManager.instance.getFirstDie();
+		_SecondDieText.text = "" + GameManager.instance.getSecondDie();
+		_EventDieText.text = convert (GameManager.instance.getEventDie() );
 
 		// After updating values, deactivate Roll button (Uncomment Later)
 		//_DiceRollButton.gameObject.SetActive (false);
@@ -61,11 +61,12 @@ public class UIDiceRollPanel : UIElement {
 	/// NOT YET IMPLEMENTED
 	/// </summary>
 	/// <param name="p_Player">P player.</param>
-	public void showRollButton(Player p_Player)
+	public void showRollButton(bool p_State)
 	{
 		// If this player is the one who's turn it is:
-		_DiceRollButton.gameObject.SetActive(true);
+		_DiceRollButton.gameObject.SetActive(p_State);
 	}
+		
 
 	/// <summary>
 	/// Convert the specified p_EventDieEnum into a string

@@ -7,10 +7,14 @@ public class Vertex : BoardPiece {
 
 	public List<Edge> neighbouringEdges;
     public bool isOnMainland;
-	private bool hasWall;
-	private int chits;
-	private bool adjacentToRobber;
-	public Enums.PortType portType;
+    public Enums.PortType portType;
+
+    public bool producesFish;
+    public int fishNumber;
+
+    private bool hasWall;
+    private bool adjacentToRobber;
+    private int chits;
 	private int visited;
 
 	public Vertex(Enums.TerrainType terrain) : base (terrain) {
@@ -73,15 +77,5 @@ public class Vertex : BoardPiece {
 
 	public void addEdge(Edge e) {
 		this.neighbouringEdges.Add (e);
-	}
-
-	// Use this for initialization
-	void Start () {
-		
-	}
-	
-	// Update is called once per frame
-	void Update () {
-		
 	}
 }

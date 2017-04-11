@@ -13,7 +13,16 @@ public class PrefabHolder : MonoBehaviour {
     public GameObject road;
     public GameObject metropolis;
     public GameObject boat;
+    public GameObject pirate;
+    public GameObject robber;
 
     public List<Material> materials;
+
+    static public PrefabHolder instance = null;
+
+	void Awake()
+    {
+        instance = this;
+    }
 
 }

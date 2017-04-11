@@ -6,6 +6,8 @@ using UnityEngine.Networking;
 public class BoardGenerator : NetworkBehaviour {
 
     //Spawn Locations
+    public List<GameObject> lakeSpawnLocations;
+
     private List<GameObject> mainBoardHexSpawns;
     private List<GameObject> islandHexSpawns;
 
@@ -21,6 +23,8 @@ public class BoardGenerator : NetworkBehaviour {
     //Number Tiles
     public List<GameObject> numberPieces;
 
+    public GameObject robber;
+
     //Edges
     private List<GameObject> edges;
 
@@ -35,11 +39,38 @@ public class BoardGenerator : NetworkBehaviour {
 
     private bool doOnce;
 
+    private Dictionary<char, int> numberTiles;
+
+    private Hex robberHex;
+    private Hex extraHex;
+
     void Start()
     {
         doOnce = true;
+        numberTiles = new Dictionary<char, int>();
+        numberTiles.Add('A', 5);
+        numberTiles.Add('B', 2);
+        numberTiles.Add('C', 6);
+        numberTiles.Add('D', 3);
+        numberTiles.Add('E', 8);
+        numberTiles.Add('F', 10);
+        numberTiles.Add('G', 9);
+        numberTiles.Add('H', 12);
+        numberTiles.Add('I', 11);
+        numberTiles.Add('J', 4);
+        numberTiles.Add('K', 8);
+        numberTiles.Add('L', 10);
+        numberTiles.Add('M', 9);
+        numberTiles.Add('N', 4);
+        numberTiles.Add('O', 5);
+        numberTiles.Add('P', 6);
+        numberTiles.Add('Q', 3);
+        numberTiles.Add('R', 11);
+        numberTiles.Add('S', 11);
     }
-    // Use this for initialization
+    
+
+    [ServerCallback]
     void LateUpdate ()
     {
         if(doOnce && isServer)
@@ -57,13 +88,13 @@ public class BoardGenerator : NetworkBehaviour {
             mainBoardHexSpawns = new List<GameObject>(GameObject.FindGameObjectsWithTag("MainHex"));
             islandHexSpawns = new List<GameObject>(GameObject.FindGameObjectsWithTag("IslandHex"));
 
-
             makeBoard();
         }
 	}
 
 	void makeBoard()
     {
+
         //Spawn Main Board Hexes
         //----------------------
         //Spawn Forest
@@ -73,7 +104,6 @@ public class BoardGenerator : NetworkBehaviour {
         //Spawn Hills
         spawnHex(mainBoardHexSpawns, hillHex, 3, true);
         //Spawn Dessert
-        spawnHex(mainBoardHexSpawns, dessertHex, 1, true);
         //Spawn Mountain 
         spawnHex(mainBoardHexSpawns, mountainHex, 3, true);
         //Spawn Pasture 
@@ -83,31 +113,38 @@ public class BoardGenerator : NetworkBehaviour {
         //Spawn Island Hexes
         //------------------
         //Spawn Gold
-        spawnHex(islandHexSpawns, goldHex, 1, false);
+        spawnHex(islandHexSpawns, goldHex, 2, false);
         //Spawn Forest
         spawnHex(islandHexSpawns, forestHex, 1, false);
         //Spawn Fields
         spawnHex(islandHexSpawns, fieldHex, 1, false);
         //Spawn Hills
         spawnHex(islandHexSpawns, hillHex, 1, false);
-        //Spawn Dessert
-        spawnHex(islandHexSpawns, dessertHex, 1, false);
         //Spawn Mountain 
-        spawnHex(islandHexSpawns, mountainHex, 1, false);
+        spawnHex(islandHexSpawns, mountainHex, 2, false);
         //Spawn Pasture 
-        spawnHex(islandHexSpawns, pastureHex, 2, false);
+        spawnHex(islandHexSpawns, pastureHex, 1, false);
+
+
+        spawnHex(lakeSpawnLocations, dessertHex, 1, true);
     }
 
     void spawnHex(List<GameObject> spawnPositions, GameObject hexToSpawn, int numToSpawn, bool isOnMainBoard)
     {
-       for( int i = 0; i < numToSpawn; i++)
+        for ( int i = 0; i < numToSpawn; i++)
         {
-            GameObject targetSpawn = (spawnPositions[Random.Range(0, spawnPositions.Count)]);
+            GameObject targetSpawn = (spawnPositions[UnityEngine.Random.Range(0, spawnPositions.Count)]);
+            while (targetSpawn.name.Equals("Hex (4)") && !hexToSpawn.name.Equals("desertTile"))
+            {
+                targetSpawn = (spawnPositions[UnityEngine.Random.Range(0, spawnPositions.Count)]);
+
+                if(spawnPositions.Count == 1)
+                {
+                    return;
+                }
+            }
             Transform targetTransform = targetSpawn.transform;
             GameObject spawnedHex = Instantiate(hexToSpawn, targetTransform.position, Quaternion.identity, targetTransform);
-
-            GameObject targetNumber = numberPieces[Random.Range(0, numberPieces.Count)];
-            //GameObject spawnedNumber = Instantiate(targetNumber, targetTransform.position, Quaternion.identity, targetTransform);
 
             Hex hex = targetSpawn.gameObject.GetComponent<Hex>();
             string name = hexToSpawn.name;
@@ -147,49 +184,9 @@ public class BoardGenerator : NetworkBehaviour {
                     break;
             }
 
-            string number = targetNumber.name;
-            switch (number)
-            {
-                case "one":
-                    hex.hexNumber = Random.Range(8, 12);
-                    break;
-                case "two":
-                    hex.hexNumber = 2;
-                    break;
-                case "three":
-                    hex.hexNumber = 3;
-                    break;
-                case "four":
-                    hex.hexNumber = 4;
-                    break;
-                case "five":
-                    hex.hexNumber = 5;
-                    break;
-                case "six":
-                    hex.hexNumber = 6;
-                    break;
-                case "seven":
-                    hex.hexNumber = Random.Range(2, 6);
-                    break;
-                case "eight":
-                    hex.hexNumber = 8;
-                    break;
-                case "nine":
-                    hex.hexNumber = 9;
-                    break;
-                case "ten":
-                    hex.hexNumber = 10;
-                    break;
-                case "eleven":
-                    hex.hexNumber = 11;
-                    break;
-                case "twelve":
-                    hex.hexNumber = 12;
-                    break;
-            }
-
             if (isOnMainBoard)
             {
+                hex.hexNumber = numberTiles[hex.hexLetter];
                 spawnedMainBoardHexes.Add(spawnedHex);
             }
             else
@@ -198,7 +195,7 @@ public class BoardGenerator : NetworkBehaviour {
             }
 
             NetworkServer.Spawn(spawnedHex);
-            //NetworkServer.Spawn(targetNumber);
+            
             spawnPositions.Remove(targetSpawn);
         }
     }

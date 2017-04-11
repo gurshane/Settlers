@@ -11,65 +11,69 @@ public class Edge : BoardPiece {
 	public Hex rightHex;
 	private int visited;
 
-	public Edge(Enums.TerrainType terrain) : base(terrain) {
+	public Edge(Enums.TerrainType terrain) : base(terrain)
+    {
 		this.visited = 0;
 	}
 		
-	public int getVisited() {
+	public int getVisited()
+    {
 		return this.visited;
 	}
 
-	public void setVisited() {
+	public void setVisited()
+    {
 		this.visited = 1;
 	}
 
-	public void resetVisited() {
+	public void resetVisited()
+    {
 		this.visited = 0;
 	}
 
-	public void clearVisited() {
+	public void clearVisited()
+    {
 		this.visited = 2;
 	}
 
-	public Vertex getLeftVertex() {
+	public Vertex getLeftVertex()
+    {
 		return this.leftVertex;
 	}
 
-	public Vertex getRightVertex() {
+	public Vertex getRightVertex()
+    {
 		return this.rightVertex;
 	}
 
-	public Hex getLeftHex() {
+	public Hex getLeftHex()
+    {
 		return this.leftHex;
 	}
 
-	public Hex getRightHex() {
+	public Hex getRightHex()
+    {
 		return this.rightHex;
 	}
 
-	public void setLeftVertex(Vertex v) {
+	public void setLeftVertex(Vertex v)
+    {
 		this.leftVertex = v;
 	}
 
-	public void setRightVertex(Vertex v) {
+	public void setRightVertex(Vertex v)
+    {
 		this.rightVertex = v;
 	}
 
-	public void setLeftHex(Hex v) {
+	public void setLeftHex(Hex v)
+    {
 		this.leftHex = v;
 	}
 
-	public void setRightHex(Hex v) {
+	public void setRightHex(Hex v)
+    {
 		this.rightHex = v;
 	}
-
-	// Use this for initialization
-	void Start () {
-		
-	}
-	
-	// Update is called once per frame
-	void Update () {
-		
-	}
+    
 }

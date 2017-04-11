@@ -9,6 +9,7 @@ using Enums;
 /// </summary>
 public class UIResource : UIElement {
 
+	private bool isGold;
 
 	#region Private Attributes
 	/// <summary>
@@ -28,6 +29,10 @@ public class UIResource : UIElement {
 	// Use this for initialization
 	void Start () {
 
+		if (name == "Gold_Image")
+			isGold = true;
+
+
 		setResourceType ();
 		_ResourceCount = transform.GetChild (0).GetComponent<Text>();
 	}
@@ -39,6 +44,11 @@ public class UIResource : UIElement {
 	/// <param name="p_Player">P player.</param>
 	public override void uiUpdate(Player p_Player)
 	{
+		if (isGold) 
+		{
+			_ResourceCount.text = "x" + p_Player.getGoldCount ();
+			return;
+		}
 
 		// Get Player's resource list, find the index in the list
 		// which corresponds to this instance's ResourceType

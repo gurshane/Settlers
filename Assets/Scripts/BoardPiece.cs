@@ -6,22 +6,26 @@ using UnityEngine.Networking;
 
 public class BoardPiece : NetworkBehaviour {
 
-	private GamePiece occupyingPiece;
+	public GamePiece occupyingPiece;
 	public Enums.TerrainType terrainType;
 
-	public BoardPiece (Enums.TerrainType terrain) {
+	public BoardPiece (Enums.TerrainType terrain)
+    {
 		this.terrainType = terrain;
 	}
 
-	public GamePiece getOccupyingPiece() {
+	public GamePiece getOccupyingPiece()
+    {
 		return this.occupyingPiece;
 	}
 
-	public Enums.TerrainType getTerrainType() {
+	public Enums.TerrainType getTerrainType()
+    {
 		return this.terrainType;
 	}
 
-	public void setOccupyingPiece(GamePiece gamePiece) {
+	public void setOccupyingPiece(GamePiece gamePiece)
+    {
 		this.occupyingPiece = gamePiece;
 	}
 }

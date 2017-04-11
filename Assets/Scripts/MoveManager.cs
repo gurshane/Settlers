@@ -6,45 +6,54 @@ using UnityEngine.Networking;
 
 public class MoveManager : NetworkBehaviour {
     
-    GameManager gameManager;
-    PrefabHolder prefabHolder;
-    Bank bank;
-    BoardState boardState;
+    MoveAuthorizer ma;
+	Graph graph;
+	private NetworkIdentity objNetId;
+	static public MoveManager instance = null;
+
+	void Awake()
+    {
+        instance = this;
+    }
 
     void Start()
     {
-        gameManager = GetComponent<GameManager>();
-        bank = GetComponent<Bank>();
-        boardState = GetComponent<BoardState>();
-        prefabHolder = GetComponent<PrefabHolder>();
+        ma = new MoveAuthorizer();
+		graph = new Graph ();
     }
 
     // Move a knight from source to target
-    public bool moveKnight(Vertex source, Vertex target, Enums.Color color, int currentLongest) {
+	public bool moveKnight(Vertex source, Vertex target, Enums.Color color, bool server)
+    {
 
 		// Check if the knight can be moved
-		if (!MoveAuthorizer.canKnightMove (source, target, color)) {
+		if (!ma.canKnightMove (source, target, color))
+        {
 			return false;
 		}
 
-        CmdMoveKnight(source.transform.position, target.transform.position);
+		Knight k = (Knight)source.getOccupyingPiece ();
+		int level = k.getLevel ();
 
-		// Check if longest route needs to be updated
+		assignAuthority(server);
+        RpcMoveKnight(source.transform.position, target.transform.position, level, color);
+		removeAuthority(server);
 
 		return true;
 	}
 
-    [Command]
-    void CmdMoveKnight(Vector3 source, Vector3 target)
-    {
-        RpcMoveKnight(source, target);
-    }
-
     [ClientRpc]
-    void RpcMoveKnight(Vector3 source, Vector3 target)
+	void RpcMoveKnight(Vector3 source, Vector3 target, int level, Enums.Color color)
     {
-        Vertex sourcePiece = boardState.vertexPosition[source];
-        Vertex targetPiece = boardState.vertexPosition[target];
+        Vertex sourcePiece = BoardState.instance.vertexPosition[source];
+        Vertex targetPiece = BoardState.instance.vertexPosition[target];
+
+		GameObject knight = getKnightFromLevel (level, target, color);
+        knight.transform.position += new Vector3(0f, 10f, 0f);
+		Destroy (BoardState.instance.spawnedObjects [source]);
+
+		BoardState.instance.spawnedObjects.Add(target, knight);
+		BoardState.instance.spawnedObjects.Remove (source);
 
         Knight sourceKnight = (Knight)sourcePiece.getOccupyingPiece();
 
@@ -54,340 +63,1108 @@ public class MoveManager : NetworkBehaviour {
 
         // Deactivate the knight
         sourceKnight.deactivateKnight();
+
+		// Check if longest road needs to be updated
     }
 
 	// Displace a knight at target with knight at source
-	public bool displaceKnight(Vertex source, Vertex target, Enums.Color color) {
-		
+	public bool displaceKnight(Vertex source, Vertex target, Enums.Color color, bool server)
+    {
+		Debug.Log("displaceKnight: ");
+		Debug.Log(source + " " + target);
 		// Check if the knight can displace
-		if (!MoveAuthorizer.canKnightDisplace (source, target, color)) {
-			return false;
+		//if (!ma.canKnightDisplace (source, target, color))
+        //{
+			//return false;
+		//}
+
+		Knight kSource = (Knight)source.getOccupyingPiece ();
+		int sourceLevel = kSource.getLevel ();
+
+		Knight kTarget = (Knight)target.getOccupyingPiece ();
+		int targetLevel = kTarget.getLevel ();
+
+		bool gone = true;
+		foreach (Vertex v in BoardState.instance.vertexPosition.Values)
+        {
+			if (graph.areConnectedVertices (v, target, kTarget.getColor()))
+            {
+				if (!Object.ReferenceEquals (v.getOccupyingPiece (), null))
+                {
+					if (Object.ReferenceEquals (v, source))
+                    {
+						gone = false;
+						break;
+					}
+				}
+                else
+                {
+					gone = false;
+					break;
+				}
+			}
 		}
 
-        CmdDisplaceKnight(source.transform.position, target.transform.position);
-		// Check if longest route needs to be updated
+		Debug.Log("gone: " + gone);
 
+		if (!gone) {
+			int currTurn = GameManager.instance.getPlayerTurn();
+			GameManager.instance.getPersonalPlayer().setOldTurn(currTurn);
+
+			foreach (Player p in GameManager.instance.players) {
+				GameManager.instance.getPersonalPlayer().setMoveType(MoveType.SPECIAL, p.getID());
+			}
+
+			Player opponent = GameManager.instance.getPlayer((int)kTarget.getColor());
+			GameManager.instance.getPersonalPlayer().setSpecial(Special.KNIGHT_DISPLACED, opponent.getID());
+			GameManager.instance.getPersonalPlayer().setI1(targetLevel, opponent.getID());
+			GameManager.instance.getPersonalPlayer().setB1(kTarget.isActive(), opponent.getID());
+			GameManager.instance.getPersonalPlayer().SetV1(target, opponent.getID());
+			GameManager.instance.getPersonalPlayer().setSpecialTurn((int)kTarget.getColor());
+		}
+		assignAuthority(server);
+		RpcDisplaceKnight(source.transform.position, target.transform.position, 
+			sourceLevel, targetLevel, color);
+
+		removeAuthority(server);
 		return true;
 	}
 
-    [Command]
-    void CmdDisplaceKnight(Vector3 source, Vector3 target)
-    {
-        RpcDisplaceKnight(source, target);
-    }
+	public void alternateDisplaceKnight (Vertex displacedLocation, int targetLevel,
+		bool active, Enums.Color color, bool server) {
+
+		assignAuthority(server);
+		RpcAlternateDisplaceKnight(displacedLocation.transform.position,
+				targetLevel, active, color);
+		removeAuthority(server);
+	}
+
+	[ClientRpc]
+	void RpcAlternateDisplaceKnight(Vector3 displacedLocation, 
+		int targetLevel, bool active, Enums.Color color) 
+		
+		{
+
+		Vertex displacedPiece = BoardState.instance.vertexPosition[displacedLocation];
+
+		Player current = GameManager.instance.getCurrentPlayer();
+		List<GamePiece> pieces = current.getGamePieces();
+        Knight targetKnight = Knight.getFreeKnight(pieces);
+		targetKnight.updateLevel(targetLevel);
+		if (active) {
+			targetKnight.activateKnight();
+			targetKnight.notActivatedThisTurn();
+		}
+
+		GameObject targetKnightObject = getKnightFromLevel (targetLevel, displacedLocation, color);
+        targetKnightObject.transform.position += new Vector3(0f, 10f, 0f);
+		BoardState.instance.spawnedObjects.Add(displacedLocation, targetKnightObject);
+
+        // Deactivate the knight
+		if (!Object.ReferenceEquals(targetKnight, null)) {
+			displacedPiece.setOccupyingPiece(targetKnight);			
+			targetKnight.putOnBoard();
+		}
+
+		// Check if longest road needs to be updated
+	}
 
     [ClientRpc]
-    void RpcDisplaceKnight(Vector3 source, Vector3 target)
+	void RpcDisplaceKnight(Vector3 source, Vector3 target,
+		int sourceLevel, int targetLevel, Enums.Color color)
     {
-        Vertex sourcePiece = boardState.vertexPosition[source];
-        Vertex targetPiece = boardState.vertexPosition[target];
+        Vertex sourcePiece = BoardState.instance.vertexPosition[source];
+        Vertex targetPiece = BoardState.instance.vertexPosition[target];
 
         Knight sourceKnight = (Knight)sourcePiece.getOccupyingPiece();
         Knight targetKnight = (Knight)targetPiece.getOccupyingPiece();
+
+		Destroy (BoardState.instance.spawnedObjects [source]);
+		Destroy (BoardState.instance.spawnedObjects [target]);
+
+		GameObject sourceKnightObject = getKnightFromLevel (sourceLevel, target, color);
+        sourceKnightObject.transform.position += new Vector3(0f, 10f, 0f);
+		BoardState.instance.spawnedObjects.Remove(target);
+		BoardState.instance.spawnedObjects.Remove(source);
+		BoardState.instance.spawnedObjects.Add(target, sourceKnightObject);
         
         // Move the knight
         sourcePiece.setOccupyingPiece(null);
-
-        Vertex displacedTarget = new Vertex(Enums.TerrainType.LAND); // = forcedDisplacement(target);
-
         targetPiece.setOccupyingPiece(sourceKnight);
-        displacedTarget.setOccupyingPiece(targetKnight);
 
         // Deactivate the knight
         sourceKnight.deactivateKnight();
+		targetKnight.takeOffBoard();
+
+		// Check if longest road needs to be updated
     }
 
 	// Upgrade a knight at vertex v
-	public bool upgradeKnight(int[] resources, int[] devChart, Vertex v) {
-        CmdUpgradeKnight(resources, devChart, v.transform.position);
+	public bool upgradeKnight(int[] resources, int[] devChart, Vertex v, List<GamePiece> pieces,
+			Enums.Color color, bool server)
+    {
+
+		// Check if the knight can be upgraded
+		if (!ma.canUpgradeKnight (resources, devChart, v, pieces, color))
+        {
+			return false;
+		}
+
+		Knight k = (Knight)v.getOccupyingPiece ();
+		int level = k.getLevel ();
+
+		assignAuthority(server);
+        RpcUpgradeKnight(resources, devChart, v.transform.position, level, color);
+
+		Player current = GameManager.instance.getCurrentPlayer();
+
+		// Spend the correct resources
+        GameManager.instance.getPersonalPlayer().changeResource(Enums.ResourceType.WOOL, -1, current.getID());
+        Bank.instance.depositResource(Enums.ResourceType.WOOL, 1, current.isServer);
+
+        GameManager.instance.getPersonalPlayer().changeResource(Enums.ResourceType.ORE, -1, current.getID());
+        Bank.instance.depositResource(Enums.ResourceType.ORE, 1, current.isServer);
+
+		removeAuthority(server);
 		return true;
 	}
 
-    [Command]
-    void CmdUpgradeKnight(int[] resources, int[] devChart, Vector3 v)
-    {
-        RpcUpgradeKnight(resources, devChart, v);
-    }
-
     [ClientRpc]
-    void RpcUpgradeKnight(int[] resources, int[] devChart, Vector3 v)
+	void RpcUpgradeKnight(int[] resources, int[] devChart, Vector3 v, int level, Enums.Color color)
     {
+		// Remove the current settlement
+        Vertex source = BoardState.instance.vertexPosition[v];
+        Knight knight = (Knight)source.getOccupyingPiece();
+		Destroy (BoardState.instance.spawnedObjects [v]);
+		BoardState.instance.spawnedObjects.Remove(v);
 
+		GameObject newKnight = getKnightFromLevel (level + 1, v, color);
+        newKnight.transform.position += new Vector3(0f, 10f, 0f);
+
+		BoardState.instance.spawnedObjects.Add(v, newKnight);
+
+		knight.upgrade ();
     }
 
 	// Activate a knight at vertex v
-	public bool activateKnight(int[] resources, Vertex v) {
-        CmdActivateKnight(resources, v.transform.position);
+	public bool activateKnight(int[] resources, Vertex v, Enums.Color color, bool server)
+    {
+		// Check if the knight can be upgraded
+		if (!ma.canActivateKnight (resources, v, color))
+        {
+			return false;
+		}
+
+		assignAuthority(server);
+        RpcActivateKnight(resources, v.transform.position);
+
+		Player current = GameManager.instance.getCurrentPlayer();
+
+		// Spend the correct resources
+        GameManager.instance.getPersonalPlayer().changeResource(Enums.ResourceType.GRAIN, -1, current.getID());
+        Bank.instance.depositResource(Enums.ResourceType.GRAIN, 1, current.isServer);
+
+		removeAuthority(server);
 		return true;
 	}
-
-    [Command]
-    void CmdActivateKnight(int[] resources, Vector3 v)
-    {
-        RpcActivateKnight(resources, v);
-    }
 
     [ClientRpc]
     void RpcActivateKnight(int[] resources, Vector3 v)
     {
+		Vertex source = BoardState.instance.vertexPosition[v];
 
+		// Activate the knight
+		Knight knight = (Knight)source.getOccupyingPiece();
+		knight.activateKnight ();
     }
 
 	// Upgrade a development chart in the specified field
 	public bool upgradeDevChart(Enums.DevChartType dev, int[] commodities, 
-		List<GamePiece> pieces, int[] devChart) {
-        
+		List<GamePiece> pieces, int[] devChart, bool server)
+    {
+		// Check if the knight can be upgraded
+		if (!ma.canUpgradeDevChart (dev, commodities, pieces, devChart))
+        {
+			return false;
+		}
+
+		Player current = GameManager.instance.getCurrentPlayer();
+
+		Enums.CommodityType com = (CommodityType)((int)dev);
+		int level = devChart[(int)dev];
+		int newLevel = level + 1;
+
+		// Spend the correct resources
+        GameManager.instance.getPersonalPlayer().changeCommodity(com, -newLevel, current.getID());
+        Bank.instance.depositCommodity(com, newLevel, current.isServer);
+
+		GameManager.instance.getPersonalPlayer().upgradeDevChart(dev, current.getID());
+
+		if (newLevel == 3) {
+			if (dev == Enums.DevChartType.TRADE) {
+				for (int i = 0; i < 3; i++) {
+					GameManager.instance.getPersonalPlayer().updateCommodityRatio((CommodityType)i, 2, current.getID());
+				}
+			} else if (dev == Enums.DevChartType.SCIENCE) {
+				GameManager.instance.getPersonalPlayer().makeAqueduct(current.getID());
+			}
+		} 
+		
+		bool check0 = false;
+		foreach (Vertex v in BoardState.instance.vertexPosition.Values) {
+			GamePiece city = v.getOccupyingPiece();
+			if (!Object.ReferenceEquals(city, null)) {
+				if (city.getPieceType() == PieceType.CITY) {
+					City c = (City)city;
+					if (!c.isMetropolis()) {
+						if (c.getColor() == GameManager.instance.getCurrentPlayer().getColor()) check0 = true;
+					}
+				}
+			}
+		}
+		
+		if (newLevel == 4 && Object.ReferenceEquals(GameManager.instance.getMetropolisAt(dev), null) && check0) {
+
+			Debug.Log("numPlayers");
+			foreach (Player p2 in GameManager.instance.getPlayers()) {
+				Debug.Log("setmovetype");
+				GameManager.instance.getPersonalPlayer().setMoveType(MoveType.SPECIAL, p2.getID());
+			}
+			int ident = GameManager.instance.getCurrentPlayer().getID();
+
+			GameManager.instance.getPersonalPlayer().setSpecial(Special.CHOOSE_METROPOLIS, ident);
+			GameManager.instance.getPersonalPlayer().setMetropolis(dev, ident);
+			
+			foreach (Player p2 in GameManager.instance.getPlayers()) {
+				if(!Object.ReferenceEquals(GameManager.instance.getPlayer(ident), p2)) GameManager.instance.getPersonalPlayer().setSpecial(Special.NONE, p2.getID());
+			}
+		}
+
+		bool check1 = (newLevel == 5);
+		bool check2 = Object.ReferenceEquals(GameManager.instance.getMetropolisAt(dev), null);
+		bool check3 = false;
+		bool check4 = false;
+		Vertex currentMet = GameManager.instance.getMetropolisAt(dev);
+		if (!Object.ReferenceEquals(currentMet, null)) {
+			GamePiece c = currentMet.getOccupyingPiece();
+			int i = (int)c.getColor(); 
+			int[] oppDevChart = GameManager.instance.getPlayer(i).getDevFlipChart();
+			if (oppDevChart[(int)dev] < 5) check3 = true;
+			if (i == GameManager.instance.getCurrentPlayer().getID()) check4 = true;
+		}
+
+		if (check1 && (check2 || check3) && !check4 && check0) {
+			foreach (Player p2 in GameManager.instance.getPlayers()) {
+				GameManager.instance.getPersonalPlayer().setMoveType(MoveType.SPECIAL, p2.getID());
+			}
+			int ident = GameManager.instance.getCurrentPlayer().getID();
+
+			GameManager.instance.getPersonalPlayer().setSpecial(Special.CHOOSE_METROPOLIS, ident);
+			GameManager.instance.getPersonalPlayer().setMetropolis(dev, ident);
+			
+			foreach (Player p2 in GameManager.instance.getPlayers()) {
+				if(!Object.ReferenceEquals(GameManager.instance.getPlayer(ident), p2)) GameManager.instance.getPersonalPlayer().setSpecial(Special.NONE, p2.getID());
+			}
+		}
+
+
 		return true;
 	}
 
 	// Build a settlement at location
 	public bool buidSettlement(Vertex location, int[] resources,
-		List<GamePiece> pieces, Enums.Color color) {
+		List<GamePiece> pieces, Enums.Color color, bool server)
+    {
 
-		if (!MoveAuthorizer.canBuildSettlement (location, resources, pieces, color)) {
+		if (!ma.canBuildSettlement (location, resources, pieces, color))
+        {
 			return false;
 		}
 
-        CmdBuildSettlement(location.transform.position);
+		assignAuthority(server);
+        RpcBuildSettlement(location.transform.position, color);
 
-        Player current = GetComponent<Player>();//gameManager.getCurrentPlayer();
+		Player current = GameManager.instance.getCurrentPlayer();
 
-        // Add an appropriate amount of victory points
-        current.incrementVictoryPoints (1);
-		current.incrementVictoryPoints (location.getChits ());
+		// Add an appropriate amount of victory points
+        GameManager.instance.getPersonalPlayer().changeVictoryPoints(1, current.getID());
+        GameManager.instance.getPersonalPlayer().changeVictoryPoints(location.getChits(), current.getID());
 
         // Spend the correct resources
-        current.discardResource (Enums.ResourceType.BRICK, 1);
-		bank.depositResource (Enums.ResourceType.BRICK, 1);
+        GameManager.instance.getPersonalPlayer().changeResource(Enums.ResourceType.BRICK, -1, current.getID());
+        Bank.instance.depositResource(Enums.ResourceType.BRICK, 1, current.isServer);
 
-		current.discardResource (Enums.ResourceType.GRAIN, 1);
-		bank.depositResource (Enums.ResourceType.GRAIN, 1);
+        GameManager.instance.getPersonalPlayer().changeResource(Enums.ResourceType.GRAIN, -1, current.getID());
+        Bank.instance.depositResource(Enums.ResourceType.GRAIN, 1, current.isServer);
 
-		current.discardResource (Enums.ResourceType.WOOL, 1);
-		bank.depositResource (Enums.ResourceType.WOOL, 1);
+        GameManager.instance.getPersonalPlayer().changeResource(Enums.ResourceType.WOOL, -1, current.getID());
+        Bank.instance.depositResource(Enums.ResourceType.WOOL, 1, current.isServer);
 
-		current.discardResource (Enums.ResourceType.LUMBER, 1);
-		bank.depositResource (Enums.ResourceType.LUMBER, 1);
+        GameManager.instance.getPersonalPlayer().changeResource(Enums.ResourceType.LUMBER, -1, current.getID());
+        Bank.instance.depositResource(Enums.ResourceType.LUMBER, 1, current.isServer);
 
-		// Check if there is a port
-		updatePort (location);
-
-		// Update longest road
-
+		removeAuthority(server);
+		
 		return true;
 	}
 
-    [Command]
-    void CmdBuildSettlement(Vector3 location)
-    {
-        RpcBuildSettlement(location);
-
-        GameObject newSettlement = Instantiate<GameObject>(prefabHolder.settlement, location, Quaternion.identity);
-        boardState.spawnedObjects.Add(location, newSettlement);
-        NetworkServer.Spawn(newSettlement);
-    }
-
     [ClientRpc]
-    void RpcBuildSettlement(Vector3 location)
+	void RpcBuildSettlement(Vector3 location, Enums.Color color)
     {
-        Vertex source = boardState.vertexPosition[location];
+       	Vertex source = BoardState.instance.vertexPosition[location];
+		GameObject newSettlement = Instantiate<GameObject>(PrefabHolder.instance.settlement, location, Quaternion.identity);
+        fixPieceRotationAndPosition(newSettlement);
+        newSettlement.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
+		BoardState.instance.spawnedObjects.Add(location, newSettlement);
 
-        List<GamePiece> pieces = GetComponent<Player>().getGamePieces();// gameManager.getCurrentPlayer().getGamePieces();
+		Player current = GameManager.instance.getCurrentPlayer();
+		List<GamePiece> pieces = current.getGamePieces();
 
         // Put a settlement on the board
         Settlement settlement = Settlement.getFreeSettlement(pieces);
 
-        source.setOccupyingPiece(settlement);
-        settlement.putOnBoard();
+		if (!Object.ReferenceEquals(settlement, null)) {
+			source.setOccupyingPiece(settlement);
+			settlement.putOnBoard();
+		}
+
+        // Check if there is a port
+        updatePort (source);
+
+		// Update longest road
     }
 
 
 	// Build a city at location
 	public bool buildCity(Vertex location, int[] resources,
-		List<GamePiece> pieces, Enums.Color color) {
+		List<GamePiece> pieces, Enums.Color color, bool server)
+    {
 
-		if (!MoveAuthorizer.canBuildCity (location, resources, pieces, color)) {
+		Debug.Log("hello1");
+		if (!ma.canBuildCity (location, resources, pieces, color))
+        {
 			return false;
 		}
 
-        CmdBuildCity(location.transform.position);
+		Debug.Log("hello2");
 
-        // Add an appropriate amount of victory points
-        Player current = GetComponent<Player>();//gameManager.getCurrentPlayer();
-        current.incrementVictoryPoints (1);
+		assignAuthority(server);
+        RpcBuildCity(location.transform.position, color);
 
-		// Spend the resources
-		current.discardResource (Enums.ResourceType.GRAIN, 2);
-		bank.depositResource (Enums.ResourceType.GRAIN, 2);
+		Player current = GameManager.instance.getCurrentPlayer();
 
-		current.discardResource (Enums.ResourceType.ORE, 3);
-		bank.depositResource (Enums.ResourceType.ORE, 3);
+		// Add an appropriate amount of victory points
+        GameManager.instance.getPersonalPlayer().changeVictoryPoints(1, current.getID());
 
-		return true;
+        // Spend the resources
+        GameManager.instance.getPersonalPlayer().changeResource(Enums.ResourceType.GRAIN, -2, current.getID());
+        Bank.instance.depositResource(Enums.ResourceType.GRAIN, 2, current.isServer);
+
+        GameManager.instance.getPersonalPlayer().changeResource(Enums.ResourceType.ORE, -3, current.getID());
+        Bank.instance.depositResource(Enums.ResourceType.ORE, 3, current.isServer);
+
+		removeAuthority(server);
+
+        return true;
 	}
 
-    [Command]
-    void CmdBuildCity(Vector3 location)
-    {
-        RpcBuildCity(location);
-
-        GameObject spawnedCity = Instantiate<GameObject>(prefabHolder.city, location, Quaternion.identity);
-        boardState.spawnedObjects.Add(location, spawnedCity);
-        NetworkServer.Spawn(spawnedCity);
-    }
-
     [ClientRpc]
-    void RpcBuildCity(Vector3 location)
+	void RpcBuildCity(Vector3 location, Enums.Color color)
     {
         // Remove the current settlement
-        Vertex source = boardState.vertexPosition[location];
+        Vertex source = BoardState.instance.vertexPosition[location];
         GamePiece settlement = source.getOccupyingPiece();
-        
-        settlement.takeOffBoard();
+		Destroy (BoardState.instance.spawnedObjects [location]);
+		BoardState.instance.spawnedObjects.Remove(location);
 
-        // Build a city
-        List<GamePiece> pieces = GetComponent<Player>().getGamePieces();// gameManager.getCurrentPlayer().getGamePieces();
+		GameObject spawnedCity = Instantiate<GameObject>(PrefabHolder.instance.city, location, Quaternion.identity);
+        fixPieceRotationAndPosition(spawnedCity);
+        spawnedCity.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
+
+		BoardState.instance.spawnedObjects.Add(location, spawnedCity);
+
+		// Remove settlement at location
+		settlement.takeOffBoard ();
+
+		Player current = GameManager.instance.getCurrentPlayer();
+		List<GamePiece> pieces = current.getGamePieces();
         City city = City.getFreeCity(pieces);
 
-        source.setOccupyingPiece(city);
-        city.putOnBoard();
+		if (!Object.ReferenceEquals(city, null)) {
+			source.setOccupyingPiece(city);
+			city.putOnBoard();
+		}
+    }
+
+    public bool tradeWithBank(int[] resRatios, int[] commodityRatios, Trades trade)
+    {
+        if (!Bank.instance.isValidBankTrade(resRatios, commodityRatios, trade))
+        {
+            return false;
+        }
+
+        Bank.instance.tradeWithBank(resRatios, commodityRatios, trade);
+        return true;
+    }
+
+	public bool chooseMetropolis (Vertex location, Enums.Color color, Enums.DevChartType dev, bool server)
+    {
+
+		if (!ma.canChooseMetropolis (location, color))
+        {
+			return false;
+		}
+
+		assignAuthority(server);
+        RpcChooseMetropolis(location.transform.position, color, dev);
+
+		Player current = GameManager.instance.getCurrentPlayer();
+
+		// Add an appropriate amount of victory points
+        GameManager.instance.getPersonalPlayer().changeVictoryPoints(2, current.getID());
+
+		Vertex before = GameManager.instance.getMetropolisAt(dev);
+		if (!Object.ReferenceEquals(before, null)) {
+
+			int p = (int)before.getOccupyingPiece().getColor();
+
+			GameManager.instance.getPersonalPlayer().changeVictoryPoints(-2, p);
+		}
+
+		removeAuthority(server);
+
+        return true;
+	}
+
+	[ClientRpc]
+	void RpcChooseMetropolis(Vector3 location, Enums.Color color, Enums.DevChartType dev)
+    {
+        // Remove the current settlement
+        Vertex source = BoardState.instance.vertexPosition[location];
+        City city = (City)source.getOccupyingPiece();
+		Destroy (BoardState.instance.spawnedObjects [location]);
+		BoardState.instance.spawnedObjects.Remove(location);
+
+		GameObject spawnedMetropolis = Instantiate<GameObject>(PrefabHolder.instance.metropolis, location, Quaternion.identity);
+        fixPieceRotationAndPosition(spawnedMetropolis);
+
+		switch (dev) {
+			case DevChartType.TRADE : 
+				spawnedMetropolis.GetComponent<MeshRenderer>().material.SetColor("_Color", UnityEngine.Color.yellow);
+                spawnedMetropolis.GetComponentInChildren<MeshRenderer>().material.SetColor("_Color", UnityEngine.Color.yellow);
+				break;
+			case DevChartType.POLITICS :
+				spawnedMetropolis.GetComponent<MeshRenderer>().material.SetColor("_Color", UnityEngine.Color.blue);
+                spawnedMetropolis.GetComponentInChildren<MeshRenderer>().material.SetColor("_Color", UnityEngine.Color.blue);
+                break;
+			default:
+				spawnedMetropolis.GetComponent<MeshRenderer>().material.SetColor("_Color", UnityEngine.Color.green);
+                spawnedMetropolis.GetComponentInChildren<MeshRenderer>().material.SetColor("_Color", UnityEngine.Color.green);
+                break;
+		}
+
+		BoardState.instance.spawnedObjects.Add(location, spawnedMetropolis);
+
+		city.makeMetropolis();
+
+		Debug.Log("metro "+ city.isMetropolis());
+
+		Vertex before = GameManager.instance.getMetropolisAt(dev);
+		if (!Object.ReferenceEquals(before, null)) {
+
+			City beforePiece = (City)before.getOccupyingPiece();
+
+			beforePiece.removeMetropolis();
+
+			Destroy (BoardState.instance.spawnedObjects [before.transform.position]);
+			BoardState.instance.spawnedObjects.Remove(before.transform.position);
+
+			GameObject oldCity = Instantiate<GameObject>(PrefabHolder.instance.city, before.transform.position, Quaternion.identity);
+			oldCity.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(beforePiece.getColor()));
+			BoardState.instance.spawnedObjects.Add(before.transform.position, oldCity);
+		}
+
+		GameManager.instance.setMetropolisPlayer(dev, BoardState.instance.vertexPosition[location]);
     }
 
 	// Check if a city wall can be built at a vertex
 	public bool buildCityWall(Vertex location, int[] resources,
-		int cityWalls, Enums.Color color) {
-        CmdBuildCityWall(location.transform.position);
-		return true;
+		int cityWalls, Enums.Color color, bool server)
+    {
+		if (!ma.canBuildCityWall (location, resources, cityWalls, color))
+        {
+			return false;
+		}
+
+		assignAuthority(server);
+        RpcBuildCityWall(location.transform.position, color);
+
+		Player current = GameManager.instance.getCurrentPlayer();
+
+		GameManager.instance.getPersonalPlayer().changeCityWallCount(-1, current.getID());
+
+        // Spend the resources
+        GameManager.instance.getPersonalPlayer().changeResource(Enums.ResourceType.BRICK, -2, current.getID());
+        Bank.instance.depositResource(Enums.ResourceType.BRICK, 2, current.isServer);
+
+		removeAuthority(server);
+
+        return true;
 	}
 
-    [Command]
-    void CmdBuildCityWall(Vector3 location)
-    {
-        RpcBuildCityWall(location);
-
-        GameObject spawnedCityWall = Instantiate<GameObject>(prefabHolder.cityWall, location, Quaternion.identity);
-        boardState.spawnedObjects.Add(location, spawnedCityWall);
-        NetworkServer.Spawn(spawnedCityWall);
-    }
-
     [ClientRpc]
-    void RpcBuildCityWall(Vector3 location)
+	void RpcBuildCityWall(Vector3 location, Enums.Color color)
     {
-
+		Vertex source = BoardState.instance.vertexPosition[location];
+		GameObject spawnedCityWall = Instantiate<GameObject>(PrefabHolder.instance.cityWall, location, Quaternion.identity);
+        fixPieceRotationAndPosition(spawnedCityWall);
+        spawnedCityWall.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
+		BoardState.instance.spawnedObjects.Add(location, spawnedCityWall);
+		source.addWall();
     }
 
 	// Build a knight at location
 	public bool buildKnight(Vertex location, int[] resources,
-		List<GamePiece> pieces, Enums.Color color) {
-        CmdBuildKnight(location.transform.position);
-		return true;
+		List<GamePiece> pieces, Enums.Color color, bool server)
+    {
+		if (!ma.canBuildKnight (location, resources, pieces, color))
+        {
+			return false;
+		}
+
+		assignAuthority(server);
+        RpcBuildKnight(location.transform.position, color);
+
+		Player current = GameManager.instance.getCurrentPlayer();
+
+        // Spend the resources
+        GameManager.instance.getPersonalPlayer().changeResource(Enums.ResourceType.WOOL, -1, current.getID());
+        Bank.instance.depositResource(Enums.ResourceType.WOOL, 1, current.isServer);
+
+        GameManager.instance.getPersonalPlayer().changeResource(Enums.ResourceType.ORE, -1, current.getID());
+        Bank.instance.depositResource(Enums.ResourceType.ORE, 1, current.isServer);
+
+		removeAuthority(server);
+
+        return true;
 	}
 
-    [Command]
-    void CmdBuildKnight(Vector3 location)
-    {
-        RpcBuildKnight(location);
-
-        GameObject spawnedKnight = Instantiate<GameObject>(prefabHolder.levelOneKnight, location, Quaternion.identity);
-        boardState.spawnedObjects.Add(location, spawnedKnight);
-        NetworkServer.Spawn(spawnedKnight);
-    }
-
     [ClientRpc]
-    void RpcBuildKnight(Vector3 location)
+	void RpcBuildKnight(Vector3 location, Enums.Color color)
     {
+		Vertex source = BoardState.instance.vertexPosition[location];
+		GameObject spawnedKnight = getKnightFromLevel(1, location, color);
+        spawnedKnight.transform.position += new Vector3(0f, 10f, 0f);
+		BoardState.instance.spawnedObjects.Add(location, spawnedKnight);
 
+		Player current = GameManager.instance.getCurrentPlayer();
+		List<GamePiece> pieces = current.getGamePieces();
+        Knight knight = Knight.getFreeKnight(pieces);
+
+		if (!Object.ReferenceEquals(knight, null)) {
+			source.setOccupyingPiece(knight);
+			knight.putOnBoard();
+		}
     }
 
 	// Build a road at location
 	public bool buildRoad(Edge location, int[] resources,
-		List<GamePiece> pieces, Enums.Color color) {
+		List<GamePiece> pieces, Enums.Color color, bool server)
+    {
 
-		if (!MoveAuthorizer.canBuildRoad (location, resources, pieces, color)) {
+		if (!ma.canBuildRoad (location, resources, pieces, color))
+        {
 			return false;
 		}
 
-        CmdBuildRoad(location.transform.position);
+		assignAuthority(server);
+        RpcBuildRoad(location.transform.position, color);
 
-        Player current = GetComponent<Player>();// gameManager.getCurrentPlayer ();
+		Player current = GameManager.instance.getCurrentPlayer();
 
 		// Spend the resources
-		current.discardResource (Enums.ResourceType.BRICK, 1);
-		bank.depositResource (Enums.ResourceType.BRICK, 1);
+        GameManager.instance.getPersonalPlayer().changeResource(Enums.ResourceType.BRICK, -1, current.getID());
+        Bank.instance.depositResource(Enums.ResourceType.BRICK, 1, current.isServer);
 
-		current.discardResource (Enums.ResourceType.LUMBER, 1);
-		bank.depositResource (Enums.ResourceType.LUMBER, 1);
+        GameManager.instance.getPersonalPlayer().changeResource(Enums.ResourceType.LUMBER, -1, current.getID());
+        Bank.instance.depositResource(Enums.ResourceType.LUMBER, 1, current.isServer);
 
-		//Update longest route
-
-		return true;
+		removeAuthority(server);
+		
+        return true;
 	}
 
-    [Command]
-    void CmdBuildRoad(Vector3 location)
+	public bool fishRoad(Edge location, int numFish,
+		List<GamePiece> pieces, Enums.Color color, bool server)
     {
-        RpcBuildRoad(location);
 
-        GameObject spawnedRoad = Instantiate<GameObject>(prefabHolder.road, location, Quaternion.identity);
-        boardState.spawnedObjects.Add(location, spawnedRoad);
-        NetworkServer.Spawn(spawnedRoad);
-    }
+		if (!ma.canFishRoad (location, numFish, pieces, color))
+        {
+			return false;
+		}
+
+		assignAuthority(server);
+        RpcBuildRoad(location.transform.position, color);
+
+		Player current = GameManager.instance.getCurrentPlayer();
+
+		// Spend the resources
+        GameManager.instance.getPersonalPlayer().changeFishCount( -5, current.getID());
+
+		removeAuthority(server);
+		
+        return true;
+	}
 
     [ClientRpc]
-    void RpcBuildRoad(Vector3 location)
+	void RpcBuildRoad(Vector3 location, Enums.Color color)
     {
-        Edge edge = boardState.edgePosition[location];
+        Edge edge = BoardState.instance.edgePosition[location];
+		GameObject spawnedRoad = Instantiate<GameObject>(PrefabHolder.instance.road, location, Quaternion.identity);
+        fixPieceRotationAndPosition(spawnedRoad);
+        spawnedRoad.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
+		BoardState.instance.spawnedObjects.Add(location, spawnedRoad);
 
         // Put a road on the given edge
-        List<GamePiece> pieces = GetComponent<Player>().getGamePieces();// gameManager.getCurrentPlayer().getGamePieces();
+		Player current = GameManager.instance.getCurrentPlayer();
+		List<GamePiece> pieces = current.getGamePieces();
         Road road = Road.getFreeRoad(pieces);
         
-        edge.setOccupyingPiece(road);
-        road.putOnBoard();
-        road.wasBuiltThisTurn();
+
+		if (!Object.ReferenceEquals(road, null)) {
+			edge.setOccupyingPiece(road);
+			road.putOnBoard();
+			road.wasBuiltThisTurn();
+		}
+
+        //Update longest route
     }
 
 	// Build a ship at location
 	public bool buildShip(Edge location, int[] resources,
-		List<GamePiece> pieces, Enums.Color color) {
-
-		if (!MoveAuthorizer.canBuildShip (location, resources, pieces, color)) {
+		List<GamePiece> pieces, Enums.Color color, bool server)
+    {
+		Debug.Log("ship2");
+		if (!ma.canBuildShip (location, resources, pieces, color))
+        {
 			return false;
 		}
+		Debug.Log("ship3");
+		assignAuthority(server);
+        RpcBuildShip(location.transform.position, color);
 
-        CmdBuildShip(location.transform.position);
-
-        Player current = GetComponent<Player>();// gameManager.getCurrentPlayer ();
+		Player current = GameManager.instance.getCurrentPlayer();
 
 		// Spend the resources
-		current.discardResource (Enums.ResourceType.WOOL, 1);
-		bank.depositResource (Enums.ResourceType.WOOL, 1);
+        GameManager.instance.getPersonalPlayer().changeResource(Enums.ResourceType.WOOL, -1, current.getID());
+        Bank.instance.depositResource(Enums.ResourceType.WOOL, 1, current.isServer);
 
-		current.discardResource (Enums.ResourceType.LUMBER, 1);
-		bank.depositResource (Enums.ResourceType.LUMBER, 1);
+        GameManager.instance.getPersonalPlayer().changeResource(Enums.ResourceType.LUMBER, -1, current.getID());
+        Bank.instance.depositResource(Enums.ResourceType.LUMBER, 1, current.isServer);
 
-		//Update longest route
+		removeAuthority(server);
 
+        return true;
+	}
+		
+
+    [ClientRpc]
+	void RpcBuildShip(Vector3 location, Enums.Color color)
+    {
+        Edge edge = BoardState.instance.edgePosition[location];
+		GameObject spawnedBoat = Instantiate<GameObject>(PrefabHolder.instance.boat, location, Quaternion.identity);
+
+        spawnedBoat.transform.position += new Vector3(0f, 10f, 0f);
+
+        spawnedBoat.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
+		BoardState.instance.spawnedObjects.Add(location, spawnedBoat);
+
+        // Put a road on the given edge
+		Player current = GameManager.instance.getCurrentPlayer();
+		List<GamePiece> pieces = current.getGamePieces();
+        Road ship = Road.getFreeShip(pieces);
+
+		if (!Object.ReferenceEquals(ship, null)) {
+			edge.setOccupyingPiece(ship);
+			ship.putOnBoard();
+			ship.wasBuiltThisTurn();
+		}
+
+        //Update longest route
+    }
+
+	// Move a ship from source to target
+	public bool moveShip(Edge source, Edge target, Enums.Color color, bool server)
+    {
+		if (!ma.canShipMove (source, target, color))
+        {
+			return false;
+		}
+		assignAuthority(server);
+        RpcMoveShip(source.transform.position, target.transform.position, color);
+
+		Player current = GameManager.instance.getCurrentPlayer();
+		current.movesRoad();
+
+		removeAuthority(server);
 		return true;
 	}
 
-    [Command]
-    void CmdBuildShip(Vector3 location)
+    [ClientRpc]
+    void RpcMoveShip(Vector3 source, Vector3 target, Enums.Color color)
     {
-        RpcBuildShip(location);
+		Edge sourcePiece = BoardState.instance.edgePosition [source];
+        Edge targetPiece = BoardState.instance.edgePosition [target];
 
-        GameObject spawnedBoat = Instantiate<GameObject>(prefabHolder.boat, location, Quaternion.identity);
-        boardState.spawnedObjects.Add(location, spawnedBoat);
-        NetworkServer.Spawn(spawnedBoat);
+		GameObject spawnedBoat = Instantiate<GameObject>(PrefabHolder.instance.boat, target, Quaternion.identity);
+		spawnedBoat.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
+		Destroy (BoardState.instance.spawnedObjects [source]);
+
+		BoardState.instance.spawnedObjects.Add(target, spawnedBoat);
+		BoardState.instance.spawnedObjects.Remove (source);
+
+        Road movedBoat = (Road)sourcePiece.getOccupyingPiece();
+
+        // Move the knight
+        sourcePiece.setOccupyingPiece(null);
+        targetPiece.setOccupyingPiece(movedBoat);
     }
 
-    [ClientRpc]
-    void RpcBuildShip(Vector3 location)
+	// Chase robber from source
+	public bool chaseRobber(Vertex source, Hex target, Enums.Color color, bool server)
     {
-        Edge edge = boardState.edgePosition[location];
+		// Check if the knight can displace
+		if (!ma.canChaseRobber (source, color))
+        {
+			return false;
+		}
+
+		Knight kSource = (Knight)source.getOccupyingPiece ();
+
+		if (!ma.canMoveRobber(target)) {
+			return false;
+		}
+
+		assignAuthority(server);
+        RpcChaseRobber(source.transform.position);
+		RpcMoveRobber(target.transform.position);
+		removeAuthority(server);
+		return true;
+	}
+
+    [ClientRpc]
+    void RpcChaseRobber(Vector3 source)
+    {
+		Vertex sourcePiece = BoardState.instance.vertexPosition[source];
+        Knight sourceKnight = (Knight)sourcePiece.getOccupyingPiece();
+
+        // Deactivate the knight
+        sourceKnight.deactivateKnight();
+    }
+
+	// Move robber to target
+	public bool moveRobber(Hex target, bool server)
+    {
+		// Check if the knight can displace
+		if (!ma.canMoveRobber (target))
+        {
+			return false;
+		}
+
+		assignAuthority(server);
+        RpcMoveRobber(target.transform.position);
+		removeAuthority(server);
+		return true;
+	}
+
+    [ClientRpc]
+    void RpcMoveRobber(Vector3 target)
+    {
+		Hex source = null;
+		GamePiece piece = null;
+		foreach (Hex h in BoardState.instance.hexPosition.Values) {
+			piece = h.getOccupyingPiece();
+			if (!Object.ReferenceEquals(piece, null)) {
+				if (piece.getPieceType() == Enums.PieceType.ROBBER) {
+					source = h;
+					break;
+				} else {
+					piece = null;
+				}
+			}
+		}
+
+		Hex targetLocation = BoardState.instance.hexPosition[target];
+		if (!Object.ReferenceEquals(piece, null)) {
+			targetLocation.setOccupyingPiece(piece);
+		} else {
+			targetLocation.setOccupyingPiece(new Robber());
+		}
+
+		GameObject newRobber = Instantiate<GameObject>(PrefabHolder.instance.robber, target, Quaternion.identity);
+        newRobber.transform.position += new Vector3(0f, 10f, 0f);
+		BoardState.instance.spawnedObjects.Add(target, newRobber);
+
+		if (!Object.ReferenceEquals(piece, null)) {
+			source.setOccupyingPiece(null);
+			Destroy (BoardState.instance.spawnedObjects [source.transform.position]);
+			BoardState.instance.spawnedObjects.Remove(source.transform.position);
+		}
+    }
+
+	// Move Pirate to target
+	public bool movePirate(Hex target, bool server)
+    {
+		// Check if the knight can displace
+		if (!ma.canMovePirate (target))
+        {
+			return false;
+		}
+
+		assignAuthority(server);
+        RpcMovePirate(target.transform.position);
+		removeAuthority(server);
+		return true;
+	}
+
+    [ClientRpc]
+    void RpcMovePirate(Vector3 target)
+    {
+		Hex source = null;
+		GamePiece piece = null;
+		foreach (Hex h in BoardState.instance.hexPosition.Values) {
+			piece = h.getOccupyingPiece();
+			if (!Object.ReferenceEquals(piece, null)) {
+				if (piece.getPieceType() == Enums.PieceType.PIRATE) {
+					source = h;
+					break;
+				} else {
+					piece = null;
+				}
+			}
+		}
+
+		Hex targetLocation = BoardState.instance.hexPosition[target];
+		if (!Object.ReferenceEquals(piece, null)) {
+			targetLocation.setOccupyingPiece(piece);
+		} else {
+			targetLocation.setOccupyingPiece(new Pirate());
+		}
+
+		GameObject newPirate = Instantiate<GameObject>(PrefabHolder.instance.pirate, target, Quaternion.identity);
+        newPirate.transform.position += new Vector3(0f, 10f, 0f);
+		BoardState.instance.spawnedObjects.Add(target, newPirate);
+
+		if (!Object.ReferenceEquals(piece, null)) {
+			source.setOccupyingPiece(null);
+			Destroy (BoardState.instance.spawnedObjects [source.transform.position]);
+			BoardState.instance.spawnedObjects.Remove(source.transform.position);
+		}
+    }
+
+	// Place Merchant at target
+	public bool placeMerchant(Hex target, bool server)
+    {
+		// Check if the knight can displace
+		if (!ma.canPlaceMerchant (target))
+        {
+			return false;
+		}
+
+		assignAuthority(server);
+        RpcPlaceMerchant(target.transform.position);
+		removeAuthority(server);
+		return true;
+	}
+
+    [ClientRpc]
+    void RpcPlaceMerchant(Vector3 target)
+    {
+		Hex source = null;
+		foreach (Hex h in BoardState.instance.hexPosition.Values) {
+			GamePiece piece = h.getOccupyingPiece();
+			if (!Object.ReferenceEquals(piece, null)) {
+				if (piece.getPieceType() == Enums.PieceType.MERCHANT) {
+					source = h;
+					break;
+				}
+			}
+		}
+
+		Hex targetLocation = BoardState.instance.hexPosition[target];
+		GameObject newMerchant = Instantiate<GameObject>(PrefabHolder.instance.city, target, Quaternion.identity);
+        fixPieceRotationAndPosition(newMerchant);
+        newMerchant.GetComponent<MeshRenderer>().material.SetColor("_Color", UnityEngine.Color.yellow);
+		BoardState.instance.spawnedObjects.Add(target, newMerchant);
+
+		Destroy (BoardState.instance.spawnedObjects [source.transform.position]);
+		BoardState.instance.spawnedObjects.Remove(source.transform.position);
+    }
+
+	// Place an initial settlement
+	public bool placeInitialSettlement (Vertex v, List<GamePiece> pieces, bool server)
+    {
+		if (!ma.canPlaceInitialTownPiece (v))
+        {
+			return false;
+		}
+
+		Player current = GameManager.instance.getCurrentPlayer();
+
+		assignAuthority(server);
+		RpcPlaceInitialSettlement(v.transform.position, current.getColor());
+
+		GameManager.instance.getPersonalPlayer().changeVictoryPoints(1, current.getID());
+
+		removeAuthority(server);
+
+        return true;
+    }
+
+	[ClientRpc]
+	void RpcPlaceInitialSettlement(Vector3 location, Enums.Color color)
+    {
+        Vertex source = BoardState.instance.vertexPosition[location];
+		GameObject newSettlement = Instantiate<GameObject>(PrefabHolder.instance.settlement, location, Quaternion.identity);
+        fixPieceRotationAndPosition(newSettlement);
+        newSettlement.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
+		BoardState.instance.spawnedObjects.Add(location, newSettlement);
+
+		Player current = GameManager.instance.getCurrentPlayer();
+		List<GamePiece> pieces = current.getGamePieces();
+
+        // Put a settlement on the board
+        Settlement settlement = Settlement.getFreeSettlement(pieces);
+
+		if (!Object.ReferenceEquals(settlement, null)) {
+			source.setOccupyingPiece(settlement);
+			settlement.putOnBoard();
+		}
+
+		updatePort(source);
+    }
+
+    // Place an initial city
+	public bool placeInitialCity (Vertex v, List<GamePiece> pieces, bool server)
+    {
+		if (!ma.canPlaceInitialTownPiece (v))
+        {
+			return false;
+		}
+
+		assignAuthority(server);
+		RpcPlaceInitialCity(v.transform.position, GameManager.instance.getCurrentPlayer().getColor());
+
+		Player current = GameManager.instance.getCurrentPlayer();
+
+		// Give starting resources to current player
+		foreach (Hex h in BoardState.instance.hexPosition.Values)
+        {
+            if (h.adjacentToVertex(v))
+            {
+                Enums.ResourceType res = GameManager.instance.getResourceFromHex(h.getHexType());
+                if (res != Enums.ResourceType.NONE)
+                {
+                    GameManager.instance.getPersonalPlayer().changeResource(res, 1, current.getID());
+                    Bank.instance.withdrawResource(res, 1, current.isServer);
+                }
+            }
+        }
+
+		// Update the victory points and add a port 
+        GameManager.instance.getPersonalPlayer().changeVictoryPoints(2, current.getID());
+
+		removeAuthority(server);
+        
+        return true;
+    }
+
+	[ClientRpc]
+	void RpcPlaceInitialCity(Vector3 location, Enums.Color color)
+    {
+        Vertex source = BoardState.instance.vertexPosition[location];
+		GameObject spawnedCity = Instantiate<GameObject>(PrefabHolder.instance.city, location, Quaternion.identity);
+        fixPieceRotationAndPosition(spawnedCity);
+        spawnedCity.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
+		BoardState.instance.spawnedObjects.Add(location, spawnedCity);
+
+        // Build a city
+		Player current = GameManager.instance.getCurrentPlayer();
+		List<GamePiece> pieces = current.getGamePieces();
+        City city = City.getFreeCity(pieces);
+
+		if (!Object.ReferenceEquals(city, null)) {
+			source.setOccupyingPiece(city);
+			city.putOnBoard();
+		}
+
+        updatePort(source);
+    }
+
+	// Place an initial road
+	public bool placeInitialRoad (Edge e, Enums.Color color, List<GamePiece> pieces, bool server)
+    {
+		if (!ma.canPlaceInitialRoad (e, color))
+        {
+			return false;
+		}
+
+		assignAuthority(server);
+        RpcPlaceInitialRoad(e.transform.position, color);
+		removeAuthority(server);
+		return true;
+	}
+
+	[ClientRpc]
+	void RpcPlaceInitialRoad(Vector3 location, Enums.Color color)
+    {
+        Edge edge = BoardState.instance.edgePosition[location];
+		GameObject spawnedRoad = Instantiate<GameObject>(PrefabHolder.instance.road, location, Quaternion.identity);
+        fixPieceRotationAndPosition(spawnedRoad);
+        spawnedRoad.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
+		BoardState.instance.spawnedObjects.Add(location, spawnedRoad);
 
         // Put a road on the given edge
-        List<GamePiece> pieces = GetComponent<Player>().getGamePieces();// gameManager.getCurrentPlayer().getGamePieces();
+		Player current = GameManager.instance.getCurrentPlayer();
+		List<GamePiece> pieces = current.getGamePieces();
+        Road road = Road.getFreeRoad(pieces);
+        
+		if (!Object.ReferenceEquals(road, null)) {
+			edge.setOccupyingPiece(road);
+			road.putOnBoard();
+			road.wasBuiltThisTurn();
+		}
+    }
+
+	 
+	// Place an initial ship
+	public bool placeInitialShip (Edge e, Enums.Color color, List<GamePiece> pieces, bool server)
+    {
+		if (!ma.canPlaceInitialShip (e, color))
+        {
+			return false;
+		}
+
+		assignAuthority(server);
+        RpcPlaceInitialShip(e.transform.position, color);
+		removeAuthority(server);
+		return true;
+	}
+
+	[ClientRpc]
+	void RpcPlaceInitialShip(Vector3 location, Enums.Color color)
+    {
+        Edge edge = BoardState.instance.edgePosition[location];
+		GameObject spawnedBoat = Instantiate<GameObject>(PrefabHolder.instance.boat, location, Quaternion.identity);
+
+        spawnedBoat.transform.position += new Vector3(0f, 10f, 0f);
+
+        spawnedBoat.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
+		BoardState.instance.spawnedObjects.Add(location, spawnedBoat);
+
+        // Put a road on the given edge
+		Player current = GameManager.instance.getCurrentPlayer();
+		List<GamePiece> pieces = current.getGamePieces();// gameManager.getCurrentPlayer().getGamePieces();
         Road ship = Road.getFreeShip(pieces);
 
         edge.setOccupyingPiece(ship);
@@ -395,180 +1172,181 @@ public class MoveManager : NetworkBehaviour {
         ship.wasBuiltThisTurn();
     }
 
-	// Move a ship from source to target
-	public bool moveShip(Edge source, Edge target, Enums.Color color) {
-        CmdMoveShip(source.transform.position, target.transform.position);
-		return true;
-	}
-
-    [Command]
-    void CmdMoveShip(Vector3 source, Vector3 target)
-    {
-        RpcMoveShip(source, target);
-    }
-
-    [ClientRpc]
-    void RpcMoveShip(Vector3 source, Vector3 target)
-    {
-
-    }
-
-	// Chase robber from source
-	public bool chaseRobber(Vertex source) {
-        CmdChaseRobber(source.transform.position);
-		return true;
-	}
-
-    [Command]
-    void CmdChaseRobber(Vector3 source)
-    {
-        RpcChaseRobber(source);
-    }
-
-    [ClientRpc]
-    void RpcChaseRobber(Vector3 source)
-    {
-
-    }
-
-	// Move robber to target
-	public bool moveRobber(Hex target) {
-        CmdMoveRobber(target.transform.position);
-		return true;
-	}
-
-    [Command]
-    void CmdMoveRobber(Vector3 target)
-    {
-        RpcMoveRobber(target);
-    }
-
-    [ClientRpc]
-    void RpcMoveRobber(Vector3 target)
-    {
-
-    }
-
-	// Move Pirate to target
-	public bool movePirate(Hex target) {
-        CmdMovePirate(target.transform.position);
-		return true;
-	}
-
-    [Command]
-    void CmdMovePirate(Vector3 target)
-    {
-        RpcMovePirate(target);
-    }
-
-    [ClientRpc]
-    void RpcMovePirate(Vector3 target)
-    {
-
-    }
-
-	// Place Merchant at target
-	public bool placeMerchant(Hex target) {
-
-        CmdPlaceMerchant(target.transform.position);
-
-		return true;
-	}
-
-    [Command]
-    void CmdPlaceMerchant(Vector3 target)
-    {
-        RpcPlaceMerchant(target);
-    }
-
-    [ClientRpc]
-    void RpcPlaceMerchant(Vector3 target)
-    {
-
-    }
-
-	// Place an initial settlement
-	public bool placeInitialSettlement (Vertex v, List<GamePiece> pieces, List<Hex> validHexes) {
-		if (!MoveAuthorizer.canPlaceInitialTownPiece (v, validHexes)) {
-			return false;
-		}
-
-        CmdBuildSettlement(v.transform.position);
-
-        // Get the resources around the settlement
-        Player current = GetComponent<Player>();// gameManager.getCurrentPlayer ();
-		foreach (Hex h in validHexes) {
-			if (h.adjacentToVertex (v)) {
-				Enums.ResourceType res = gameManager.getResourceFromHex (h.getHexType());
-				if (res != Enums.ResourceType.NONE) {
-					current.addResource (res, 1);
-					bank.withdrawResource (res, 1);
-				}
-			}
-		}
-
-		// Update the victory points and add a port
-		current.incrementVictoryPoints (1);
-        
-        updatePort(v);
-
-		return true;
-	}
-
-    // Place an initial city
-    public bool placeInitialCity (Vertex v, List<GamePiece> pieces, List<Hex> validHexes) {
-		if (!MoveAuthorizer.canPlaceInitialTownPiece (v, validHexes)) {
-			return false;
-		}
-
-        CmdBuildCity(v.transform.position);
-
-        // Get the resources around the city
-        Player current = GetComponent<Player>();// gameManager.getCurrentPlayer ();
-		foreach (Hex h in validHexes) {
-			if (h.adjacentToVertex (v)) {
-				Enums.ResourceType res = gameManager.getResourceFromHex (h.getHexType());
-				if (res != Enums.ResourceType.NONE) {
-					current.addResource (res, 1);
-					bank.withdrawResource (res, 1);
-				}
-			}
-		}
-
-		// Update the victory points and add a port 
-		current.incrementVictoryPoints (2);
-        
-        updatePort(v);
-
-		return true;
-	}
-
-	// Place an initial road
-	public bool placeInitialRoad (Edge e, Enums.Color color, List<GamePiece> pieces) {
-		if (!MoveAuthorizer.canPlaceInitialRoad (e, color)) {
-			return false;
-		}
-
-        CmdBuildRoad(e.transform.position);
-
-		return true;
-	}
-	 
 	// Place an initial ship
-	public bool placeInitialShip (Edge e, Enums.Color color, List<GamePiece> pieces) {
-		if (!MoveAuthorizer.canPlaceInitialShip (e, color)) {
+	public bool destroyCity (Vertex v, Enums.Color color, bool server)
+    {
+		if (!ma.canDestroyCity (v, color))
+        {
 			return false;
 		}
 
-        CmdBuildShip(e.transform.position);
+		assignAuthority(server);
+        RpcDestroyCity(v.transform.position, color);
 
+		Player current = GameManager.instance.getCurrentPlayer();
+
+		GameManager.instance.getPersonalPlayer().changeVictoryPoints(-1, current.getID());
+
+		removeAuthority(server);
 		return true;
+	}
+
+	[ClientRpc]
+	void RpcDestroyCity(Vector3 location, Enums.Color color)
+    {
+         // Remove the current settlement
+        Vertex source = BoardState.instance.vertexPosition[location];
+        GamePiece city = source.getOccupyingPiece();
+		Destroy (BoardState.instance.spawnedObjects [location]);
+		BoardState.instance.spawnedObjects.Remove(location);
+
+		GameObject spawnedSettlement = Instantiate<GameObject>(PrefabHolder.instance.settlement, location, Quaternion.identity);
+        fixPieceRotationAndPosition(spawnedSettlement);
+        spawnedSettlement.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
+
+		BoardState.instance.spawnedObjects.Add(location, spawnedSettlement);
+
+		// Remove settlement at location
+		city.takeOffBoard ();
+
+		Player current = GameManager.instance.getCurrentPlayer();
+		List<GamePiece> pieces = current.getGamePieces();
+        Settlement settlement = Settlement.getFreeSettlement(pieces);
+
+		if (!Object.ReferenceEquals(settlement, null)) {
+			source.setOccupyingPiece(settlement);
+			settlement.putOnBoard();
+		}
+    }
+
+	public bool removeRobber(bool server)
+    {
+		assignAuthority(server);
+
+		Player current = GameManager.instance.getCurrentPlayer();
+
+        GameManager.instance.getPersonalPlayer().changeFishCount( -2, current.getID());
+
+        RpcRemoveRobber();
+		removeAuthority(server);
+		return true;
+	}
+
+    [ClientRpc]
+    void RpcRemoveRobber()
+    {
+		Hex source = null;
+		GamePiece piece = null;
+		foreach (Hex h in BoardState.instance.hexPosition.Values) {
+			piece = h.getOccupyingPiece();
+			if (!Object.ReferenceEquals(piece, null)) {
+				if (piece.getPieceType() == Enums.PieceType.ROBBER) {
+					source = h;
+					break;
+				} else {
+					piece = null;
+				}
+			}
+		}
+
+		if (!Object.ReferenceEquals(piece, null)) {
+			source.setOccupyingPiece(null);
+			Destroy (BoardState.instance.spawnedObjects [source.transform.position]);
+			BoardState.instance.spawnedObjects.Remove(source.transform.position);
+		}
+    }
+
+	public bool removePirate(bool server)
+    {
+		assignAuthority(server);
+
+		Player current = GameManager.instance.getCurrentPlayer();
+		
+        GameManager.instance.getPersonalPlayer().changeFishCount( -2, current.getID());
+
+        RpcRemovePirate();
+		removeAuthority(server);
+		return true;
+	}
+
+    [ClientRpc]
+    void RpcRemovePirate()
+    {
+		Hex source = null;
+		GamePiece piece = null;
+		foreach (Hex h in BoardState.instance.hexPosition.Values) {
+			piece = h.getOccupyingPiece();
+			if (!Object.ReferenceEquals(piece, null)) {
+				if (piece.getPieceType() == Enums.PieceType.PIRATE) {
+					source = h;
+					break;
+				} else {
+					piece = null;
+				}
+			}
+		}
+
+		if (!Object.ReferenceEquals(piece, null)) {
+			source.setOccupyingPiece(null);
+			Destroy (BoardState.instance.spawnedObjects [source.transform.position]);
+			BoardState.instance.spawnedObjects.Remove(source.transform.position);
+		}
+    }
+	
+	// Instantiate a knight of the given level at the given location 
+	private GameObject getKnightFromLevel(int level, Vector3 location, Enums.Color color) {
+		GameObject knight;
+		switch (level) {
+		case 1:
+			knight = Instantiate<GameObject> (PrefabHolder.instance.levelOneKnight, location, Quaternion.identity);
+            knight.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
+            break;
+		case 2:
+			knight = Instantiate<GameObject> (PrefabHolder.instance.levelTwoKnight, location, Quaternion.identity);
+            foreach(MeshRenderer meshRend in knight.GetComponentsInChildren<MeshRenderer>())
+            {
+                meshRend.material.SetColor("_Color", translateColor(color));
+            }
+			break;
+		case 3:
+			knight = Instantiate<GameObject> (PrefabHolder.instance.levelThreeKnight, location, Quaternion.identity);
+            foreach (MeshRenderer meshRend in knight.GetComponentsInChildren<MeshRenderer>())
+            {
+                meshRend.material.SetColor("_Color", translateColor(color));
+            }
+            break;
+		default:
+			knight = null;
+			break;
+		}
+        knight.transform.position += new Vector3(0f, 10f, 0f);
+        return knight;
+	}
+		
+
+	// Get a unity color from an enums color
+	private UnityEngine.Color translateColor(Enums.Color color) {
+		switch (color)
+		{
+		case Enums.Color.RED:
+			return UnityEngine.Color.red;
+		case Enums.Color.BLUE:
+			return UnityEngine.Color.blue; 
+		case Enums.Color.ORANGE:
+			return UnityEngine.Color.green;
+		case Enums.Color.WHITE:
+			return UnityEngine.Color.white;
+		default:
+			return UnityEngine.Color.gray;
+		}
 	}
 
 	// Get a resource type from a port type
-	private Enums.ResourceType getResourceFromPort(Enums.PortType port) {
+	private Enums.ResourceType getResourceFromPort(Enums.PortType port)
+    {
 
-		switch (port) {
+		switch (port)
+        {
 		case Enums.PortType.BRICK:
 			return Enums.ResourceType.BRICK;
 		case Enums.PortType.WOOL:
@@ -585,24 +1363,50 @@ public class MoveManager : NetworkBehaviour {
 	}
 
 	// Update the current players resource ratios according to the given vertex
-	private void updatePort(Vertex v) {
-        Player current = GetComponent<Player>();// gameManager.getCurrentPlayer ();
+	private void updatePort(Vertex v)
+    {
+		Player current = GameManager.instance.getCurrentPlayer();
 		int[] ratios = current.getResourceRatios ();
 		Enums.PortType port = v.getPortType ();
 
 		// If the port is generic, update the ratios accordingly
-		if (port == Enums.PortType.GENERIC) {
-			for (int i = 0; i < ratios.Length; i++) {
-				if (ratios [i] > 3) {
+		if (port == Enums.PortType.GENERIC)
+        {
+			for (int i = 0; i < ratios.Length; i++)
+            {
+				if (ratios [i] > 3)
+                {
 					ratios [i] = 3;
 				}
 			}
-			current.updateResoureRatios (ratios);
+			GameManager.instance.getPersonalPlayer().updateResourceRatios (ratios, current.getID());
 
 		// If there is a specific port, update the correct ratio
-		} else if (port != Enums.PortType.NONE) {
-			current.updateResourceRatio (getResourceFromPort (port), 2);
+		}
+        else if (port != Enums.PortType.NONE)
+        {
+			GameManager.instance.getPersonalPlayer().updateResourceRatio (getResourceFromPort (port), 2, current.getID());
 		}
 	}
+
+	// Assign client authority
+	private void assignAuthority(bool server) {
+        if (!server) {
+			objNetId = this.GetComponent<NetworkIdentity> ();     
+			objNetId.AssignClientAuthority (connectionToClient);   
+		}
+    }
+
+	// Remove client authority
+    private void removeAuthority(bool server) {
+        if (!server) {
+			objNetId.RemoveClientAuthority (connectionToClient); 
+		}
+    }
     
+    void fixPieceRotationAndPosition(GameObject go)
+    {
+        go.transform.position = go.transform.position + (new Vector3(0f, 10f, 0f));
+        go.transform.Rotate(-90f, 0f, 0f);
+    }
 }
