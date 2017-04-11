@@ -12,7 +12,7 @@ public class Vertex : BoardPiece {
     public bool producesFish;
     public int fishNumber;
 
-    private bool hasWall;
+    public bool hasWall;
     private bool adjacentToRobber;
     private int chits;
 	private int visited;

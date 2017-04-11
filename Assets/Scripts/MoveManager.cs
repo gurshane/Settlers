@@ -546,8 +546,8 @@ public class MoveManager : NetworkBehaviour {
 		BoardState.instance.spawnedObjects.Remove(location);
 
 		GameObject spawnedMetropolis;
-		if (source.getHasWall()) spawnedMetropolis = Instantiate<GameObject>(PrefabHolder.instance.metropolis, location, Quaternion.identity);
-		else spawnedMetropolis = Instantiate<GameObject>(PrefabHolder.instance.metropolisWithCityWall, location, Quaternion.identity);
+		if (source.getHasWall()) spawnedMetropolis = Instantiate<GameObject>(PrefabHolder.instance.metropolisWithCityWall, location, Quaternion.identity);
+		else spawnedMetropolis = Instantiate<GameObject>(PrefabHolder.instance.metropolis, location, Quaternion.identity);
         fixPieceRotationAndPosition(spawnedMetropolis);
 
 		switch (dev) {
