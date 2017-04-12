@@ -2040,7 +2040,7 @@ public class Player : NetworkBehaviour
             return false;
         }
         CmdChangeResource(resource, num, plyr);
-        GameManager.instance.getPlayer(plyr).resources[(int)resourceType] += num;
+        GameManager.instance.getPlayer(plyr).resources[(int)resource] += num;
         return true;
     }
 
