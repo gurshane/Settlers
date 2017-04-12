@@ -108,6 +108,9 @@ public class UIMoveManager : MonoBehaviour {
 
 	[SerializeField]
 	private Transform _SpyProgressCardsPanel;
+
+	[SerializeField]
+	private Transform _MerchantFleetPanel;
 	#endregion
 
 	// -------------------------
@@ -140,6 +143,7 @@ public class UIMoveManager : MonoBehaviour {
 		_SaboteurPanel.gameObject.SetActive (false);
 		_SpyPlayerPanel.gameObject.SetActive (false);
 		_SpyProgressCardsPanel.gameObject.SetActive (false);
+		_MerchantFleetPanel.gameObject.SetActive (false);
 
 		_ResourceMonopolyPanel.gameObject.SetActive (false);
 		_TradeMonopolyPanel.gameObject.SetActive (false);
@@ -770,10 +774,10 @@ public class UIMoveManager : MonoBehaviour {
 			moveTypeChange(MoveType.PROGRESS_MEDICINE);
 			break;
 		case ProgressCardName.MERCHANT:
-			//TODO: Yeah, no
+			moveTypeChange (MoveType.PROGRESS_MERCHANT);
 			break;
 		case ProgressCardName.MERCHANTFLEET:
-			//TODO: Yeah, no
+			moveTypeChange (MoveType.PROGRESS_MERCHANT_FLEET);
 			break;
 		case ProgressCardName.MINING:
 			ProgressCards.instance.mining(_CurrentPlayer.getColor());
@@ -791,7 +795,7 @@ public class UIMoveManager : MonoBehaviour {
 			ProgressCards.instance.saboteur ();
 			break;
 		case ProgressCardName.SMITH:
-			//TODO: Yeah, no
+			moveTypeChange (MoveType.PROGRESS_SMITH_1);
 			break;
 		case ProgressCardName.SPY:
 			moveTypeChange(MoveType.PROGRESS_SPY);
@@ -1169,8 +1173,26 @@ public class UIMoveManager : MonoBehaviour {
 	}
 		
 
+	private void revealMerchantFleetPanel()
+	{
+		if (_CurrentPlayer.getMoveType () == MoveType.PROGRESS_MERCHANT_FLEET  && GameManager.instance.getGamePhase() == GamePhase.PHASE_TWO ) 
+		{
+			_MerchantFleetPanel.gameObject.SetActive (true);
+		} 
 
+		else {
+			_MerchantFleetPanel.gameObject.SetActive (false);
+		}
+	}
 
+	public void merchantFleetSetRatio(int p_Goods)
+	{
+		_CurrentPlayer.setFleet (p_Goods, _CurrentPlayer.getID ());
+		_CurrentPlayer.removeProgressCard (ProgressCardName.MERCHANTFLEET, _CurrentPlayer.getID ());
+
+		moveTypeChange (MoveType.NONE);
+
+	}
 
 	public void closeProgressCardPanel()
 	{
@@ -1689,5 +1711,6 @@ public class UIMoveManager : MonoBehaviour {
 
 		revealSpyPlayerPanel ();
 		revealSpyProgressCardsPanel ();
+		revealMerchantFleetPanel ();
 	}
 }
