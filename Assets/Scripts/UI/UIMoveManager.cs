@@ -26,7 +26,8 @@ public class UIMoveManager : MonoBehaviour {
 	private bool knightToggle;
 	private bool fishToggle;
 	private bool progressCardToggle;
-	private bool tradeToggle;
+	private bool bankTradeToggle;
+	private bool playerTradeToggle;
 
 	#endregion
 
@@ -158,7 +159,8 @@ public class UIMoveManager : MonoBehaviour {
 		knightToggle = false;
 		fishToggle = false;
 		progressCardToggle = false;
-		tradeToggle = false;
+		bankTradeToggle = false;
+		playerTradeToggle = false;
 	}
 		
 
@@ -545,6 +547,9 @@ public class UIMoveManager : MonoBehaviour {
 
 	public void revealProgressCardsPanel()
 	{
+		if (GameManager.instance.getGamePhase () == GamePhase.SETUP_ONE || GameManager.instance.getGamePhase () == GamePhase.SETUP_TWO)
+			return;
+		
 		progressCardToggle = !progressCardToggle;
 		_ProgressCardsPanel.gameObject.SetActive (progressCardToggle);
 
@@ -927,10 +932,16 @@ public class UIMoveManager : MonoBehaviour {
 		if (_CurrentPlayer.getSpecial () == Special.DISCARD_RESOURCE_SABOTEUR  && GameManager.instance.getGamePhase() == GamePhase.PHASE_TWO ) 
 		{
 			_SaboteurPanel.gameObject.SetActive (true);
+
+			// If originalHandSum hasn't been modified at all, then set it to Player's current hand size
+			if (originalPlayerHandSum == 0) {
+				originalPlayerHandSum = _CurrentPlayer.getHandSize ();
+			}
 		} 
 
 		else {
 			_SaboteurPanel.gameObject.SetActive (false);
+			originalPlayerHandSum = 0;
 		}
 	}
 
@@ -1188,12 +1199,18 @@ public class UIMoveManager : MonoBehaviour {
 	#endregion
 
 	#region TradePanel Methods
-	public void revealTradePanelBank()
+	public void revealTradePanel()
 	{
 		if (_CurrentPlayer.getMoveType () == Enums.MoveType.TRADE_WITH_BANK && GameManager.instance.getGamePhase() == Enums.GamePhase.PHASE_TWO) 
 		{
 			_TradePanel.gameObject.SetActive (true);
-			_TradePanel.GetComponent<UITradePanel> ().showBankSubmit ();
+			_TradePanel.GetComponent<UITradePanel> ().showBankSubmitButton ();
+		} 
+
+		else if (_CurrentPlayer.getMoveType () == Enums.MoveType.TRADE_WITH_PLAYER && GameManager.instance.getGamePhase() == Enums.GamePhase.PHASE_TWO) 
+		{
+			_TradePanel.gameObject.SetActive (true);
+			_TradePanel.GetComponent<UITradePanel> ().showPlayerSubmitButton ();
 		} 
 
 		else {
@@ -1206,7 +1223,7 @@ public class UIMoveManager : MonoBehaviour {
 		if (_CurrentPlayer.getMoveType () == Enums.MoveType.TRADE_WITH_PLAYER && GameManager.instance.getGamePhase() == Enums.GamePhase.PHASE_TWO) 
 		{
 			_TradePanel.gameObject.SetActive (true);
-			_TradePanel.GetComponent<UITradePanel> ().showPlayerSubmit ();
+			_TradePanel.GetComponent<UITradePanel> ().showPlayerSubmitButton ();
 		} 
 
 		else {
@@ -1453,15 +1470,37 @@ public class UIMoveManager : MonoBehaviour {
 	/// <summary>
 	/// Toggles the trade panel.
 	/// </summary>
-	public void toggleTradePanel()
+	public void toggleBankTradePanel()
 	{
-		tradeToggle = !tradeToggle;
+		bankTradeToggle = !bankTradeToggle;
 
-		if (tradeToggle) 
+		if (GameManager.instance.getGamePhase () == GamePhase.SETUP_ONE || GameManager.instance.getGamePhase () == GamePhase.SETUP_TWO)
+			return;
+		
+		if (bankTradeToggle && GameManager.instance.getGamePhase() == Enums.GamePhase.PHASE_TWO) 
 		{
-			//moveTypeChange (MoveType);
+			moveTypeChange (MoveType.TRADE_WITH_BANK);
 		}
-		else 
+		else if (!bankTradeToggle && GameManager.instance.getGamePhase() == Enums.GamePhase.PHASE_TWO)
+		{
+			moveTypeChange (MoveType.NONE);
+		}
+	}
+
+	public void togglePlayerTradePanel()
+	{
+		playerTradeToggle = !playerTradeToggle;
+
+		if (GameManager.instance.getGamePhase () == GamePhase.SETUP_ONE || GameManager.instance.getGamePhase () == GamePhase.SETUP_TWO)
+			return;
+
+
+		if (playerTradeToggle && GameManager.instance.getGamePhase() == Enums.GamePhase.PHASE_TWO) 
+		{
+			moveTypeChange (MoveType.TRADE_WITH_PLAYER);
+		}
+
+		else if (!playerTradeToggle && GameManager.instance.getGamePhase() == Enums.GamePhase.PHASE_TWO)
 		{
 			moveTypeChange (MoveType.NONE);
 		}
@@ -1765,7 +1804,8 @@ public class UIMoveManager : MonoBehaviour {
 		handleBannerText ();
 
 		revealResetButton ();
-		revealTradePanelBank ();
+		revealTradePanel ();
+		//revealTradePanelPlayer ();
 
 		/* Show or hide Discard Resource Panel */
 		revealResourceDiscardPanel ();

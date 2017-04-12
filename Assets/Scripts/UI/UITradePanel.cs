@@ -14,7 +14,9 @@ public class UITradePanel : MonoBehaviour {
 	[SerializeField]
 	private UITradeReceivePanel _ReceivingPanel;
 
+	[SerializeField]
 	private Button _PlayerSubmitButton;
+	[SerializeField]
 	private Button _BankSubmitButton;
 
 	// Use this for initialization
@@ -28,7 +30,7 @@ public class UITradePanel : MonoBehaviour {
 	/// <summary>
 	/// Shows the bank submit button in the trade panel
 	/// </summary>
-	public void showBankSubmit ()
+	public void showBankSubmitButton ()
 	{
 		_PlayerSubmitButton.gameObject.SetActive (false);
 		_BankSubmitButton.gameObject.SetActive (true);
@@ -37,17 +39,38 @@ public class UITradePanel : MonoBehaviour {
 	/// <summary>
 	/// Shows the player submit button in the trade panel
 	/// </summary>
-	public void showPlayerSubmit ()
+	public void showPlayerSubmitButton ()
 	{
 		_PlayerSubmitButton.gameObject.SetActive (true);
 		_BankSubmitButton.gameObject.SetActive (false);
 	}
 
-	public void submitButton()
+	public void bankTradeSubmit()
 	{
 		//Trade, using all the slider values
+		int[] resourcesOffered = _OfferingPanel.getResources();
+		int[] commoditiesOffered = _OfferingPanel.getCommodities ();
+		int goldOffered = _OfferingPanel.getGold ();
+
+		int[] resourcesReceive = _ReceivingPanel.getResources();
+		int[] commoditiesReceive = _ReceivingPanel.getCommodities ();
+		int goldReceive = _ReceivingPanel.getGold ();
+
+		//_CurrentPlayer
 	}
 		
+	public void playerTradeSubmit()
+	{
+		int[] resourcesOffered = _OfferingPanel.getResources();
+		int[] commoditiesOffered = _OfferingPanel.getCommodities ();
+		int goldOffered = _OfferingPanel.getGold ();
+
+		int[] resourcesReceive = _ReceivingPanel.getResources();
+		int[] commoditiesReceive = _ReceivingPanel.getCommodities ();
+		int goldReceive = _ReceivingPanel.getGold ();
+
+		//CurrentPlayer
+	}
 
 	// Update is called once per frame
 	void Update () {
