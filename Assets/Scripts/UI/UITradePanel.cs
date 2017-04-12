@@ -23,6 +23,15 @@ public class UITradePanel : MonoBehaviour {
 		//Trade, using all the slider values
 	}
 
+
+	/// <summary>
+	/// Reveals the trade panel at the appropriate times
+	/// hides otherwise
+	/// </summary>
+	private void revealTradePanel()
+	{
+	}
+
 	// Update is called once per frame
 	void Update () {
 		
