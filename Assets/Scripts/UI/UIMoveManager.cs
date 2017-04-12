@@ -26,8 +26,12 @@ public class UIMoveManager : MonoBehaviour {
 	private bool knightToggle;
 	private bool fishToggle;
 	private bool progressCardToggle;
+	private bool tradeToggle;
 
 	#endregion
+
+	[SerializeField]
+	private Transform _TradePanel;
 
 	/// <summary>
 	/// The progress cards panel.
@@ -118,8 +122,10 @@ public class UIMoveManager : MonoBehaviour {
 	void Start () {
 		_UIManager = GetComponent<UIManager> ();
 
+	
 		_InitialPhasePanel.gameObject.SetActive (true);
 
+		_TradePanel.gameObject.SetActive (false);
 		_ResourceDiscardPanel.gameObject.SetActive (false);
 		originalPlayerHandSum = 0;
 
@@ -150,6 +156,9 @@ public class UIMoveManager : MonoBehaviour {
 
 		buildingToggle = false;
 		knightToggle = false;
+		fishToggle = false;
+		progressCardToggle = false;
+		tradeToggle = false;
 	}
 		
 
@@ -250,15 +259,6 @@ public class UIMoveManager : MonoBehaviour {
 			// Update Move ENUM Here
 	}
 
-	/*
-	/// <summary>
-	/// Calls necessary methods to place player's ship
-	/// </summary>
-	public void uiPlaceInitialCity()
-	{
-		_Banner.setHeaderText ("SECOND TURN");
-		_Banner.setSubText ("Place Initial City");
-	}*/
 
 	#endregion
 
@@ -1037,6 +1037,7 @@ public class UIMoveManager : MonoBehaviour {
 			{
 				_SpiedPlayer = p;
 
+
 				// If the player has no cards, set spied player to null and return immediately
 				if (_SpiedPlayer.progressCards.Count == 0) 
 				{
@@ -1044,6 +1045,7 @@ public class UIMoveManager : MonoBehaviour {
 					return;
 				}
 			}
+				
 		}
 
 
@@ -1066,6 +1068,7 @@ public class UIMoveManager : MonoBehaviour {
 
 		// Set _currentPlayer's Special to the enum necessary to reveal next panel
 		_CurrentPlayer.setSpecial (Special.TAKE_OPPONENT_PROGRESS, _CurrentPlayer.getID ());
+		_CurrentPlayer.removeProgressCard (ProgressCardName.SPY, _CurrentPlayer.getID ());
 
 
 	}
@@ -1139,6 +1142,15 @@ public class UIMoveManager : MonoBehaviour {
 
 		_CurrentPlayer.addProgressCard (_pCardButton.pCardName, _CurrentPlayer.getID ());
 		_CurrentPlayer.removeProgressCard (_pCardButton.pCardName, _SpiedPlayer.getID ());
+
+		foreach (Player p in GameManager.instance.players) 
+		{
+			_CurrentPlayer.setMoveType (MoveType.NONE, p.getID ());
+
+			// Set the special of all players not this instance's _currentPlayer attribute to NONE
+			_CurrentPlayer.setSpecial (Special.NONE, p.getID ());
+		}
+
 	}
 
 	public void closeSpyProgressCardPanel()
@@ -1174,6 +1186,36 @@ public class UIMoveManager : MonoBehaviour {
 	}
 
 	#endregion
+
+	#region TradePanel Methods
+	public void revealTradePanelBank()
+	{
+		if (_CurrentPlayer.getMoveType () == Enums.MoveType.TRADE_WITH_BANK && GameManager.instance.getGamePhase() == Enums.GamePhase.PHASE_TWO) 
+		{
+			_TradePanel.gameObject.SetActive (true);
+			_TradePanel.GetComponent<UITradePanel> ().showBankSubmit ();
+		} 
+
+		else {
+			_TradePanel.gameObject.SetActive (false);
+		}
+	}
+
+	public void revealTradePanelPlayer()
+	{
+		if (_CurrentPlayer.getMoveType () == Enums.MoveType.TRADE_WITH_PLAYER && GameManager.instance.getGamePhase() == Enums.GamePhase.PHASE_TWO) 
+		{
+			_TradePanel.gameObject.SetActive (true);
+			_TradePanel.GetComponent<UITradePanel> ().showPlayerSubmit ();
+		} 
+
+		else {
+			_TradePanel.gameObject.SetActive (false);
+		}
+	}
+	#endregion
+
+
 
 	#region Fish Methods
 	/// <summary>
@@ -1408,6 +1450,22 @@ public class UIMoveManager : MonoBehaviour {
 
 
 	#region Panel Toggles
+	/// <summary>
+	/// Toggles the trade panel.
+	/// </summary>
+	public void toggleTradePanel()
+	{
+		tradeToggle = !tradeToggle;
+
+		if (tradeToggle) 
+		{
+			//moveTypeChange (MoveType);
+		}
+		else 
+		{
+			moveTypeChange (MoveType.NONE);
+		}
+	}
 
 	/// <summary>
 	/// Toggles the build panel.
@@ -1707,6 +1765,7 @@ public class UIMoveManager : MonoBehaviour {
 		handleBannerText ();
 
 		revealResetButton ();
+		revealTradePanelBank ();
 
 		/* Show or hide Discard Resource Panel */
 		revealResourceDiscardPanel ();
