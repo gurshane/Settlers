@@ -233,10 +233,6 @@ public class Player : NetworkBehaviour
                 validateTrade();
             } 
         }
-        else
-        {
-            Debug.Log("TRADE IS NULL");
-        }
 
 
         if (!isLocalPlayer || GameManager.instance.getPlayerTurn() != iD)
@@ -1143,7 +1139,7 @@ public class Player : NetworkBehaviour
             else if (moveType == Enums.MoveType.PROGRESS_MERCHANT)
             {
 
-                if (!pieceHit.tag.Equals("Hex"))
+                if (!pieceHit.tag.Equals("MainHex") && !pieceHit.tag.Equals("LandHex") && !pieceHit.tag.Equals("IslandHex"))
                 {
                     return;
                 }

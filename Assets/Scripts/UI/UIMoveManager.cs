@@ -1040,8 +1040,9 @@ public class UIMoveManager : MonoBehaviour {
 				continue;
 			}
 
-			_text.text = "Player_" + index + " | Cards: " + GameManager.instance.players [index].progressCards.Count;
+			_text.text =  "Cards: " + GameManager.instance.players [index].progressCards.Count;
 
+			index++;
 		}
 	}
 
@@ -1170,6 +1171,11 @@ public class UIMoveManager : MonoBehaviour {
 
 		_CurrentPlayer.addProgressCard (_pCardButton.pCardName, _CurrentPlayer.getID ());
 		_CurrentPlayer.removeProgressCard (_pCardButton.pCardName, _SpiedPlayer.getID ());
+	}
+
+	public void closeSpyProgressCardPanel()
+	{
+		_SpyProgressCardsPanel.gameObject.SetActive (false);	
 	}
 		
 
@@ -1599,11 +1605,32 @@ public class UIMoveManager : MonoBehaviour {
 		case Enums.MoveType.PROGRESS_MEDICINE:
 			rString = "Progress Card : Medicine";
 			break;
+		case Enums.MoveType.PROGRESS_MERCHANT:
+			rString = "Progress Card : Merchant";
+			break;
+		case Enums.MoveType.PROGRESS_MERCHANT_FLEET:
+			rString = "Progress Card: Merchant Fleet";
+			break;
+		case Enums.MoveType.PROGRESS_RESOURCE_MONOPOLY:
+			rString = "Progress Card: Resource Monopoly";
+			break;
 		case Enums.MoveType.PROGRESS_ROAD_BUILDING_1:
 			rString = "RoadBuilding : Place First Road";
 			break;
 		case Enums.MoveType.PROGRESS_ROAD_BUILDING_2:
 			rString = "RoadBuilding : Place Second Road";
+			break;
+		case Enums.MoveType.PROGRESS_SMITH_1:
+			rString = "Smith: First Part";
+			break;
+		case Enums.MoveType.PROGRESS_SMITH_2:
+			rString = "Smith: Second Part";
+			break;
+		case Enums.MoveType.PROGRESS_SPY:
+			rString = "Progress Card : Spy";
+			break;
+		case Enums.MoveType.PROGRESS_TRADE_MONOPOLY:
+			rString = "Progress Card: Trade Monopoly";
 			break;
 		case Enums.MoveType.SPECIAL:
 			rString = "Special: " + convert(_CurrentPlayer.getSpecial());
@@ -1648,6 +1675,9 @@ public class UIMoveManager : MonoBehaviour {
 		case Special.CHOOSE_PROGRESS_PILE:
 			rString = "Choose Progress Pile";
 			break;
+		case Special.DISCARD_RESOURCE_SABOTEUR:
+			rString = "Saboteur In Progress";
+			break;
 		case Special.DISCARD_RESOURCE_SEVEN:
 			rString = "Discard Cards";
 			break;
@@ -1665,6 +1695,15 @@ public class UIMoveManager : MonoBehaviour {
 			break;
 		case Special.STEAL_RESOURCES_PIRATE:
 			rString = "Steal Resources Pirate";
+			break;
+		case Special.TAKE_OPPONENT_PROGRESS:
+			rString = "Taking Opponent Progress Card";
+			break;
+		case Special.YOU_LOSE:
+			rString = "You Lose";
+			break;
+		case Special.YOU_WIN:
+			rString = "YOU WIN";
 			break;
 		case Special.NONE:
 			rString = "None";
