@@ -1182,7 +1182,7 @@ public class UIMoveManager : MonoBehaviour {
 	/// <param name="p_ButtonIndex">P button index.</param>
 	public void addBoot(int p_ButtonIndex)
 	{
-		_CurrentPlayer.giveBoot (GameManager.instance.players [p_ButtonIndex].getID());
+		_CurrentPlayer.giveBoot (p_ButtonIndex);
 	}
 
 	public void fish3StealResource(int p_ColorInt)
