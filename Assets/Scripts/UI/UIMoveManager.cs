@@ -1176,6 +1176,15 @@ public class UIMoveManager : MonoBehaviour {
 	#endregion
 
 	#region Fish Methods
+	/// <summary>
+	/// Tells the _currentPlayer attribute to give boot to the player pointed to by p_ButtonIndex
+	/// </summary>
+	/// <param name="p_ButtonIndex">P button index.</param>
+	public void addBoot(int p_ButtonIndex)
+	{
+		_CurrentPlayer.giveBoot (GameManager.instance.players [p_ButtonIndex].getID());
+	}
+
 	public void fish3StealResource(int p_ColorInt)
 	{
 		// If Player doesn't exist
