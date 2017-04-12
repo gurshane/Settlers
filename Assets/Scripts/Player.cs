@@ -192,8 +192,8 @@ public class Player : NetworkBehaviour
         this.resourcesWanted = new int[5] { 0, 0, 0, 0, 0, };
         this.commoditiesOffered = new int[3] { 0, 0, 0 };
         this.commoditiesWanted = new int[3] { 0, 0, 0 };
-        this.resources = new int[5] { 10, 10, 10, 10, 10 };
-        this.commodities = new int[3] { 10, 10, 10 };
+        this.resources = new int[5] { 0, 0, 0, 0, 0 };
+        this.commodities = new int[3] { 0, 0, 0 };
         this.goldCount = 0;
         this.devFlipChart = new int[3] { 0, 0, 0 };
         this.resourceRatios = new int[5] { 4, 4, 4, 4, 4 };
@@ -2864,22 +2864,19 @@ public class Player : NetworkBehaviour
     void yearsOfPlenty()
     {
         
-        for(int i = 0; i < GameManager.instance.getPlayers().Count; i++)
+        for(int j = 0; j < 5; j++)
         {
-            for(int j = 0; j < 5; j++)
-            {
-                GameManager.instance.getPersonalPlayer().changeResource((ResourceType)j, 10, i);
-            }
-
-            for (int j = 0; j < 3; j++)
-            {
-                GameManager.instance.getPersonalPlayer().changeCommodity((CommodityType)j, 10, i);
-            }
-
-            GameManager.instance.getPersonalPlayer().changeGoldCount(10, i);
-            GameManager.instance.getPersonalPlayer().changeFishCount(10, i);
-
+            GameManager.instance.getPersonalPlayer().changeResource((ResourceType)j, 10, getId());
         }
+
+        for (int j = 0; j < 3; j++)
+        {
+            GameManager.instance.getPersonalPlayer().changeCommodity((CommodityType)j, 10, getId());
+        }
+
+        GameManager.instance.getPersonalPlayer().changeGoldCount(10, getId());
+        GameManager.instance.getPersonalPlayer().changeFishCount(10, getId());
+
     }
 
     void progressCardSavedGame()
@@ -2931,21 +2928,31 @@ public class Player : NetworkBehaviour
 
     void devChartSavedGame()
     {
-        for(int i = 0; i < GameManager.instance.getPlayers().Count; i++)
+        if(getID() == 0)
         {
-            GameManager.instance.getPersonalPlayer().upgradeDevChart(DevChartType.POLITICS, 0);
-            GameManager.instance.getPersonalPlayer().upgradeDevChart(DevChartType.SCIENCE, 1);
-            GameManager.instance.getPersonalPlayer().upgradeDevChart(DevChartType.TRADE, 2);
+            GameManager.instance.getPersonalPlayer().upgradeDevChart(DevChartType.POLITICS, getID());
+            GameManager.instance.getPersonalPlayer().upgradeDevChart(DevChartType.POLITICS, getID());
+            GameManager.instance.getPersonalPlayer().upgradeDevChart(DevChartType.POLITICS, getID());
         }
 
-        for (int i = 0; i < 3; i++)
+        if(getID() == 1)
         {
-            GameManager.instance.getPersonalPlayer().updateCommodityRatio((CommodityType)i, 2, 2);
+            GameManager.instance.getPersonalPlayer().upgradeDevChart(DevChartType.SCIENCE, getID());
+            GameManager.instance.getPersonalPlayer().upgradeDevChart(DevChartType.SCIENCE, getID());
+            GameManager.instance.getPersonalPlayer().upgradeDevChart(DevChartType.SCIENCE, getID());
+            GameManager.instance.getPersonalPlayer().makeAqueduct(getID());
         }
 
-        GameManager.instance.getPersonalPlayer().makeAqueduct(1);
-
-
+        if(getID() == 2)
+        {
+            GameManager.instance.getPersonalPlayer().upgradeDevChart(DevChartType.TRADE, getID());
+            GameManager.instance.getPersonalPlayer().upgradeDevChart(DevChartType.TRADE, getID());
+            GameManager.instance.getPersonalPlayer().upgradeDevChart(DevChartType.TRADE, getID());
+            for (int i = 0; i < 3; i++)
+            {
+                GameManager.instance.getPersonalPlayer().updateCommodityRatio((CommodityType)i, 2, getID());
+            }
+        }
     }
 
     void knightSavedGame()
