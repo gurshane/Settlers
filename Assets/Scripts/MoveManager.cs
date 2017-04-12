@@ -1115,7 +1115,6 @@ public class MoveManager : NetworkBehaviour {
 		}
 
 		GameObject newMerchant = Instantiate<GameObject>(PrefabHolder.instance.merchant, target, Quaternion.identity);
-        fixPieceRotationAndPosition(newMerchant);
 		BoardState.instance.spawnedObjects.Add(target, newMerchant);
 
 		ResourceType targetRes = GameManager.instance.getResourceFromHex(targetLocation.getHexType());
