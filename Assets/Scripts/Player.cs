@@ -49,6 +49,9 @@ public class Player : NetworkBehaviour
     public bool ownsBoot;
 
     [SyncVar]
+    public int progressCardSet;
+
+    [SyncVar]
     public int safeCardCount;
 
     public List<GamePiece> pieces;
@@ -247,32 +250,26 @@ public class Player : NetworkBehaviour
 
         if (Input.GetKeyDown(KeyCode.Alpha1))
         {
-            Debug.Log("Years of Plenty");
             yearsOfPlenty();
         }
         else if (Input.GetKeyDown(KeyCode.Alpha2))
         {
-            Debug.Log("Progress Card Saved Game");
             progressCardSavedGame();
         }
         else if (Input.GetKeyDown(KeyCode.Alpha3))
         {
-            Debug.Log("Metropolis Aqueduct, MarketPlace, Fortress");
             devChartSavedGame();
         }
         else if (Input.GetKeyDown(KeyCode.Alpha4))
         {
-            Debug.Log("Knight Saved Game");
             knightSavedGame();
         }
         else if (Input.GetKeyDown(KeyCode.Alpha5))
         {
-            Debug.Log("Barbarian Saved Game");
             barbarianSavedGame();
         }
         else if (Input.GetKeyDown(KeyCode.Alpha6))
         {
-            Debug.Log("Winning Saved Game");
             winningSavedGame();
         }
 
@@ -2257,6 +2254,23 @@ public class Player : NetworkBehaviour
         GameManager.instance.getPlayer(plyr).resources[resP] += num;
     }
 
+    public void emptyProgressCards(int player)
+    {
+        CmdEmptyProgressCards(player);
+    }
+
+    [Command]
+    public void CmdEmptyProgressCards(int player)
+    {
+        RpcEmptyProgressCards(player);
+    }
+
+    [ClientRpc]
+    public void RpcEmptyProgressCards(int player)
+    {
+        GameManager.instance.getPlayer(player).progressCards.Clear();
+    }
+
     public void addProgressCard(ProgressCardName cardName, int plyr)
     {
         CmdAddProgressCard(cardName, plyr);
@@ -2869,6 +2883,48 @@ public class Player : NetworkBehaviour
     void progressCardSavedGame()
     {
 
+        GameManager.instance.getCurrentPlayer().emptyProgressCards(0);
+
+        if(this.progressCardSet == 0)
+        {
+            GameManager.instance.getCurrentPlayer().addProgressCard(ProgressCardName.ALCHEMIST, 0);
+            GameManager.instance.getCurrentPlayer().addProgressCard(ProgressCardName.CRANE, 0);
+            GameManager.instance.getCurrentPlayer().addProgressCard(ProgressCardName.ENGINEER, 0);
+            GameManager.instance.getCurrentPlayer().addProgressCard(ProgressCardName.INVENTOR, 0);
+        }
+        else if(this.progressCardSet == 1)
+        {
+            GameManager.instance.getCurrentPlayer().addProgressCard(ProgressCardName.IRRIGATION, 0);
+            GameManager.instance.getCurrentPlayer().addProgressCard(ProgressCardName.MEDICINE, 0);
+            GameManager.instance.getCurrentPlayer().addProgressCard(ProgressCardName.MINING, 0);
+            GameManager.instance.getCurrentPlayer().addProgressCard(ProgressCardName.SMITH, 0);
+        }
+        else if(this.progressCardSet == 2)
+        {
+            GameManager.instance.getCurrentPlayer().addProgressCard(ProgressCardName.PRINTER, 0);
+            GameManager.instance.getCurrentPlayer().addProgressCard(ProgressCardName.ROADBUILDING, 0);
+            GameManager.instance.getCurrentPlayer().addProgressCard(ProgressCardName.BISHOP, 0);
+            GameManager.instance.getCurrentPlayer().addProgressCard(ProgressCardName.TRADEMONOPOLY, 0);
+        }
+        else if(this.progressCardSet == 3)
+        {
+            GameManager.instance.getCurrentPlayer().addProgressCard(ProgressCardName.DIPLOMAT, 0);
+            GameManager.instance.getCurrentPlayer().addProgressCard(ProgressCardName.INTRIGUE, 0);
+            GameManager.instance.getCurrentPlayer().addProgressCard(ProgressCardName.SABOTEUR, 0);
+            GameManager.instance.getCurrentPlayer().addProgressCard(ProgressCardName.SPY, 0);
+            GameManager.instance.getCurrentPlayer().addProgressCard(ProgressCardName.DIPLOMAT, 1);
+        }
+        else if(this.progressCardSet == 4)
+        {
+            GameManager.instance.getCurrentPlayer().addProgressCard(ProgressCardName.WARLORD, 0);
+            GameManager.instance.getCurrentPlayer().addProgressCard(ProgressCardName.MERCHANT, 0);
+            GameManager.instance.getCurrentPlayer().addProgressCard(ProgressCardName.MERCHANTFLEET, 0);
+            GameManager.instance.getCurrentPlayer().addProgressCard(ProgressCardName.RESOURCEMONOPOLY, 0);
+        }
+
+        GameManager.instance.getCurrentPlayer().changeProgressCardSet(0);
+
+
     }
 
     void devChartSavedGame()
@@ -2914,6 +2970,23 @@ public class Player : NetworkBehaviour
         }
 
         GameManager.instance.getCurrentPlayer().hasBoot(true, 0);
+    }
+
+    public void changeProgressCardSet(int player)
+    {
+        CmdChangeProgressCardSet(player);
+    }
+
+    [Command]
+    public void CmdChangeProgressCardSet(int player)
+    {
+        RpcChangeProgressCardSet(player);
+    }
+
+    [ClientRpc]
+    public void RpcChangeProgressCardSet(int player)
+    {
+        GameManager.instance.getPlayer(player).progressCardSet++;
     }
 
     [Command]
