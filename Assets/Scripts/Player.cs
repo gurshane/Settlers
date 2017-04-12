@@ -40,7 +40,7 @@ public class Player : NetworkBehaviour
     private Enums.Status status;
 
     [SyncVar]
-    private int goldCount;
+    public int goldCount;
 
     [SyncVar]
     public int numFish;
@@ -49,7 +49,7 @@ public class Player : NetworkBehaviour
     public bool ownsBoot;
 
     [SyncVar]
-    private int safeCardCount;
+    public int safeCardCount;
 
     public List<GamePiece> pieces;
     public List<ProgressCardName> progressCards;
@@ -1558,10 +1558,9 @@ public class Player : NetworkBehaviour
         {
             return;
         }
-
         
-        GameManager.instance.getPlayer(targetPlayer).hasBoot(true, targetPlayer);
-        GameManager.instance.getPlayer(this.iD).hasBoot(false, this.iD);
+        GameManager.instance.getPersonalPlayer().hasBoot(true, targetPlayer);
+        GameManager.instance.getPersonalPlayer().hasBoot(false, this.iD);
     }
 
     public int getI1()
@@ -1849,6 +1848,23 @@ public class Player : NetworkBehaviour
     {
         Debug.Log("epo3");
         GameManager.instance.setGamePhase(GamePhase.PHASE_TWO, server);
+    }
+
+    public void moveBarbarianToPosition(int position)
+    {
+        CmdMoveBarbarianToPosition(position);
+    }
+
+    [Command]
+    public void CmdMoveBarbarianToPosition(int position)
+    {
+        RpcMoveBarbarianToPosition(position);
+    }
+
+    [ClientRpc]
+    public void RpcMoveBarbarianToPosition(int position)
+    {
+        GameManager.instance.barbarianPos = position;
     }
 
     public void moveBarbarian()
@@ -2809,7 +2825,23 @@ public class Player : NetworkBehaviour
 
     void yearsOfPlenty()
     {
+        
+        for(int i = 0; i < GameManager.instance.getPlayers().Count; i++)
+        {
+            for(int j = 0; j < 5; j++)
+            {
+                GameManager.instance.getPersonalPlayer().changeResource((ResourceType)i, 10, i);
+            }
 
+            for (int j = 0; j < 3; j++)
+            {
+                GameManager.instance.getPersonalPlayer().changeCommodity((CommodityType)i, 10, i);
+            }
+
+            GameManager.instance.getPersonalPlayer().changeGoldCount(10, i);
+            GameManager.instance.getPersonalPlayer().changeFishCount(10, i);
+
+        }
     }
 
     void progressCardSavedGame()
@@ -2829,7 +2861,7 @@ public class Player : NetworkBehaviour
 
     void barbarianSavedGame()
     {
-
+        moveBarbarianToPosition(6);
     }
 
     void winningSavedGame()
@@ -2837,7 +2869,7 @@ public class Player : NetworkBehaviour
 
     }
 
-[Command]
+    [Command]
     public void CmdDestroyObject(NetworkInstanceId netId)
     {
         GameObject theObject = NetworkServer.FindLocalObject(netId);
