@@ -32,7 +32,7 @@ public class GameManager : NetworkBehaviour {
     public int playerTurn;
 
     [SyncVar]
-    private int merchantController;
+    public int merchantController;
 
     [SyncVar]
     private int longestRouteController;

@@ -1071,11 +1071,36 @@ public class MoveManager : NetworkBehaviour {
 			}
 		}
 
+		int mController = GameManager.instance.merchantController;
+
+		if (mController >= 0 && !Object.ReferenceEquals(source, null)) {
+			ResourceType res = GameManager.instance.getResourceFromHex(source.getHexType());
+
+			foreach (Vertex v in BoardState.instance.vertexPosition.Values) {
+				GamePiece vPiece = v.getOccupyingPiece();
+				if (!Object.ReferenceEquals(vPiece, null)) {
+					if ((int)vPiece.getColor() == mController) {
+						if (vPiece.getPieceType() == PieceType.CITY || vPiece.getPieceType() == PieceType.SETTLEMENT) {
+							if (canMerchantChange(mController, res)) {
+								if (!hasGeneric(mController, res)) {
+									GameManager.instance.getPersonalPlayer().updateResourceRatio (res, 4, GameManager.instance.getPersonalPlayer().getID());
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+
 		Hex targetLocation = BoardState.instance.hexPosition[target];
-		GameObject newMerchant = Instantiate<GameObject>(PrefabHolder.instance.city, target, Quaternion.identity);
+		GameObject newMerchant = Instantiate<GameObject>(PrefabHolder.instance.merchant, target, Quaternion.identity);
         fixPieceRotationAndPosition(newMerchant);
         newMerchant.GetComponent<MeshRenderer>().material.SetColor("_Color", UnityEngine.Color.yellow);
 		BoardState.instance.spawnedObjects.Add(target, newMerchant);
+
+		ResourceType targetRes = GameManager.instance.getResourceFromHex(targetLocation.getHexType());
+		GameManager.instance.getPersonalPlayer().setMerchantController(GameManager.instance.getPersonalPlayer().getID());
+		GameManager.instance.getPersonalPlayer().updateResourceRatio (targetRes, 2, GameManager.instance.getPersonalPlayer().getID());
 
 		Destroy (BoardState.instance.spawnedObjects [source.transform.position]);
 		BoardState.instance.spawnedObjects.Remove(source.transform.position);
@@ -1491,6 +1516,38 @@ public class MoveManager : NetworkBehaviour {
         {
 			GameManager.instance.getPersonalPlayer().updateResourceRatio (getResourceFromPort (port), 2, current.getID());
 		}
+	}
+
+	private bool canMerchantChange(int plyr, ResourceType merchRes) {
+		Player p = GameManager.instance.getPlayer(plyr);
+
+		foreach (Vertex v in BoardState.instance.vertexPosition.Values) {
+			Enums.PortType port = v.getPortType ();
+
+			if (port != Enums.PortType.NONE && port != Enums.PortType.GENERIC) {
+				if (getResourceFromPort(port) == merchRes) {
+					return false;
+				}
+			}
+		}
+
+		return true;
+	}
+
+	private bool hasGeneric(int plyr, ResourceType merchRes) {
+
+		Player p = GameManager.instance.getPlayer(plyr);
+
+		foreach (Vertex v in BoardState.instance.vertexPosition.Values) {
+			Enums.PortType port = v.getPortType ();
+
+			if (port == Enums.PortType.GENERIC)
+			{
+				GameManager.instance.getPersonalPlayer().updateResourceRatio (merchRes, 3, p.getID());
+				return true;
+			}
+		}
+		return false;	
 	}
 
 	// Assign client authority
