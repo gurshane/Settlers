@@ -218,13 +218,17 @@ public class Player : NetworkBehaviour
         {
             return;
         }
-
+        
         if (trade != null)
         {
             if(Input.GetKeyDown("a"))
             {
                 validateTrade();
             } 
+        }
+        else
+        {
+            Debug.Log("TRADE IS NULL");
         }
 
 
@@ -402,7 +406,7 @@ public class Player : NetworkBehaviour
                     goldW = 2;
                 }
 
-                CmdSpawnTrade(this.resources, this.resources, this.commodities, this.commodities, goldO, goldW, this.iD);
+                CmdSpawnTrade(this.resources, this.resources, this.commodities, this.commodities, goldO, goldW);
             }
 
             // Get mouse click
@@ -2524,7 +2528,7 @@ public class Player : NetworkBehaviour
     }
 
     [Command]//call from Player on client to spawn a trade on all machines 
-    public void CmdSpawnTrade(int[] resourcesOffered, int[] resourcesDemanded, int[] commoditiesOffered, int[] commoditiesDemanded, int goldOffered, int goldDemanded, int playerId)
+    public void CmdSpawnTrade(int[] resourcesOffered, int[] resourcesDemanded, int[] commoditiesOffered, int[] commoditiesDemanded, int goldOffered, int goldDemanded)
     {
         List<Player> players = GameManager.instance.getPlayers();
         GameObject trade = (GameObject)GameObject.Instantiate(tradePrefab);
@@ -2549,6 +2553,7 @@ public class Player : NetworkBehaviour
         {
             if (resources[i]<trade.getResourcesWanted()[i])
             {
+                Debug.Log("Failure");
                 return false;
             }
         }
@@ -2556,6 +2561,7 @@ public class Player : NetworkBehaviour
         {
             if (commodities[j] < trade.getCommoditiesWanted()[j])
             {
+                Debug.Log("Failure");
                 return false;
             }
         }
@@ -2586,6 +2592,23 @@ public class Player : NetworkBehaviour
         CmdDestroyObject(trade.netId);//destroy the trade 
     }
 
+    public bool canTrade(Enums.ResourceType resource, int toTrade)
+    {
+        if (this.resources[(int) resource] >= toTrade)
+        {
+            return true;
+        }
+        return false;
+    }
+
+    public bool canTrade(Enums.CommodityType commodity, int toTrade)
+    {
+        if (this.commodities[(int)commodity] >= toTrade)
+        {
+            return true;
+        }
+        return false;
+    }
 
     [Command]
     public void CmdDestroyObject(NetworkInstanceId netId)
