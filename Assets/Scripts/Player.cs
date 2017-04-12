@@ -2977,17 +2977,14 @@ public class Player : NetworkBehaviour
 
     void winningSavedGame()
     {
-        for (int i = 0; i < GameManager.instance.getPlayers().Count; i++)
+        GameManager.instance.getPersonalPlayer().changeVPToAlmostWin(getID());
+
+        if (getID() == 0)
         {
-            GameManager.instance.getPersonalPlayer().changeVPToAlmostWin(i);
-
-            if (GameManager.instance.getPlayer(i).ownsBoot)
-            {
-                GameManager.instance.getCurrentPlayer().hasBoot(false, i);
-            }
+            GameManager.instance.getCurrentPlayer().hasBoot(true, getID());
+        } else {
+            GameManager.instance.getCurrentPlayer().hasBoot(false, getID());
         }
-
-        GameManager.instance.getCurrentPlayer().hasBoot(true, 0);
     }
 
     public void changeProgressCardSet(int player)
