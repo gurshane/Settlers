@@ -676,24 +676,14 @@ public class Player : NetworkBehaviour
 
             if (special == Enums.Special.KNIGHT_DISPLACED)
             {
-                bool chosen = false;
                 if (!pieceHit.tag.Equals("Vertex"))
                 {
                     return;
                 }
                 Vertex v = pieceHit.GetComponent<Vertex>();
 
-                if (graph.areConnectedVertices(v, v1, myColor))
-                {
-                    if (Object.ReferenceEquals(v.getOccupyingPiece(), null))
-                    {
-                        chosen = true;
-                    }
-                }
-
-                if (Object.ReferenceEquals(v, v1)) chosen = false;
-
-                if (chosen)
+               
+                if (ma.canForcedKnightMove(v1,v,myColor))
                 {
                     CmdAlternateDisplaceKnight(v.transform.position);
 
