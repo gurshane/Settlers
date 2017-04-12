@@ -1222,6 +1222,21 @@ public class Player : NetworkBehaviour
         CmdDestroyObject(trade.GetComponent<Trades>().netId);
     }
 
+    
+    public void tradeWithBank(int[] p_resourcesOffered, int[] p_resourcesWanted, int[] p_commoditiesOffered, int[] p_commoditiesWanted, int p_goldOffered, int p_goldWanted)
+    {
+        Trade newTrade = new Trade();
+        newTrade.resourcesOffered = p_resourcesOffered;
+        newTrade.resourcesWanted = p_resourcesWanted;
+        newTrade.commoditiesOffered = p_commoditiesOffered;
+        newTrade.commoditiesWanted = p_commoditiesWanted;
+        newTrade.goldOffered = p_goldOffered;
+        newTrade.goldWanted = p_goldWanted;
+        newTrade.offeringPlayer = this.iD;
+
+        Bank.instance.tradeWithBank(this.resourceRatios, this.commodityRatios, newTrade);
+    }
+
 
 
     public int getID()
@@ -2958,7 +2973,6 @@ public class Player : NetworkBehaviour
 
     void winningSavedGame()
     {
-
         for (int i = 0; i < GameManager.instance.getPlayers().Count; i++)
         {
             GameManager.instance.getPersonalPlayer().changeVPToAlmostWin(i);
