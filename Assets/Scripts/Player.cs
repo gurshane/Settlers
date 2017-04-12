@@ -221,7 +221,10 @@ public class Player : NetworkBehaviour
 
         if (trade != null)
         {
-            //do UI thing 
+            if(Input.GetKeyDown("a"))
+            {
+                acceptTrade(trade);
+            } 
         }
 
 
