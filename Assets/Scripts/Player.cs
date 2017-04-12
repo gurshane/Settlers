@@ -1046,7 +1046,7 @@ public class Player : NetworkBehaviour
                 Vertex v = pieceHit.GetComponent<Vertex>();
                 if (pa.canEngineer(v, this.cityWallsLeft, this.myColor))
                 {
-                    CmdIntrigue(v.transform.position);
+                    CmdEngineer(v.transform.position);
                     moveType = Enums.MoveType.NONE;
                 }
             }
@@ -2191,6 +2191,38 @@ public class Player : NetworkBehaviour
                 (moveType != MoveType.PLACE_INITIAL_ROAD &&
                 moveType != MoveType.PLACE_INITIAL_SHIP &&
                 moveType != MoveType.NONE)) { return; }
+
+        if (!ownsBoot) {
+            if (victoryPoints >= 13) {
+
+                Player winner = GameManager.instance.getCurrentPlayer();
+
+                foreach (Player p in players) {
+                    GameManager.instance.getPersonalPlayer().setMoveType(MoveType.SPECIAL, p.getID());
+                }
+
+                winner.setSpecial(Special.YOU_WIN, .getID());
+
+                foreach (Player p in players) {
+                    if(!Object.ReferenceEquals(p, winner)) winner.setSpecial(Special.YOU_LOSE, p.getID());
+                }
+                return;
+            }
+        } else if (victoryPoints >= 14 ) {
+            
+            Player winner = GameManager.instance.getCurrentPlayer();
+
+            foreach (Player p in players) {
+                GameManager.instance.getPersonalPlayer().setMoveType(MoveType.SPECIAL, p.getID());
+            }
+
+            winner.setSpecial(Special.YOU_WIN, .getID());
+
+            foreach (Player p in players) {
+                if(!Object.ReferenceEquals(p, winner)) winner.setSpecial(Special.YOU_LOSE, p.getID());
+            }
+            return;
+        }
 
         moveType = Enums.MoveType.NONE;
 

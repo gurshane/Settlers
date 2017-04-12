@@ -629,8 +629,14 @@ public class MoveManager : NetworkBehaviour {
 		Destroy (BoardState.instance.spawnedObjects [location]);
 		BoardState.instance.spawnedObjects.Remove(location);
 
-		GameObject spawnedCityWall = Instantiate<GameObject>(PrefabHolder.instance.cityWithCityWall, location, Quaternion.identity);
-        fixPieceRotationAndPosition(spawnedCityWall);
+		GameObject spawnedCityWall;
+		if (!city.isMetropolis()) { 
+			Instantiate<GameObject>(PrefabHolder.instance.cityWithCityWall, location, Quaternion.identity);
+        	fixPieceRotationAndPosition(spawnedCityWall);
+		} else {
+			Instantiate<GameObject>(PrefabHolder.instance.metropolisWithCityWall, location, Quaternion.identity);
+        	fixPieceRotationAndPosition(spawnedCityWall);
+		}
         spawnedCityWall.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
         foreach(MeshRenderer meshRend in spawnedCityWall.GetComponentsInChildren<MeshRenderer>())
         {
