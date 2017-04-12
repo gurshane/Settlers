@@ -2866,16 +2866,16 @@ public class Player : NetworkBehaviour
         
         for(int j = 0; j < 5; j++)
         {
-            GameManager.instance.getPersonalPlayer().changeResource((ResourceType)j, 10, getId());
+            GameManager.instance.getPersonalPlayer().changeResource((ResourceType)j, 10, getID());
         }
 
         for (int j = 0; j < 3; j++)
         {
-            GameManager.instance.getPersonalPlayer().changeCommodity((CommodityType)j, 10, getId());
+            GameManager.instance.getPersonalPlayer().changeCommodity((CommodityType)j, 10, getID());
         }
 
-        GameManager.instance.getPersonalPlayer().changeGoldCount(10, getId());
-        GameManager.instance.getPersonalPlayer().changeFishCount(10, getId());
+        GameManager.instance.getPersonalPlayer().changeGoldCount(10, getID());
+        GameManager.instance.getPersonalPlayer().changeFishCount(10, getID());
 
     }
 
