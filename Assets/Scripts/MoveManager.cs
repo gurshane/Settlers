@@ -198,11 +198,11 @@ public class MoveManager : NetworkBehaviour {
 
 	// Upgrade a knight at vertex v
 	public bool upgradeKnight(int[] resources, int[] devChart, Vertex v, List<GamePiece> pieces,
-			Enums.Color color, bool server)
+			Enums.Color color, bool server, bool check)
     {
 
 		// Check if the knight can be upgraded
-		if (!ma.canUpgradeKnight (resources, devChart, v, pieces, color))
+		if (!ma.canUpgradeKnight (resources, devChart, v, pieces, color) && check)
         {
 			return false;
 		}
@@ -243,10 +243,10 @@ public class MoveManager : NetworkBehaviour {
     }
 
 	// Activate a knight at vertex v
-	public bool activateKnight(int[] resources, Vertex v, Enums.Color color, bool server)
+	public bool activateKnight(int[] resources, Vertex v, Enums.Color color, bool server, bool check)
     {
 		// Check if the knight can be upgraded
-		if (!ma.canActivateKnight (resources, v, color))
+		if (!ma.canActivateKnight (resources, v, color) && check)
         {
 			return false;
 		}
@@ -369,10 +369,10 @@ public class MoveManager : NetworkBehaviour {
 
 	// Build a settlement at location
 	public bool buidSettlement(Vertex location, int[] resources,
-		List<GamePiece> pieces, Enums.Color color, bool server)
+		List<GamePiece> pieces, Enums.Color color, bool server, bool check)
     {
 
-		if (!ma.canBuildSettlement (location, resources, pieces, color))
+		if (!ma.canBuildSettlement (location, resources, pieces, color) && check)
         {
 			return false;
 		}
@@ -433,11 +433,11 @@ public class MoveManager : NetworkBehaviour {
 
 	// Build a city at location
 	public bool buildCity(Vertex location, int[] resources,
-		List<GamePiece> pieces, Enums.Color color, bool server)
+		List<GamePiece> pieces, Enums.Color color, bool server, bool check)
     {
 
 		Debug.Log("hello1");
-		if (!ma.canBuildCity (location, resources, pieces, color))
+		if (!ma.canBuildCity (location, resources, pieces, color) && check)
         {
 			return false;
 		}
@@ -671,9 +671,9 @@ public class MoveManager : NetworkBehaviour {
 
 	// Build a knight at location
 	public bool buildKnight(Vertex location, int[] resources,
-		List<GamePiece> pieces, Enums.Color color, bool server)
+		List<GamePiece> pieces, Enums.Color color, bool server, bool check)
     {
-		if (!ma.canBuildKnight (location, resources, pieces, color))
+		if (!ma.canBuildKnight (location, resources, pieces, color) && check)
         {
 			return false;
 		}
@@ -714,10 +714,10 @@ public class MoveManager : NetworkBehaviour {
 
 	// Build a road at location
 	public bool buildRoad(Edge location, int[] resources,
-		List<GamePiece> pieces, Enums.Color color, bool server)
+		List<GamePiece> pieces, Enums.Color color, bool server, bool check)
     {
 
-		if (!ma.canBuildRoad (location, resources, pieces, color))
+		if (!ma.canBuildRoad (location, resources, pieces, color) && check)
         {
 			return false;
 		}
@@ -799,10 +799,10 @@ public class MoveManager : NetworkBehaviour {
 
 	// Build a ship at location
 	public bool buildShip(Edge location, int[] resources,
-		List<GamePiece> pieces, Enums.Color color, bool server)
+		List<GamePiece> pieces, Enums.Color color, bool server, bool check)
     {
 		Debug.Log("ship2");
-		if (!ma.canBuildShip (location, resources, pieces, color))
+		if (!ma.canBuildShip (location, resources, pieces, color) && check)
         {
 			return false;
 		}
@@ -1129,9 +1129,9 @@ public class MoveManager : NetworkBehaviour {
     }
 
 	// Place an initial settlement
-	public bool placeInitialSettlement (Vertex v, List<GamePiece> pieces, bool server)
+	public bool placeInitialSettlement (Vertex v, List<GamePiece> pieces, bool server, bool check)
     {
-		if (!ma.canPlaceInitialTownPiece (v))
+		if (!ma.canPlaceInitialTownPiece (v) && check)
         {
 			return false;
 		}
@@ -1172,9 +1172,9 @@ public class MoveManager : NetworkBehaviour {
     }
 
     // Place an initial city
-	public bool placeInitialCity (Vertex v, List<GamePiece> pieces, bool server)
+	public bool placeInitialCity (Vertex v, List<GamePiece> pieces, bool server, bool check)
     {
-		if (!ma.canPlaceInitialTownPiece (v))
+		if (!ma.canPlaceInitialTownPiece (v) && check)
         {
 			return false;
 		}
