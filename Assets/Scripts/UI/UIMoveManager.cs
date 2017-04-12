@@ -1030,7 +1030,7 @@ public class UIMoveManager : MonoBehaviour {
 		// Set the moveType to special for all players
 		foreach (Player p in _Players) 
 		{
-			p.setMoveType (MoveType.SPECIAL, p.getID ());
+			_CurrentPlayer.setMoveType (MoveType.SPECIAL, p.getID ());
 
 			// If the observed player is the same as UIMoveManager's _currentPlayer attribute, continue
 			if (p.getColor () == _CurrentPlayer.getColor ())
@@ -1043,7 +1043,7 @@ public class UIMoveManager : MonoBehaviour {
 			}
 
 			// Set the special of all players not this instance's _currentPlayer attribute to NONE
-			p.setSpecial (Special.NONE, p.getID ());
+			_CurrentPlayer.setSpecial (Special.NONE, p.getID ());
 		}
 			
 
@@ -1121,7 +1121,7 @@ public class UIMoveManager : MonoBehaviour {
 		UIProgressCardButton _pCardButton = _SpyProgressCardsPanel.GetChild(p_ButtonIndex).GetComponent<UIProgressCardButton>();
 
 		_CurrentPlayer.addProgressCard (_pCardButton.pCardName, _CurrentPlayer.getID ());
-		_SpiedPlayer.removeProgressCard (_pCardButton.pCardName, _SpiedPlayer.getID ());
+		_CurrentPlayer.removeProgressCard (_pCardButton.pCardName, _SpiedPlayer.getID ());
 	}
 		
 
