@@ -5,31 +5,22 @@ using UnityEngine;
 public class UITradePanel : MonoBehaviour {
 
 	[SerializeField]
-	private Transform _OfferingPanel;
+	private UIManager _UIM;
+	private Player _CurrentPlayer;
+
 	[SerializeField]
-	private Transform _ReceivingPanel;
+	private UITradeOfferingPanel _OfferingPanel;
+	[SerializeField]
+	private UITradeReceivePanel _ReceivingPanel;
 
 	// Use this for initialization
 	void Start () {
-		
+		_CurrentPlayer = _UIM.getCurrentPlayer ();	
 	}
 
-	public void updateTextResource(int p_SliderType)
+	public void submitButton()
 	{
-		switch (p_SliderType) 
-		{
-		case 0:
-			break;
-		case 1:
-			break;
-		default:
-			break;
-		}
-	}
-
-	public void updateTextCommodity(int p_SliderType)
-	{
-		
+		//Trade, using all the slider values
 	}
 
 	// Update is called once per frame
