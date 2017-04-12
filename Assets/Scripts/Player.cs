@@ -218,10 +218,17 @@ public class Player : NetworkBehaviour
         {
             return;
         }
-
+        
         if (trade != null)
         {
-            //do UI thing 
+            if(Input.GetKeyDown("a"))
+            {
+                validateTrade();
+            } 
+        }
+        else
+        {
+            Debug.Log("TRADE IS NULL");
         }
 
 
@@ -399,7 +406,7 @@ public class Player : NetworkBehaviour
                     goldW = 2;
                 }
 
-                CmdSpawnTrade(this.resources, this.resources, this.commodities, this.commodities, goldO, goldW, this.iD);
+                CmdSpawnTrade(this.resources, this.resources, this.commodities, this.commodities, goldO, goldW);
             }
 
             // Get mouse click
@@ -1142,7 +1149,7 @@ public class Player : NetworkBehaviour
         GameObject trade = (GameObject)GameObject.Instantiate(tradePrefab);
         trade.GetComponent<Trades>().init(resourcesOffered, resourcesDemanded, commoditiesOffered, commoditiesDemanded, goldOffered, goldDemanded, GameManager.instance.getPlayers().Count, this);
         NetworkServer.Spawn(trade);
-        trade.GetComponent<Trades>().RpcSetPlayer(this.netId);
+        trade.GetComponent<Trades>().RpcSetPlayer(this.iD);
         MoveManager.instance.tradeWithBank(this.resourceRatios, this.commodityRatios, trade.GetComponent<Trades>());
         CmdDestroyObject(trade.GetComponent<Trades>().netId);
     }
@@ -2037,12 +2044,14 @@ public class Player : NetworkBehaviour
             return false;
         }
         CmdChangeResource(resource, num, plyr);
+        GameManager.instance.getPlayer(plyr).resources[(int)resource] += num;
         return true;
     }
 
     [Command]
     public void CmdChangeResource(ResourceType resourceType, int num, int plyr)
     {
+        GameManager.instance.getPlayer(plyr).resources[(int)resourceType] += num;
         RpcChangeResource(resourceType, num, plyr);
     }
 
@@ -2168,6 +2177,8 @@ public class Player : NetworkBehaviour
         {
             return false;//if there arent return false to denote an error
         }
+        int comP = (int)commodityType;
+        GameManager.instance.getPlayer(plyr).commodities[comP] += num;
         CmdChangeCommodity(commodityType, num, plyr);
         return true;
     }
@@ -2175,6 +2186,8 @@ public class Player : NetworkBehaviour
     [Command]
     public void CmdChangeCommodity(CommodityType commodityType, int num, int plyr)
     {
+        int comP = (int)commodityType;
+        GameManager.instance.getPlayer(plyr).commodities[comP] += num;
         RpcChangeCommodity(commodityType, num, plyr);
     }
 
@@ -2515,13 +2528,13 @@ public class Player : NetworkBehaviour
     }
 
     [Command]//call from Player on client to spawn a trade on all machines 
-    public void CmdSpawnTrade(int[] resourcesOffered, int[] resourcesDemanded, int[] commoditiesOffered, int[] commoditiesDemanded, int goldOffered, int goldDemanded, int playerId)
+    public void CmdSpawnTrade(int[] resourcesOffered, int[] resourcesDemanded, int[] commoditiesOffered, int[] commoditiesDemanded, int goldOffered, int goldDemanded)
     {
         List<Player> players = GameManager.instance.getPlayers();
         GameObject trade = (GameObject)GameObject.Instantiate(tradePrefab);
         trade.GetComponent<Trades>().init(resourcesOffered, resourcesDemanded, commoditiesOffered, commoditiesDemanded, goldOffered, goldDemanded, GameManager.instance.getPlayers().Count, this);
         NetworkServer.Spawn(trade);
-        trade.GetComponent<Trades>().RpcSetPlayer(this.netId);
+        trade.GetComponent<Trades>().RpcSetPlayer(this.iD);
     }
 
     [Command]
@@ -2540,6 +2553,7 @@ public class Player : NetworkBehaviour
         {
             if (resources[i]<trade.getResourcesWanted()[i])
             {
+                Debug.Log("Failure");
                 return false;
             }
         }
@@ -2547,6 +2561,7 @@ public class Player : NetworkBehaviour
         {
             if (commodities[j] < trade.getCommoditiesWanted()[j])
             {
+                Debug.Log("Failure");
                 return false;
             }
         }
@@ -2573,9 +2588,27 @@ public class Player : NetworkBehaviour
         }
         offered.changeGoldCount(trade.getGoldWanted() - trade.getGoldOffered(), offered.iD);
         this.changeGoldCount(trade.getGoldOffered() - trade.getGoldWanted(), this.iD);
+        Debug.Log(trade.netId);
         CmdDestroyObject(trade.netId);//destroy the trade 
     }
 
+    public bool canTrade(Enums.ResourceType resource, int toTrade)
+    {
+        if (this.resources[(int) resource] >= toTrade)
+        {
+            return true;
+        }
+        return false;
+    }
+
+    public bool canTrade(Enums.CommodityType commodity, int toTrade)
+    {
+        if (this.commodities[(int)commodity] >= toTrade)
+        {
+            return true;
+        }
+        return false;
+    }
 
     [Command]
     public void CmdDestroyObject(NetworkInstanceId netId)
