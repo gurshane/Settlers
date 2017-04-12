@@ -2230,19 +2230,6 @@ public class Player : NetworkBehaviour
         GameManager.instance.getPlayer(player).commoditiesWanted[comP] += num;
     }
 
-    public void tradeWithBank()
-    {
-        Trade newTrade = new Trade();
-        newTrade.resourcesOffered = this.resourcesOffered;
-        newTrade.resourcesWanted = this.resourcesWanted;
-        newTrade.commoditiesOffered = this.commoditiesOffered;
-        newTrade.commoditiesWanted = this.commoditiesWanted;
-        newTrade.goldOffered = this.goldOffered;
-        newTrade.goldWanted = this.goldWanted;
-        newTrade.offeringPlayer = this.iD;
-        Bank.instance.tradeWithBank(this.resourceRatios, this.commodityRatios, newTrade);
-    }
-
     public bool changeResource(ResourceType resource, int num, int plyr)
     {
         int resPosition = (int)resource;
@@ -2963,7 +2950,17 @@ public class Player : NetworkBehaviour
 
     void knightSavedGame()
     {
+        if(this.iD == 0)
+        {
+        }
+        else if(this.iD == 1)
+        {
 
+        }
+        else if(this.iD == 2)
+        {
+
+        }
     }
 
     void barbarianSavedGame()
