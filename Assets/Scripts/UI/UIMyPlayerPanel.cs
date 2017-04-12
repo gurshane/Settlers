@@ -50,7 +50,7 @@ public class UIMyPlayerPanel : UIElement {
         //_PlayerName.text = "\"" + p_Player.getUserName() + "\"";
 
 		_PlayerName.text = enumToString(p_Player.getColor());
-		_PlayerInTurnText.text = "Now Playing: " + enumToString(GameManager.instance.getCurrentPlayer().getColor());
+		_PlayerInTurnText.text = "Now Making Move: " + enumToString(GameManager.instance.getCurrentPlayer().getColor());
 
 		// Update UI Image to display appropriate colour
 		updateIconColor(p_Player);

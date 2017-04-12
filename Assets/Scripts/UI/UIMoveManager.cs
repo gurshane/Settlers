@@ -610,11 +610,6 @@ public class UIMoveManager : MonoBehaviour {
 			p_Text.text = "Bishop";
 			_pCButton.pCardName = ProgressCardName.BISHOP;
 			break;
-		case ProgressCardName.COMMERCIALHARBOR:
-			p_Text.text = "Commercial Harbor";
-			_pCButton.pCardName = ProgressCardName.COMMERCIALHARBOR;
-			//TODO : Yeah, no
-			break;
 		case ProgressCardName.CONSTITUTION:
 			p_Text.text = "Constitution";
 			_pCButton.pCardName = ProgressCardName.CONSTITUTION;
@@ -622,11 +617,6 @@ public class UIMoveManager : MonoBehaviour {
 		case ProgressCardName.CRANE:
 			p_Text.text = "Crane";
 			_pCButton.pCardName = ProgressCardName.CRANE;
-			break;
-		case ProgressCardName.DESERTER:
-			p_Text.text = "Deserter";
-			_pCButton.pCardName = ProgressCardName.DESERTER;
-			//TODO: Yeah, no
 			break;
 		case ProgressCardName.DIPLOMAT:
 			p_Text.text = "Diplomat";
@@ -647,11 +637,6 @@ public class UIMoveManager : MonoBehaviour {
 		case ProgressCardName.IRRIGATION:
 			p_Text.text = "Irrigation";
 			_pCButton.pCardName = ProgressCardName.IRRIGATION;
-			break;
-		case ProgressCardName.MASTERMERCHANT:
-			p_Text.text = "Master Merchant";
-			_pCButton.pCardName = ProgressCardName.MASTERMERCHANT;
-			// TODO: Yeah, no
 			break;
 		case ProgressCardName.MEDICINE:
 			p_Text.text = "Medicine";
@@ -709,11 +694,6 @@ public class UIMoveManager : MonoBehaviour {
 			_pCButton.pCardName = ProgressCardName.WARLORD;
 			//TODO: Yeah, no
 			break;
-		case ProgressCardName.WEDDING:
-			p_Text.text = "Wedding";
-			_pCButton.pCardName = ProgressCardName.WEDDING;
-			//TODO: Yeah, no
-			break;
 		}
 
 	
@@ -740,17 +720,11 @@ public class UIMoveManager : MonoBehaviour {
 		case ProgressCardName.BISHOP:
 			moveTypeChange(MoveType.PROGRESS_BISHOP);
 			break;
-		case ProgressCardName.COMMERCIALHARBOR:
-			//TODO : Yeah, no
-			break;
 		case ProgressCardName.CONSTITUTION:
 			ProgressCards.instance.constitution();
 			break;
 		case ProgressCardName.CRANE:
 			moveTypeChange(MoveType.PROGRESS_CRANE);
-			break;
-		case ProgressCardName.DESERTER:
-			//TODO: Yeah, no
 			break;
 		case ProgressCardName.DIPLOMAT:
 			moveTypeChange(MoveType.PROGRESS_DIPLOMAT);
@@ -766,9 +740,6 @@ public class UIMoveManager : MonoBehaviour {
 			break;
 		case ProgressCardName.IRRIGATION:
 			ProgressCards.instance.irrigation(_CurrentPlayer.getColor());
-			break;
-		case ProgressCardName.MASTERMERCHANT:
-			// TODO: Yeah, no
 			break;
 		case ProgressCardName.MEDICINE:
 			moveTypeChange(MoveType.PROGRESS_MEDICINE);
@@ -805,9 +776,6 @@ public class UIMoveManager : MonoBehaviour {
 			break;
 		case ProgressCardName.WARLORD:
 			ProgressCards.instance.WarLord ();
-			break;
-		case ProgressCardName.WEDDING:
-			//TODO: Yeah, no
 			break;
 		}
 
