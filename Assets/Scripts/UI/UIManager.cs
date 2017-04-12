@@ -375,6 +375,30 @@ public class UIManager : NetworkBehaviour {
 		case Enums.MoveType.PLACE_INITIAL_SHIP:
 			_eToHighlight = _build.buildablePlaceInitialShip (_CurrentPlayer.getColor ());
 			break;
+		case Enums.MoveType.PROGRESS_DIPLOMAT:
+			_eToHighlight = _build.buildableMoveRoad (_CurrentPlayer.getColor ());
+			break;
+		case Enums.MoveType.PROGRESS_INTRIGUE:
+			_vToHighlight = _build.buildableIntrigueKnight (_CurrentPlayer.getColor ());
+			break;
+		case Enums.MoveType.PROGRESS_ENGINEER:
+			_vToHighlight = _build.buildableEngineer (_CurrentPlayer.cityWallsLeft, _CurrentPlayer.getColor ());
+			break;
+		case Enums.MoveType.PROGRESS_INVENTOR:
+			_hToHighlight = _build.buildableInventor();
+			break;
+		case Enums.MoveType.PROGRESS_MEDICINE:
+			_vToHighlight = _build.buildableMedicine (_CurrentPlayer.resources, _CurrentPlayer.getGamePieces (), _CurrentPlayer.getColor ());
+			break;
+		case Enums.MoveType.PROGRESS_ROAD_BUILDING_1:
+			_eToHighlight = _build.buildableRoadBuilding (_CurrentPlayer.getGamePieces (), _CurrentPlayer.getColor ());
+			break;
+		case Enums.MoveType.PROGRESS_MERCHANT:
+			_hToHighlight = _build.buildablePlaceMerchant();
+			break;
+		case Enums.MoveType.PROGRESS_SMITH_1:
+			_vToHighlight = _build.buildableSmith (_CurrentPlayer.getDevFlipChart (), _CurrentPlayer.getGamePieces (), _CurrentPlayer.getColor ());
+			break;
 		case Enums.MoveType.UPGRADE_KNIGHT:
 			_vToHighlight = _build.buildableUpgradgeKnight (_CurrentPlayer.getResources (), _CurrentPlayer.getDevFlipChart (), _CurrentPlayer.getGamePieces (), _CurrentPlayer.getColor ());
 			break;
@@ -394,7 +418,6 @@ public class UIManager : NetworkBehaviour {
 			if (Enums.Special.MOVE_PIRATE == _CurrentPlayer.getSpecial ()) 
 			{
 				highlight (false);
-				//_hToHighlight = _build.buildableCanMovePirate ();
 			}
 			if (Enums.Special.CHOOSE_DESTROYED_CITY == _CurrentPlayer.getSpecial ()) 
 			{
@@ -403,6 +426,10 @@ public class UIManager : NetworkBehaviour {
 			if (Enums.Special.CHOOSE_METROPOLIS == _CurrentPlayer.getSpecial ()) 
 			{
 				_vToHighlight = _build.buildableCanChooseMetropolis (_CurrentPlayer.getColor ());
+			}
+			if (Enums.Special.KNIGHT_DISPLACED == _CurrentPlayer.getSpecial ()) 
+			{
+				_vToHighlight = _build.buildableForcedKnightMove (_CurrentPlayer.getColor ());
 			}
 			break;
 		case Enums.MoveType.NONE:
