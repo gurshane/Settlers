@@ -90,6 +90,13 @@ public class Player : NetworkBehaviour
     [SyncVar]
     public bool b1 = false;
 
+
+    [SyncVar]
+    public int fleet = -1;
+
+    [SyncVar]
+    public int oldRatio = 4;
+
     [SyncVar]
     public int opponent;
 
@@ -1126,21 +1133,23 @@ public class Player : NetworkBehaviour
                     moveType = Enums.MoveType.NONE;
                 }
             }
+            else if (moveType == Enums.MoveType.PROGRESS_MERCHANT)
+            {
+
+                if (!pieceHit.tag.Equals("Hex"))
+                {
+                    return;
+                }
+                Hex h = pieceHit.GetComponent<Hex>();
+                if (ma.canPlaceMerchant(h))
+                {
+                    CmdPlaceMerchant(h.transform.position);
+                    moveType = Enums.MoveType.NONE;
+                }
+            }
         }
     }
 
-    /* public void tradeWithBank()
-     {
-         Trades newTrade = new Trades();
-         newTrade.resourcesOffered = this.resourcesOffered;
-         newTrade.commoditiesOffered = this.commoditiesOffered;
-         newTrade.resourcesWanted = this.resourcesWanted;
-         newTrade.commoditiesWanted = this.commoditiesWanted;
-         newTrade.goldOffered = this.goldOffered;
-         newTrade.goldWanted = this.goldWanted;
-         newTrade.offering = this.iD;
-         MoveManager.instance.tradeWithBank(this.resourceRatios, this.commodityRatios, newTrade);
-     }*/
 
 
     [Command]
@@ -1494,6 +1503,81 @@ public class Player : NetworkBehaviour
     public void RpcSetI1(int i, int plyr)
     {
         GameManager.instance.getPlayer(plyr).i1 = i;
+    }
+
+    public void setFleet(int i, int plyr)
+    {
+        CmdSetFleet(i, plyr);
+    }
+
+    [Command]
+    public void CmdSetFleet(int i, int plyr)
+    {
+        RpcSetFleet(i, plyr);
+    }
+
+    [ClientRpc]
+    public void RpcSetFleet(int i, int plyr)
+    {
+        if (i >= 0 && i < 5)
+        {
+            GameManager.instance.getPlayer(plyr).oldRatio = GameManager.instance.getPlayer(plyr).getResourceRatios()[i];
+        }
+        else if (i >= 5 && i < 8) {
+            GameManager.instance.getPlayer(plyr).oldRatio = GameManager.instance.getPlayer(plyr).getCommodityRatios()[i - 5];
+        }
+
+        GameManager.instance.getPlayer(plyr).fleet = i;
+        if (i >= 0 && i < 5)
+        {
+            updateResourceRatio((ResourceType)i, 2, plyr);
+        }
+        else if (i >= 5 && i < 8) {
+            updateCommodityRatio((CommodityType)(i - 5), 2, plyr);
+        }
+    }
+
+    public void resetFleet(int plyr)
+    {
+        CmdResetFleet(plyr);
+    }
+
+    [Command]
+    public void CmdResetFleet(int plyr)
+    {
+        RpcResetFleet(plyr);
+    }
+
+    [ClientRpc]
+    public void RpcResetFleet(int plyr)
+    {
+        if (fleet >= 0 && fleet < 5)
+        {
+            updateResourceRatio((ResourceType)fleet, GameManager.instance.getPlayer(plyr).oldRatio, plyr);
+        }
+        else if (fleet >= 5 && fleet < 8) {
+            updateCommodityRatio((CommodityType)(fleet - 5), GameManager.instance.getPlayer(plyr).oldRatio, plyr);
+        }
+
+        GameManager.instance.getPlayer(plyr).fleet = -1;
+        GameManager.instance.getPlayer(plyr).oldRatio = 4;
+    }
+
+    public void setMerchantController(int plyr)
+    {
+        CmdSetMerchantController(plyr);
+    }
+
+    [Command]
+    public void CmdSetMerchantController(int plyr)
+    {
+        RpcSetMerchantController(plyr);
+    }
+
+    [ClientRpc]
+    public void RpcSetMerchantController(int plyr)
+    {
+        GameManager.instance.merchantController = plyr;
     }
 
     public Enums.DevChartType getMetropolis()
@@ -2249,6 +2333,7 @@ public class Player : NetworkBehaviour
         }
         special = Enums.Special.NONE;
         movedRoad = false;
+        resetFleet(getID());
 
         if (progressCards.Count > 4)
         {
@@ -2272,7 +2357,11 @@ public class Player : NetworkBehaviour
                 r.notBuiltThisTurn();
             }
         }
-
+        if (trade!=null)
+        {
+            CmdDestroyObject(trade.netId);
+            trade = null;
+        }
         CmdEndTurn();
     }
 
@@ -2525,6 +2614,12 @@ public class Player : NetworkBehaviour
     public void CmdRemovePirate()
     {
         MoveManager.instance.removePirate(isServer);
+    }
+
+    [Command]
+    public void CmdPlaceMerchant(Vector3 location)
+    {
+        MoveManager.instance.placeMerchant(BoardState.instance.hexPosition[location], isServer);
     }
 
     [Command]//call from Player on client to spawn a trade on all machines 
