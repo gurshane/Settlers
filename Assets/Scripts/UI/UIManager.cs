@@ -393,10 +393,16 @@ public class UIManager : NetworkBehaviour {
 		case Enums.MoveType.PROGRESS_ROAD_BUILDING_1:
 			_eToHighlight = _build.buildableRoadBuilding (_CurrentPlayer.getGamePieces (), _CurrentPlayer.getColor ());
 			break;
+		case Enums.MoveType.PROGRESS_ROAD_BUILDING_2:
+			_eToHighlight = _build.buildableRoadBuilding (_CurrentPlayer.getGamePieces (), _CurrentPlayer.getColor ());
+			break;
 		case Enums.MoveType.PROGRESS_MERCHANT:
 			_hToHighlight = _build.buildablePlaceMerchant();
 			break;
 		case Enums.MoveType.PROGRESS_SMITH_1:
+			_vToHighlight = _build.buildableSmith (_CurrentPlayer.getDevFlipChart (), _CurrentPlayer.getGamePieces (), _CurrentPlayer.getColor ());
+			break;
+		case Enums.MoveType.PROGRESS_SMITH_2:
 			_vToHighlight = _build.buildableSmith (_CurrentPlayer.getDevFlipChart (), _CurrentPlayer.getGamePieces (), _CurrentPlayer.getColor ());
 			break;
 		case Enums.MoveType.UPGRADE_KNIGHT:
