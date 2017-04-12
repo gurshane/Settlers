@@ -624,17 +624,17 @@ public class MoveManager : NetworkBehaviour {
     {
 		// Remove the current settlement
         Vertex source = BoardState.instance.vertexPosition[location];
-        GamePiece city = source.getOccupyingPiece();
+        City city = (City)source.getOccupyingPiece();
 
 		Destroy (BoardState.instance.spawnedObjects [location]);
 		BoardState.instance.spawnedObjects.Remove(location);
 
 		GameObject spawnedCityWall;
 		if (!city.isMetropolis()) { 
-			Instantiate<GameObject>(PrefabHolder.instance.cityWithCityWall, location, Quaternion.identity);
+			spawnedCityWall = Instantiate<GameObject>(PrefabHolder.instance.cityWithCityWall, location, Quaternion.identity);
         	fixPieceRotationAndPosition(spawnedCityWall);
 		} else {
-			Instantiate<GameObject>(PrefabHolder.instance.metropolisWithCityWall, location, Quaternion.identity);
+			spawnedCityWall = Instantiate<GameObject>(PrefabHolder.instance.metropolisWithCityWall, location, Quaternion.identity);
         	fixPieceRotationAndPosition(spawnedCityWall);
 		}
         spawnedCityWall.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));

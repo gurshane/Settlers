@@ -2197,28 +2197,28 @@ public class Player : NetworkBehaviour
 
                 Player winner = GameManager.instance.getCurrentPlayer();
 
-                foreach (Player p in players) {
+                foreach (Player p in GameManager.instance.getPlayers()) {
                     GameManager.instance.getPersonalPlayer().setMoveType(MoveType.SPECIAL, p.getID());
                 }
 
-                winner.setSpecial(Special.YOU_WIN, .getID());
+                winner.setSpecial(Special.YOU_WIN, winner.getID());
 
-                foreach (Player p in players) {
+                foreach (Player p in GameManager.instance.getPlayers()) {
                     if(!Object.ReferenceEquals(p, winner)) winner.setSpecial(Special.YOU_LOSE, p.getID());
                 }
                 return;
             }
         } else if (victoryPoints >= 14 ) {
-            
+
             Player winner = GameManager.instance.getCurrentPlayer();
 
-            foreach (Player p in players) {
+            foreach (Player p in GameManager.instance.getPlayers()) {
                 GameManager.instance.getPersonalPlayer().setMoveType(MoveType.SPECIAL, p.getID());
             }
 
-            winner.setSpecial(Special.YOU_WIN, .getID());
+            winner.setSpecial(Special.YOU_WIN, winner.getID());
 
-            foreach (Player p in players) {
+            foreach (Player p in GameManager.instance.getPlayers()) {
                 if(!Object.ReferenceEquals(p, winner)) winner.setSpecial(Special.YOU_LOSE, p.getID());
             }
             return;
