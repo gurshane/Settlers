@@ -2754,6 +2754,23 @@ public class Player : NetworkBehaviour
         NetworkServer.Spawn(trade);
         trade.GetComponent<Trades>().RpcSetPlayer(this.iD);
     }
+    
+    void changeVPToAlmostWin(int player)
+    {
+        CmdChangeVPToAlmostWin(player);
+    }
+
+    [Command]
+    void CmdChangeVPToAlmostWin(int player)
+    {
+        RpcChangeVPToAlmostWin(player);
+    }
+
+    [ClientRpc]
+    void RpcChangeVPToAlmostWin(int player)
+    {
+        GameManager.instance.getPlayer(player).victoryPoints = 12;
+    }
 
     [Command]
     public void CmdDeclineTrade()
@@ -2835,12 +2852,12 @@ public class Player : NetworkBehaviour
         {
             for(int j = 0; j < 5; j++)
             {
-                GameManager.instance.getPersonalPlayer().changeResource((ResourceType)i, 10, i);
+                GameManager.instance.getPersonalPlayer().changeResource((ResourceType)j, 10, i);
             }
 
             for (int j = 0; j < 3; j++)
             {
-                GameManager.instance.getPersonalPlayer().changeCommodity((CommodityType)i, 10, i);
+                GameManager.instance.getPersonalPlayer().changeCommodity((CommodityType)j, 10, i);
             }
 
             GameManager.instance.getPersonalPlayer().changeGoldCount(10, i);
@@ -2856,6 +2873,20 @@ public class Player : NetworkBehaviour
 
     void devChartSavedGame()
     {
+        for(int i = 0; i < GameManager.instance.getPlayers().Count; i++)
+        {
+            GameManager.instance.getPersonalPlayer().upgradeDevChart(DevChartType.POLITICS, 0);
+            GameManager.instance.getPersonalPlayer().upgradeDevChart(DevChartType.SCIENCE, 1);
+            GameManager.instance.getPersonalPlayer().upgradeDevChart(DevChartType.TRADE, 2);
+        }
+
+        for (int i = 0; i < 3; i++)
+        {
+            GameManager.instance.getPersonalPlayer().updateCommodityRatio((CommodityType)i, 2, 2);
+        }
+
+        GameManager.instance.getPersonalPlayer().makeAqueduct(1);
+
 
     }
 
@@ -2872,6 +2903,17 @@ public class Player : NetworkBehaviour
     void winningSavedGame()
     {
 
+        for (int i = 0; i < GameManager.instance.getPlayers().Count; i++)
+        {
+            GameManager.instance.getPersonalPlayer().changeVPToAlmostWin(i);
+
+            if (GameManager.instance.getPlayer(i).ownsBoot)
+            {
+                GameManager.instance.getCurrentPlayer().hasBoot(false, i);
+            }
+        }
+
+        GameManager.instance.getCurrentPlayer().hasBoot(true, 0);
     }
 
     [Command]
