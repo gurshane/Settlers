@@ -375,12 +375,52 @@ public class ProgressCards : NetworkBehaviour {
 	[ClientRpc]
 	void RpcEngineer(Vector3 location, Enums.Color color)
     {
-		Vertex source = BoardState.instance.vertexPosition[location];
-		GameObject spawnedCityWall = Instantiate<GameObject>(PrefabHolder.instance.cityWall, location, Quaternion.identity);
-        fixPieceRotationAndPosition(spawnedCityWall);
-        spawnedCityWall.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
-		BoardState.instance.spawnedObjects.Add(location, spawnedCityWall);
+		// Remove the current settlement
+        Vertex source = BoardState.instance.vertexPosition[location];
+        City city = (City)source.getOccupyingPiece();
+
+		Destroy (BoardState.instance.spawnedObjects [location]);
+		BoardState.instance.spawnedObjects.Remove(location);
+
+		GameObject spawnedCityWall;
+		if (!city.isMetropolis()) { 
+			spawnedCityWall = Instantiate<GameObject>(PrefabHolder.instance.cityWithCityWall, location, Quaternion.identity);
+        	fixPieceRotationAndPosition(spawnedCityWall);
+
+			spawnedCityWall.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
+			foreach(MeshRenderer meshRend in spawnedCityWall.GetComponentsInChildren<MeshRenderer>())
+			{
+				meshRend.material.SetColor("_Color", translateColor(color));
+			}
+		} else {
+			spawnedCityWall = Instantiate<GameObject>(PrefabHolder.instance.metropolisWithCityWall, location, Quaternion.identity);
+        	fixPieceRotationAndPosition(spawnedCityWall);
+
+			if (Object.ReferenceEquals(GameManager.instance.getMetropolisAt(DevChartType.TRADE), source)) {
+				spawnedCityWall.GetComponent<MeshRenderer>().material.SetColor("_Color", UnityEngine.Color.yellow);
+				foreach(MeshRenderer meshRend in spawnedCityWall.GetComponentsInChildren<MeshRenderer>())
+				{
+					meshRend.material.SetColor("_Color", UnityEngine.Color.yellow);
+				}
+			} else if (Object.ReferenceEquals(GameManager.instance.getMetropolisAt(DevChartType.POLITICS), source)) {
+				spawnedCityWall.GetComponent<MeshRenderer>().material.SetColor("_Color", UnityEngine.Color.blue);
+				foreach(MeshRenderer meshRend in spawnedCityWall.GetComponentsInChildren<MeshRenderer>())
+				{
+					meshRend.material.SetColor("_Color", UnityEngine.Color.blue);
+				}
+			} else {
+				spawnedCityWall.GetComponent<MeshRenderer>().material.SetColor("_Color", UnityEngine.Color.green);
+				foreach(MeshRenderer meshRend in spawnedCityWall.GetComponentsInChildren<MeshRenderer>())
+				{
+					meshRend.material.SetColor("_Color", UnityEngine.Color.green);
+				}
+			}
+		}
+
+        BoardState.instance.spawnedObjects.Add(location, spawnedCityWall);
+
 		source.addWall();
+
     }
 
 	public bool inventor(Hex source, Hex target, bool server)
