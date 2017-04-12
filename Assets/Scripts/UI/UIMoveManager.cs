@@ -776,23 +776,22 @@ public class UIMoveManager : MonoBehaviour {
 			ProgressCards.instance.printer();
 			break;
 		case ProgressCardName.RESOURCEMONOPOLY:
-			//TODO: Yeah, no
+			moveTypeChange (MoveType.PROGRESS_RESOURCE_MONOPOLY);
 			break;
 		case ProgressCardName.ROADBUILDING:
 			moveTypeChange(MoveType.PROGRESS_ROAD_BUILDING_1);
 			break;
 		case ProgressCardName.SABOTEUR:
 			ProgressCards.instance.saboteur ();
-			//TODO: Yeah, no
 			break;
 		case ProgressCardName.SMITH:
 			//TODO: Yeah, no
 			break;
 		case ProgressCardName.SPY:
-			//TODO: Yeah, no
+			moveTypeChange(MoveType.PROGRESS_SPY);
 			break;
 		case ProgressCardName.TRADEMONOPOLY:
-			//TODO: Yeah, no
+			moveTypeChange (MoveType.PROGRESS_TRADE_MONOPOLY);
 			break;
 		case ProgressCardName.WARLORD:
 			ProgressCards.instance.WarLord ();
