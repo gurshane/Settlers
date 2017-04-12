@@ -380,6 +380,11 @@ public class ProgressCards : NetworkBehaviour {
 		}
 
 		GameManager.instance.getPersonalPlayer().removeProgressCard(ProgressCardName.CRANE, current.getID());
+		foreach (Player p in GameManager.instance.getPlayers())
+		{
+			GameManager.instance.getPersonalPlayer().setSpecial(Special.NONE, p.getID());
+			GameManager.instance.getPersonalPlayer().setMoveType(MoveType.NONE, p.getID());
+		}
 
 		return true;
 	}

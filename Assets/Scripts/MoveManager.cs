@@ -1071,13 +1071,17 @@ public class MoveManager : NetworkBehaviour {
     [ClientRpc]
     void RpcPlaceMerchant(Vector3 target)
     {
+
 		Hex source = null;
+		GamePiece piece = null;
 		foreach (Hex h in BoardState.instance.hexPosition.Values) {
-			GamePiece piece = h.getOccupyingPiece();
+			piece = h.getOccupyingPiece();
 			if (!Object.ReferenceEquals(piece, null)) {
 				if (piece.getPieceType() == Enums.PieceType.MERCHANT) {
 					source = h;
 					break;
+				} else {
+					piece = null;
 				}
 			}
 		}
@@ -1104,17 +1108,25 @@ public class MoveManager : NetworkBehaviour {
 		}
 
 		Hex targetLocation = BoardState.instance.hexPosition[target];
+		if (!Object.ReferenceEquals(piece, null)) {
+			targetLocation.setOccupyingPiece(piece);
+		} else {
+			targetLocation.setOccupyingPiece(new Pirate());
+		}
+
 		GameObject newMerchant = Instantiate<GameObject>(PrefabHolder.instance.merchant, target, Quaternion.identity);
         fixPieceRotationAndPosition(newMerchant);
-        newMerchant.GetComponent<MeshRenderer>().material.SetColor("_Color", UnityEngine.Color.yellow);
 		BoardState.instance.spawnedObjects.Add(target, newMerchant);
 
 		ResourceType targetRes = GameManager.instance.getResourceFromHex(targetLocation.getHexType());
 		GameManager.instance.getPersonalPlayer().setMerchantController(GameManager.instance.getPersonalPlayer().getID());
 		GameManager.instance.getPersonalPlayer().updateResourceRatio (targetRes, 2, GameManager.instance.getPersonalPlayer().getID());
 
-		Destroy (BoardState.instance.spawnedObjects [source.transform.position]);
-		BoardState.instance.spawnedObjects.Remove(source.transform.position);
+		if (!Object.ReferenceEquals(piece, null)) {
+			source.setOccupyingPiece(null);
+			Destroy (BoardState.instance.spawnedObjects [source.transform.position]);
+			BoardState.instance.spawnedObjects.Remove(source.transform.position);
+		}
     }
 
 	// Place an initial settlement
