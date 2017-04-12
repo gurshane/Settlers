@@ -231,10 +231,10 @@ public class ProgressCards : NetworkBehaviour {
 	public bool intrigue(Vertex target, Enums.Color color, bool server)
     {
 		// Check if the knight can displace
-		if (!pa.canIntrigueKnight (target, color))
-        {
-			return false;
-		}
+		//if (!pa.canIntrigueKnight (target, color))
+        //{
+			//return false;
+		//}
 
 		Knight kTarget = (Knight)target.getOccupyingPiece ();
 		int targetLevel = kTarget.getLevel ();
