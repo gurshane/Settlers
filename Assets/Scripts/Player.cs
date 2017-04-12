@@ -2163,14 +2163,14 @@ public class Player : NetworkBehaviour
             return false;
         }
         CmdChangeResource(resource, num, plyr);
-        GameManager.instance.getPlayer(plyr).resources[(int)resource] += num;
+        //GameManager.instance.getPlayer(plyr).resources[(int)resource] += num;
         return true;
     }
 
     [Command]
     public void CmdChangeResource(ResourceType resourceType, int num, int plyr)
     {
-        GameManager.instance.getPlayer(plyr).resources[(int)resourceType] += num;
+        //GameManager.instance.getPlayer(plyr).resources[(int)resourceType] += num;
         RpcChangeResource(resourceType, num, plyr);
     }
 
@@ -2296,8 +2296,8 @@ public class Player : NetworkBehaviour
         {
             return false;//if there arent return false to denote an error
         }
-        int comP = (int)commodityType;
-        GameManager.instance.getPlayer(plyr).commodities[comP] += num;
+        //int comP = (int)commodityType;
+        //GameManager.instance.getPlayer(plyr).commodities[comP] += num;
         CmdChangeCommodity(commodityType, num, plyr);
         return true;
     }
@@ -2305,8 +2305,8 @@ public class Player : NetworkBehaviour
     [Command]
     public void CmdChangeCommodity(CommodityType commodityType, int num, int plyr)
     {
-        int comP = (int)commodityType;
-        GameManager.instance.getPlayer(plyr).commodities[comP] += num;
+        //int comP = (int)commodityType;
+        //GameManager.instance.getPlayer(plyr).commodities[comP] += num;
         RpcChangeCommodity(commodityType, num, plyr);
     }
 
