@@ -11,6 +11,7 @@ using Enums;
 public class UIMoveManager : MonoBehaviour {
 
 	private Player _CurrentPlayer;
+	private Player _SpiedPlayer;
 	private UIManager _UIManager;
 
 	[SerializeField]
@@ -101,6 +102,12 @@ public class UIMoveManager : MonoBehaviour {
 
 	[SerializeField]
 	private Transform _SaboteurPanel;
+
+	[SerializeField]
+	private Transform _SpyPlayerPanel;
+
+	[SerializeField]
+	private Transform _SpyProgressCardsPanel;
 	#endregion
 
 	// -------------------------
@@ -131,6 +138,8 @@ public class UIMoveManager : MonoBehaviour {
 		_AlchemistDicePanel.gameObject.SetActive (false);
 		_CraneDevPanel.gameObject.SetActive (false);
 		_SaboteurPanel.gameObject.SetActive (false);
+		_SpyPlayerPanel.gameObject.SetActive (false);
+		_SpyProgressCardsPanel.gameObject.SetActive (false);
 
 		_ResourceMonopolyPanel.gameObject.SetActive (false);
 		_TradeMonopolyPanel.gameObject.SetActive (false);
@@ -989,6 +998,136 @@ public class UIMoveManager : MonoBehaviour {
 
 	}
 
+	private void revealSpyPlayerPanel()
+	{
+		if (_CurrentPlayer.getMoveType () == MoveType.PROGRESS_SPY  && GameManager.instance.getGamePhase() == GamePhase.PHASE_TWO ) 
+		{
+			_SpyPlayerPanel.gameObject.SetActive (true);
+		} 
+
+		else {
+			_SpyPlayerPanel.gameObject.SetActive (false);
+		}
+	}
+
+	public void spyChoosePlayer(int p_ColorInt)
+	{
+		List<Player> _Players = GameManager.instance.players;
+
+		// If the requested player color is out of bounds, assume they do not exist. 
+		// return early
+		if (p_ColorInt >= _Players.Count)
+			return;
+
+		// If the index of currentPlayer's colour and the parameter match, then return
+		if ((int)_CurrentPlayer.getColor () == p_ColorInt) 
+		{
+			return;
+		}
+
+
+
+		// Set the moveType to special for all players
+		foreach (Player p in _Players) 
+		{
+			_CurrentPlayer.setMoveType (MoveType.SPECIAL, p.getID ());
+
+			// If the observed player is the same as UIMoveManager's _currentPlayer attribute, continue
+			if (p.getColor () == _CurrentPlayer.getColor ())
+				continue;
+
+			// Find the player with the same color as the pColorInt parameter
+			if ((int)p.getColor () == p_ColorInt) 
+			{
+				_SpiedPlayer = p;
+			}
+
+			// Set the special of all players not this instance's _currentPlayer attribute to NONE
+			_CurrentPlayer.setSpecial (Special.NONE, p.getID ());
+		}
+			
+
+
+		// Set _currentPlayer's Special to the enum necessary to reveal next panel
+		_CurrentPlayer.setSpecial (Special.TAKE_OPPONENT_PROGRESS, _CurrentPlayer.getID ());
+
+
+	}
+
+	private void revealSpyProgressCardsPanel()
+	{
+		if (_CurrentPlayer.getSpecial () == Special.TAKE_OPPONENT_PROGRESS  && GameManager.instance.getGamePhase() == GamePhase.PHASE_TWO ) 
+		{
+			_SpyProgressCardsPanel.gameObject.SetActive (true);
+		} 
+
+		else {
+			_SpyProgressCardsPanel.gameObject.SetActive (false);
+		}
+	}
+
+	public void spyChooseProgressCard()
+	{
+		int index = 0;
+
+		// Set all buttons to inactive to begin.
+		foreach (Transform child in _SpyProgressCardsPanel) 
+		{
+			child.gameObject.SetActive (false);
+		}
+
+		// Loop through buttons for as many times as there are progress Cards in the player's hand
+		foreach (Transform child in _SpyProgressCardsPanel) 
+		{
+			// If index exceeds number of progress cards that player may have, 
+			// or if the number of progress cards is 0, return immediately
+			if (index >= _SpiedPlayer.getProgressCards ().Count || _SpiedPlayer.getProgressCards ().Count == 0) 
+			{
+				return;
+			}
+
+			child.gameObject.SetActive (true);
+
+			// Get the button component of the child object
+			Button _button = child.GetComponent<Button> ();
+			UIProgressCardButton _pCardButton = child.GetComponent<UIProgressCardButton> ();
+
+			List<ProgressCardName> _PCards = _SpiedPlayer.getProgressCards ();
+
+			Enums.ProgressCardName _progressCardName = _PCards [index];
+			//Debug.Log ("ProgessCard at index: " + _progressCardName);
+
+
+
+			// Get the child of this button child
+			Transform textChild = child.GetChild (0);
+
+			// Get the text component of this child of the button
+			Text _text = textChild.GetComponent<Text> ();
+
+
+			assignButtonAndText (_progressCardName, _text, _pCardButton);
+
+			index++;
+		}
+	}
+
+	public void spyProgressCardButton(int p_ButtonIndex)
+	{
+		// Use the parameter to get the corresponding Button to get the Text component from
+		Button _button = _SpyProgressCardsPanel.GetChild(p_ButtonIndex).GetComponent<Button>();
+
+		// Then, get the ProgressCardButton component of this button to use its name for the switch statement
+		UIProgressCardButton _pCardButton = _SpyProgressCardsPanel.GetChild(p_ButtonIndex).GetComponent<UIProgressCardButton>();
+
+		_CurrentPlayer.addProgressCard (_pCardButton.pCardName, _CurrentPlayer.getID ());
+		_CurrentPlayer.removeProgressCard (_pCardButton.pCardName, _SpiedPlayer.getID ());
+	}
+		
+
+
+
+
 	public void closeProgressCardPanel()
 	{
 		_ProgressCardsPanel.gameObject.SetActive (false);	
@@ -1503,5 +1642,8 @@ public class UIMoveManager : MonoBehaviour {
 		revealResourceMonopolyPanel ();
 		revealTradeMonopolyPanel ();
 		revealSaboteurPanel ();
+
+		revealSpyPlayerPanel ();
+		revealSpyProgressCardsPanel ();
 	}
 }
