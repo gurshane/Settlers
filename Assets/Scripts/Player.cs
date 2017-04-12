@@ -2545,13 +2545,13 @@ public class Player : NetworkBehaviour
     [Command]
     public void CmdPlaceInitialSettlement(Vector3 location)
     {
-        MoveManager.instance.placeInitialSettlement(BoardState.instance.vertexPosition[location], this.pieces, this.isServer);
+        MoveManager.instance.placeInitialSettlement(BoardState.instance.vertexPosition[location], this.pieces, this.isServer, true);
     }
 
     [Command]
     public void CmdPlaceInitialCity(Vector3 location)
     {
-        MoveManager.instance.placeInitialCity(BoardState.instance.vertexPosition[location], this.pieces, this.isServer);
+        MoveManager.instance.placeInitialCity(BoardState.instance.vertexPosition[location], this.pieces, this.isServer, true);
     }
 
     [Command]
@@ -2569,13 +2569,13 @@ public class Player : NetworkBehaviour
     [Command]
     public void CmdBuildSettlement(Vector3 location)
     {
-        MoveManager.instance.buidSettlement(BoardState.instance.vertexPosition[location], this.resources, this.pieces, this.myColor, this.isServer);
+        MoveManager.instance.buidSettlement(BoardState.instance.vertexPosition[location], this.resources, this.pieces, this.myColor, this.isServer, true);
     }
 
     [Command]
     public void CmdBuildRoad(Vector3 location)
     {
-        MoveManager.instance.buildRoad(BoardState.instance.edgePosition[location], this.resources, this.pieces, this.myColor, this.isServer);
+        MoveManager.instance.buildRoad(BoardState.instance.edgePosition[location], this.resources, this.pieces, this.myColor, this.isServer, true);
     }
 
     [Command]
@@ -2599,13 +2599,13 @@ public class Player : NetworkBehaviour
     [Command]
     public void CmdUpgradeKnight(Vector3 location)
     {
-        MoveManager.instance.upgradeKnight(this.resources, this.devFlipChart, BoardState.instance.vertexPosition[location], this.pieces, this.myColor, this.isServer);
+        MoveManager.instance.upgradeKnight(this.resources, this.devFlipChart, BoardState.instance.vertexPosition[location], this.pieces, this.myColor, this.isServer, true);
     }
 
     [Command]
     public void CmdActivateKnight(Vector3 location)
     {
-        MoveManager.instance.activateKnight(this.resources, BoardState.instance.vertexPosition[location], this.myColor, this.isServer);
+        MoveManager.instance.activateKnight(this.resources, BoardState.instance.vertexPosition[location], this.myColor, this.isServer, true);
     }
 
     [Command]
@@ -2624,7 +2624,7 @@ public class Player : NetworkBehaviour
     public void CmdBuildCity(Vector3 location)
     {
         Debug.Log("hello3");
-        MoveManager.instance.buildCity(BoardState.instance.vertexPosition[location], this.resources, this.pieces, this.myColor, this.isServer);
+        MoveManager.instance.buildCity(BoardState.instance.vertexPosition[location], this.resources, this.pieces, this.myColor, this.isServer, true);
     }
 
     [Command]
@@ -2636,13 +2636,13 @@ public class Player : NetworkBehaviour
     [Command]
     public void CmdBuildKnight(Vector3 location)
     {
-        MoveManager.instance.buildKnight(BoardState.instance.vertexPosition[location], this.resources, this.pieces, this.myColor, this.isServer);
+        MoveManager.instance.buildKnight(BoardState.instance.vertexPosition[location], this.resources, this.pieces, this.myColor, this.isServer, true);
     }
 
     [Command]
     public void CmdBuildShip(Vector3 location)
     {
-        MoveManager.instance.buildShip(BoardState.instance.edgePosition[location], this.resources, this.pieces, this.myColor, this.isServer);
+        MoveManager.instance.buildShip(BoardState.instance.edgePosition[location], this.resources, this.pieces, this.myColor, this.isServer, true);
     }
 
     [Command]
