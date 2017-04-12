@@ -128,6 +128,33 @@ public class ProgressAuthroizor {
         return true;
     }
 
+    public bool canDiplomatRemove(Edge target, Enums.Color color)
+    {
+        GamePiece targetPiece = target.getOccupyingPiece();
+
+        // Make sure there is a ship on the source edge
+        if (Object.ReferenceEquals(targetPiece, null))
+        {
+            return false;
+        }
+        if (targetPiece.getPieceType() != Enums.PieceType.ROAD)
+        {
+            return false;
+        }
+        if (targetPiece.getColor() == color)
+        {
+            return false;
+        }
+
+        Road road = (Road)targetPiece;
+        if (road.getIsShip())
+        {
+            return false;
+        }
+
+        return true;
+    }
+
 	 // Check if a knight can displace another knight
     public bool canIntrigueKnight (Vertex target, Enums.Color color)
     {

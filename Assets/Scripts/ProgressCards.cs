@@ -194,6 +194,39 @@ public class ProgressCards : NetworkBehaviour {
         targetPiece.setOccupyingPiece(movedRoad);
     }
 
+	// Move a knight from source to target
+	public bool diplomatRemove(Edge target, Enums.Color color, bool server)
+    {
+
+		if (!pa.canDiplomatRemove (target, color))
+        {
+			return false;
+		}
+		assignAuthority(server);
+        RpcDiplomatRemove(target.transform.position, color);
+
+		Player current = GameManager.instance.getCurrentPlayer();
+		GameManager.instance.getPersonalPlayer().removeProgressCard(ProgressCardName.DIPLOMAT, current.getID());
+
+		removeAuthority(server);
+		return true;
+	}
+
+    [ClientRpc]
+	void RpcDiplomatRemove(Vector3 target, Enums.Color color)
+    {
+
+        Edge targetPiece = BoardState.instance.edgePosition [target];
+
+		Destroy (BoardState.instance.spawnedObjects [target]);
+		BoardState.instance.spawnedObjects.Remove (target);
+
+        Road road = (Road)targetPiece.getOccupyingPiece();
+
+        targetPiece.setOccupyingPiece(null);
+		road.takeOffBoard();
+    }
+
 	// Displace a knight at target with knight at source
 	public bool intrigue(Vertex target, Enums.Color color, bool server)
     {

@@ -445,6 +445,8 @@ public class Buildable {
 		foreach (Edge source in BoardState.instance.edgePosition.Values) {
 			GamePiece sourcePiece = source.getOccupyingPiece();
 
+			if (pa.canDiplomatRemove(source, color)) edges.Add(source);
+
 			// Make sure there is a ship on the source edge
 			if (Object.ReferenceEquals(sourcePiece, null))
 			{

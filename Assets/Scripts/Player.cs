@@ -1027,16 +1027,23 @@ public class Player : NetworkBehaviour
                 }
                 Edge e = pieceHit.GetComponent<Edge>();
 
-                if (Object.ReferenceEquals(e1, null))
+                if (pa.canDiplomatRemove(e, this.myColor))
                 {
-                    SetE1(e, getID());
-                }
-                else
-                {
-                    if (pa.canRoadMove(e1, e, this.myColor))
+                    CmdDiplomatRemove(e.transform.position);
+                    moveType = Enums.MoveType.NONE;
+                } else {
+
+                    if (Object.ReferenceEquals(e1, null))
                     {
-                        CmdDiplomat(e.transform.position);
-                        moveType = Enums.MoveType.NONE;
+                        SetE1(e, getID());
+                    }
+                    else
+                    {
+                        if (pa.canRoadMove(e1, e, this.myColor))
+                        {
+                            CmdDiplomat(e.transform.position);
+                            moveType = Enums.MoveType.NONE;
+                        }
                     }
                 }
             }
@@ -2580,6 +2587,12 @@ public class Player : NetworkBehaviour
     public void CmdDiplomat(Vector3 location)
     {
         ProgressCards.instance.diplomat(e1, BoardState.instance.edgePosition[location], this.myColor, isServer);
+    }
+
+    [Command]
+    public void CmdDiplomatRemove(Vector3 location)
+    {
+        ProgressCards.instance.diplomatRemove(BoardState.instance.edgePosition[location], this.myColor, isServer);
     }
 
     [Command]
