@@ -2546,16 +2546,16 @@ public class Player : NetworkBehaviour
 
     public bool validateTrade()
     {
-        for (int i = 0; i<trade.getResourcesWanted().Count, i++)
+        for (int i = 0; i<trade.getResourcesWanted().Count; i++)
         {
             if (resources[i]<trade.getResourcesWanted()[i])
             {
                 return false;
             }
         }
-        for (int j = 0; j<trade.getCommoditiesWanted().Count, j++)
+        for (int j = 0; j<trade.getCommoditiesWanted().Count; j++)
         {
-            if (commodities[j] < trade.getCommoditiesWanted()[i])
+            if (commodities[j] < trade.getCommoditiesWanted()[j])
             {
                 return false;
             }
