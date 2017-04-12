@@ -32,7 +32,7 @@ public class GameManager : NetworkBehaviour {
     public int playerTurn;
 
     [SyncVar]
-    private int merchantController;
+    public int merchantController;
 
     [SyncVar]
     private int longestRouteController;
@@ -64,7 +64,6 @@ public class GameManager : NetworkBehaviour {
     public void Init() //initializer
     {
         GameObject[] objects = GameObject.FindGameObjectsWithTag("Player");
-        Debug.Log("Objects length is: " + objects.Length + " _playerNumber is: " + GameObject.FindObjectOfType<LobbyManager>()._playerNumber + "...continuing");
         players = new List<Player>();
         ServerInitPlayers(objects);
         ClientInitPlayers(objects);
@@ -73,7 +72,6 @@ public class GameManager : NetworkBehaviour {
     [Server]
     private void ServerInitPlayers(GameObject [] objects)
     {
-        Debug.Log(objects.Length);
         for (int i = 0; i < objects.Length; i++)
         {
             Player player = objects[i].GetComponent<Player>();
@@ -91,7 +89,6 @@ public class GameManager : NetworkBehaviour {
         {
             return;
         }
-        Debug.Log("Number of objects tagged Player: " + objects.Length);//why only 1 player object found?
         //client connections delay issues, how to delay until all connections present?
         //why isnt syncvar properly working on player objects for iD number?????    
         Player[] temp = new Player[objects.Length];
@@ -180,6 +177,7 @@ public class GameManager : NetworkBehaviour {
             gamePhase = Enums.GamePhase.PHASE_ONE;
 		}
 
+        GameManager.instance.getPersonalPlayer().setOldTurn(this.playerTurn);
         removeAuthority(server);
     }
 
@@ -478,8 +476,6 @@ public class GameManager : NetworkBehaviour {
                     getPersonalPlayer().setMoveType(MoveType.SPECIAL, p2.getID());
                 }
 
-                Debug.Log("old turn" + p.getOldTurn());
-
                 getPersonalPlayer().setSpecial(Special.DISCARD_RESOURCE_SEVEN, p.getID());
                 foreach (Player p2 in players) {
                     if(!Object.ReferenceEquals(p, p2)) getPersonalPlayer().setSpecial(Special.NONE, p2.getID());
@@ -601,7 +597,6 @@ public class GameManager : NetworkBehaviour {
     }
 
     private void barbarianLoss(int start) {
-        Debug.Log("bloss");
         int[] playerContributions = new int[players.Count];
         foreach (Vertex v in BoardState.instance.vertexPosition.Values) {
             GamePiece gp = v.getOccupyingPiece();
@@ -637,9 +632,7 @@ public class GameManager : NetworkBehaviour {
             } 
         }
 
-        Debug.Log("wp:" + worstPlayer);
         if (worstPlayer == -1) {
-            Debug.Log("wp-1");
             foreach(Player p in getPlayers()) {
                 getPersonalPlayer().setSpecial(Special.NONE, p.getID());
                 getPersonalPlayer().setMoveType(MoveType.NONE, p.getID());
@@ -711,7 +704,14 @@ public class GameManager : NetworkBehaviour {
             // If a hex isn't the right number, or doesn't produce cards, continue
             if (h.getHexNumber() != num)
             {
-                continue;
+                if(h.isLake && (num == 11 || num == 12 || num == 2 || num == 3))
+                {
+                    //generate fish
+                }
+                else
+                {
+                    continue;
+                }
             }
 
             if (Object.ReferenceEquals(h, robberLocation))
@@ -729,11 +729,7 @@ public class GameManager : NetworkBehaviour {
 
             Enums.ResourceType res = getResourceFromHex(hType);
             Enums.CommodityType com = getCommodityFromHex(hType);
-            if (res == Enums.ResourceType.NONE && hType != Enums.HexType.DESERT)
-            {
-                continue;
-            }
-
+            
             // Distribute all the resources
             foreach (Vertex v in h.getVertices())
             {
@@ -746,14 +742,20 @@ public class GameManager : NetworkBehaviour {
                 // Distribue resources for settlements
                 if (current.getPieceType() == Enums.PieceType.SETTLEMENT)
                 {
-                    Debug.Log("Hex type: " + h.getHexType() + ", enough: " + enoughRes[res]);
                     Enums.Color ownerColor = current.getColor();
                     Player p = getPlayer(ownerColor);
                     if(hType == Enums.HexType.DESERT)
                     {
                         Debug.Log("single fish");
                         int numFish = Bank.instance.getFishToken(p.isServer);
-                        getPersonalPlayer().changeFishCount(numFish, p.getID());
+                        if (numFish == -7)
+                        {
+                            getPersonalPlayer().hasBoot(true, p.getID());
+                        }
+                        else
+                        {
+                            getPersonalPlayer().changeFishCount(numFish, p.getID());
+                        }
                         playerAqueducts[p.getID()] = false;
                     }
                     else if (res != Enums.ResourceType.NONE && enoughRes[res])
@@ -776,9 +778,16 @@ public class GameManager : NetworkBehaviour {
                     Player p = getPlayer(ownerColor);
                     if(hType == Enums.HexType.DESERT)
                     {
-                        Debug.Log("fish");
+                        Debug.Log("many fish");
                         int numFish = Bank.instance.getFishTokens(p.isServer);
-                        getPersonalPlayer().changeFishCount(numFish, p.getID());
+                        if(numFish == -7)
+                        {
+                            getPersonalPlayer().hasBoot(true, p.getID());
+                        }
+                        else
+                        {
+                            getPersonalPlayer().changeFishCount(numFish, p.getID());
+                        }
                         playerAqueducts[p.getID()] = false;
                     }
                     if (com != Enums.CommodityType.NONE)

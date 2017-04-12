@@ -49,7 +49,6 @@ public class MoveManager : NetworkBehaviour {
         Vertex targetPiece = BoardState.instance.vertexPosition[target];
 
 		GameObject knight = getKnightFromLevel (level, target, color);
-        knight.transform.position += new Vector3(0f, 10f, 0f);
 		Destroy (BoardState.instance.spawnedObjects [source]);
 
 		BoardState.instance.spawnedObjects.Add(target, knight);
@@ -157,7 +156,6 @@ public class MoveManager : NetworkBehaviour {
 		}
 
 		GameObject targetKnightObject = getKnightFromLevel (targetLevel, displacedLocation, color);
-        targetKnightObject.transform.position += new Vector3(0f, 10f, 0f);
 		BoardState.instance.spawnedObjects.Add(displacedLocation, targetKnightObject);
 
         // Deactivate the knight
@@ -183,7 +181,6 @@ public class MoveManager : NetworkBehaviour {
 		Destroy (BoardState.instance.spawnedObjects [target]);
 
 		GameObject sourceKnightObject = getKnightFromLevel (sourceLevel, target, color);
-        sourceKnightObject.transform.position += new Vector3(0f, 10f, 0f);
 		BoardState.instance.spawnedObjects.Remove(target);
 		BoardState.instance.spawnedObjects.Remove(source);
 		BoardState.instance.spawnedObjects.Add(target, sourceKnightObject);
@@ -201,11 +198,11 @@ public class MoveManager : NetworkBehaviour {
 
 	// Upgrade a knight at vertex v
 	public bool upgradeKnight(int[] resources, int[] devChart, Vertex v, List<GamePiece> pieces,
-			Enums.Color color, bool server)
+			Enums.Color color, bool server, bool check)
     {
 
 		// Check if the knight can be upgraded
-		if (!ma.canUpgradeKnight (resources, devChart, v, pieces, color))
+		if (!ma.canUpgradeKnight (resources, devChart, v, pieces, color) && check)
         {
 			return false;
 		}
@@ -239,7 +236,6 @@ public class MoveManager : NetworkBehaviour {
 		BoardState.instance.spawnedObjects.Remove(v);
 
 		GameObject newKnight = getKnightFromLevel (level + 1, v, color);
-        newKnight.transform.position += new Vector3(0f, 10f, 0f);
 
 		BoardState.instance.spawnedObjects.Add(v, newKnight);
 
@@ -247,10 +243,10 @@ public class MoveManager : NetworkBehaviour {
     }
 
 	// Activate a knight at vertex v
-	public bool activateKnight(int[] resources, Vertex v, Enums.Color color, bool server)
+	public bool activateKnight(int[] resources, Vertex v, Enums.Color color, bool server, bool check)
     {
 		// Check if the knight can be upgraded
-		if (!ma.canActivateKnight (resources, v, color))
+		if (!ma.canActivateKnight (resources, v, color) && check)
         {
 			return false;
 		}
@@ -373,10 +369,10 @@ public class MoveManager : NetworkBehaviour {
 
 	// Build a settlement at location
 	public bool buidSettlement(Vertex location, int[] resources,
-		List<GamePiece> pieces, Enums.Color color, bool server)
+		List<GamePiece> pieces, Enums.Color color, bool server, bool check)
     {
 
-		if (!ma.canBuildSettlement (location, resources, pieces, color))
+		if (!ma.canBuildSettlement (location, resources, pieces, color) && check)
         {
 			return false;
 		}
@@ -437,11 +433,11 @@ public class MoveManager : NetworkBehaviour {
 
 	// Build a city at location
 	public bool buildCity(Vertex location, int[] resources,
-		List<GamePiece> pieces, Enums.Color color, bool server)
+		List<GamePiece> pieces, Enums.Color color, bool server, bool check)
     {
 
 		Debug.Log("hello1");
-		if (!ma.canBuildCity (location, resources, pieces, color))
+		if (!ma.canBuildCity (location, resources, pieces, color) && check)
         {
 			return false;
 		}
@@ -545,21 +541,32 @@ public class MoveManager : NetworkBehaviour {
 		Destroy (BoardState.instance.spawnedObjects [location]);
 		BoardState.instance.spawnedObjects.Remove(location);
 
-		GameObject spawnedMetropolis = Instantiate<GameObject>(PrefabHolder.instance.metropolis, location, Quaternion.identity);
+		GameObject spawnedMetropolis;
+		if (source.getHasWall()) spawnedMetropolis = Instantiate<GameObject>(PrefabHolder.instance.metropolisWithCityWall, location, Quaternion.identity);
+		else spawnedMetropolis = Instantiate<GameObject>(PrefabHolder.instance.metropolis, location, Quaternion.identity);
         fixPieceRotationAndPosition(spawnedMetropolis);
 
 		switch (dev) {
 			case DevChartType.TRADE : 
 				spawnedMetropolis.GetComponent<MeshRenderer>().material.SetColor("_Color", UnityEngine.Color.yellow);
-                spawnedMetropolis.GetComponentInChildren<MeshRenderer>().material.SetColor("_Color", UnityEngine.Color.yellow);
-				break;
+                foreach(MeshRenderer meshRend in spawnedMetropolis.GetComponentsInChildren<MeshRenderer>())
+                {
+                    meshRend.material.SetColor("_Color", UnityEngine.Color.yellow);
+                }
+                break;
 			case DevChartType.POLITICS :
 				spawnedMetropolis.GetComponent<MeshRenderer>().material.SetColor("_Color", UnityEngine.Color.blue);
-                spawnedMetropolis.GetComponentInChildren<MeshRenderer>().material.SetColor("_Color", UnityEngine.Color.blue);
+                foreach (MeshRenderer meshRend in spawnedMetropolis.GetComponentsInChildren<MeshRenderer>())
+                {
+                    meshRend.material.SetColor("_Color", UnityEngine.Color.blue);
+                }
                 break;
 			default:
 				spawnedMetropolis.GetComponent<MeshRenderer>().material.SetColor("_Color", UnityEngine.Color.green);
-                spawnedMetropolis.GetComponentInChildren<MeshRenderer>().material.SetColor("_Color", UnityEngine.Color.green);
+                foreach (MeshRenderer meshRend in spawnedMetropolis.GetComponentsInChildren<MeshRenderer>())
+                {
+                    meshRend.material.SetColor("_Color", UnityEngine.Color.green);
+                }
                 break;
 		}
 
@@ -615,19 +622,58 @@ public class MoveManager : NetworkBehaviour {
     [ClientRpc]
 	void RpcBuildCityWall(Vector3 location, Enums.Color color)
     {
-		Vertex source = BoardState.instance.vertexPosition[location];
-		GameObject spawnedCityWall = Instantiate<GameObject>(PrefabHolder.instance.cityWall, location, Quaternion.identity);
-        fixPieceRotationAndPosition(spawnedCityWall);
-        spawnedCityWall.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
-		BoardState.instance.spawnedObjects.Add(location, spawnedCityWall);
+		// Remove the current settlement
+        Vertex source = BoardState.instance.vertexPosition[location];
+        City city = (City)source.getOccupyingPiece();
+
+		Destroy (BoardState.instance.spawnedObjects [location]);
+		BoardState.instance.spawnedObjects.Remove(location);
+
+		GameObject spawnedCityWall;
+		if (!city.isMetropolis()) { 
+			spawnedCityWall = Instantiate<GameObject>(PrefabHolder.instance.cityWithCityWall, location, Quaternion.identity);
+        	fixPieceRotationAndPosition(spawnedCityWall);
+
+			spawnedCityWall.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
+			foreach(MeshRenderer meshRend in spawnedCityWall.GetComponentsInChildren<MeshRenderer>())
+			{
+				meshRend.material.SetColor("_Color", translateColor(color));
+			}
+		} else {
+			spawnedCityWall = Instantiate<GameObject>(PrefabHolder.instance.metropolisWithCityWall, location, Quaternion.identity);
+        	fixPieceRotationAndPosition(spawnedCityWall);
+
+			if (Object.ReferenceEquals(GameManager.instance.getMetropolisAt(DevChartType.TRADE), source)) {
+				spawnedCityWall.GetComponent<MeshRenderer>().material.SetColor("_Color", UnityEngine.Color.yellow);
+				foreach(MeshRenderer meshRend in spawnedCityWall.GetComponentsInChildren<MeshRenderer>())
+				{
+					meshRend.material.SetColor("_Color", UnityEngine.Color.yellow);
+				}
+			} else if (Object.ReferenceEquals(GameManager.instance.getMetropolisAt(DevChartType.POLITICS), source)) {
+				spawnedCityWall.GetComponent<MeshRenderer>().material.SetColor("_Color", UnityEngine.Color.blue);
+				foreach(MeshRenderer meshRend in spawnedCityWall.GetComponentsInChildren<MeshRenderer>())
+				{
+					meshRend.material.SetColor("_Color", UnityEngine.Color.blue);
+				}
+			} else {
+				spawnedCityWall.GetComponent<MeshRenderer>().material.SetColor("_Color", UnityEngine.Color.green);
+				foreach(MeshRenderer meshRend in spawnedCityWall.GetComponentsInChildren<MeshRenderer>())
+				{
+					meshRend.material.SetColor("_Color", UnityEngine.Color.green);
+				}
+			}
+		}
+
+        BoardState.instance.spawnedObjects.Add(location, spawnedCityWall);
+
 		source.addWall();
     }
 
 	// Build a knight at location
 	public bool buildKnight(Vertex location, int[] resources,
-		List<GamePiece> pieces, Enums.Color color, bool server)
+		List<GamePiece> pieces, Enums.Color color, bool server, bool check)
     {
-		if (!ma.canBuildKnight (location, resources, pieces, color))
+		if (!ma.canBuildKnight (location, resources, pieces, color) && check)
         {
 			return false;
 		}
@@ -654,7 +700,6 @@ public class MoveManager : NetworkBehaviour {
     {
 		Vertex source = BoardState.instance.vertexPosition[location];
 		GameObject spawnedKnight = getKnightFromLevel(1, location, color);
-        spawnedKnight.transform.position += new Vector3(0f, 10f, 0f);
 		BoardState.instance.spawnedObjects.Add(location, spawnedKnight);
 
 		Player current = GameManager.instance.getCurrentPlayer();
@@ -669,10 +714,10 @@ public class MoveManager : NetworkBehaviour {
 
 	// Build a road at location
 	public bool buildRoad(Edge location, int[] resources,
-		List<GamePiece> pieces, Enums.Color color, bool server)
+		List<GamePiece> pieces, Enums.Color color, bool server, bool check)
     {
 
-		if (!ma.canBuildRoad (location, resources, pieces, color))
+		if (!ma.canBuildRoad (location, resources, pieces, color) && check)
         {
 			return false;
 		}
@@ -722,6 +767,18 @@ public class MoveManager : NetworkBehaviour {
         Edge edge = BoardState.instance.edgePosition[location];
 		GameObject spawnedRoad = Instantiate<GameObject>(PrefabHolder.instance.road, location, Quaternion.identity);
         fixPieceRotationAndPosition(spawnedRoad);
+        if (edge.isRightPointing)
+        {
+            spawnedRoad.transform.Rotate(0f, 0f, -29f);
+        }
+        else if (edge.isLeftPointing)
+        {
+            spawnedRoad.transform.Rotate(0f, 0f, 31f);
+        }
+        else if (edge.isForwardPointing)
+        {
+            spawnedRoad.transform.Rotate(0f, 0f, 90f);
+        }
         spawnedRoad.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
 		BoardState.instance.spawnedObjects.Add(location, spawnedRoad);
 
@@ -742,10 +799,10 @@ public class MoveManager : NetworkBehaviour {
 
 	// Build a ship at location
 	public bool buildShip(Edge location, int[] resources,
-		List<GamePiece> pieces, Enums.Color color, bool server)
+		List<GamePiece> pieces, Enums.Color color, bool server, bool check)
     {
 		Debug.Log("ship2");
-		if (!ma.canBuildShip (location, resources, pieces, color))
+		if (!ma.canBuildShip (location, resources, pieces, color) && check)
         {
 			return false;
 		}
@@ -773,9 +830,19 @@ public class MoveManager : NetworkBehaviour {
     {
         Edge edge = BoardState.instance.edgePosition[location];
 		GameObject spawnedBoat = Instantiate<GameObject>(PrefabHolder.instance.boat, location, Quaternion.identity);
-
-        spawnedBoat.transform.position += new Vector3(0f, 10f, 0f);
-
+        
+        if (edge.isRightPointing)
+        {
+            spawnedBoat.transform.Rotate(0f, 60f, 0f);
+        }
+        else if (edge.isLeftPointing)
+        {
+            spawnedBoat.transform.Rotate(0f, -60f, 0f);
+        }
+        else if (edge.isForwardPointing)
+        {
+            spawnedBoat.transform.Rotate(0f, 0f, 0f);
+        }
         spawnedBoat.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
 		BoardState.instance.spawnedObjects.Add(location, spawnedBoat);
 
@@ -817,7 +884,19 @@ public class MoveManager : NetworkBehaviour {
         Edge targetPiece = BoardState.instance.edgePosition [target];
 
 		GameObject spawnedBoat = Instantiate<GameObject>(PrefabHolder.instance.boat, target, Quaternion.identity);
-		spawnedBoat.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
+        if (targetPiece.isRightPointing)
+        {
+            spawnedBoat.transform.Rotate(0f, 60f, 0f);
+        }
+        else if (targetPiece.isLeftPointing)
+        {
+            spawnedBoat.transform.Rotate(0f, -60f, 0f);
+        }
+        else if (targetPiece.isForwardPointing)
+        {
+            spawnedBoat.transform.Rotate(0f, 0f, 0f);
+        }
+        spawnedBoat.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
 		Destroy (BoardState.instance.spawnedObjects [source]);
 
 		BoardState.instance.spawnedObjects.Add(target, spawnedBoat);
@@ -899,6 +978,7 @@ public class MoveManager : NetworkBehaviour {
 			targetLocation.setOccupyingPiece(piece);
 		} else {
 			targetLocation.setOccupyingPiece(new Robber());
+			Debug.Log("ocpiece " + targetLocation.getOccupyingPiece().getPieceType());
 		}
 
 		GameObject newRobber = Instantiate<GameObject>(PrefabHolder.instance.robber, target, Quaternion.identity);
@@ -973,6 +1053,17 @@ public class MoveManager : NetworkBehaviour {
 
 		assignAuthority(server);
         RpcPlaceMerchant(target.transform.position);
+
+		Player current = GameManager.instance.getPersonalPlayer();
+		GameManager.instance.getPersonalPlayer().removeProgressCard(ProgressCardName.MERCHANT, current.getID());
+		GameManager.instance.getPersonalPlayer().changeVictoryPoints(1, current.getID());
+
+		int mController = GameManager.instance.merchantController;
+
+		if (mController >= 0) {
+			GameManager.instance.getPersonalPlayer().changeVictoryPoints(-1, mController);
+		}
+
 		removeAuthority(server);
 		return true;
 	}
@@ -980,31 +1071,67 @@ public class MoveManager : NetworkBehaviour {
     [ClientRpc]
     void RpcPlaceMerchant(Vector3 target)
     {
+
 		Hex source = null;
+		GamePiece piece = null;
 		foreach (Hex h in BoardState.instance.hexPosition.Values) {
-			GamePiece piece = h.getOccupyingPiece();
+			piece = h.getOccupyingPiece();
 			if (!Object.ReferenceEquals(piece, null)) {
 				if (piece.getPieceType() == Enums.PieceType.MERCHANT) {
 					source = h;
 					break;
+				} else {
+					piece = null;
+				}
+			}
+		}
+
+		int mController = GameManager.instance.merchantController;
+
+		if (mController >= 0 && !Object.ReferenceEquals(source, null)) {
+			ResourceType res = GameManager.instance.getResourceFromHex(source.getHexType());
+
+			foreach (Vertex v in BoardState.instance.vertexPosition.Values) {
+				GamePiece vPiece = v.getOccupyingPiece();
+				if (!Object.ReferenceEquals(vPiece, null)) {
+					if ((int)vPiece.getColor() == mController) {
+						if (vPiece.getPieceType() == PieceType.CITY || vPiece.getPieceType() == PieceType.SETTLEMENT) {
+							if (canMerchantChange(mController, res)) {
+								if (!hasGeneric(mController, res)) {
+									GameManager.instance.getPersonalPlayer().updateResourceRatio (res, 4, GameManager.instance.getPersonalPlayer().getID());
+								}
+							}
+						}
+					}
 				}
 			}
 		}
 
 		Hex targetLocation = BoardState.instance.hexPosition[target];
-		GameObject newMerchant = Instantiate<GameObject>(PrefabHolder.instance.city, target, Quaternion.identity);
-        fixPieceRotationAndPosition(newMerchant);
-        newMerchant.GetComponent<MeshRenderer>().material.SetColor("_Color", UnityEngine.Color.yellow);
+		if (!Object.ReferenceEquals(piece, null)) {
+			targetLocation.setOccupyingPiece(piece);
+		} else {
+			targetLocation.setOccupyingPiece(new Pirate());
+		}
+
+		GameObject newMerchant = Instantiate<GameObject>(PrefabHolder.instance.merchant, target, Quaternion.identity);
 		BoardState.instance.spawnedObjects.Add(target, newMerchant);
 
-		Destroy (BoardState.instance.spawnedObjects [source.transform.position]);
-		BoardState.instance.spawnedObjects.Remove(source.transform.position);
+		ResourceType targetRes = GameManager.instance.getResourceFromHex(targetLocation.getHexType());
+		GameManager.instance.getPersonalPlayer().setMerchantController(GameManager.instance.getPersonalPlayer().getID());
+		GameManager.instance.getPersonalPlayer().updateResourceRatio (targetRes, 2, GameManager.instance.getPersonalPlayer().getID());
+
+		if (!Object.ReferenceEquals(piece, null)) {
+			source.setOccupyingPiece(null);
+			Destroy (BoardState.instance.spawnedObjects [source.transform.position]);
+			BoardState.instance.spawnedObjects.Remove(source.transform.position);
+		}
     }
 
 	// Place an initial settlement
-	public bool placeInitialSettlement (Vertex v, List<GamePiece> pieces, bool server)
+	public bool placeInitialSettlement (Vertex v, List<GamePiece> pieces, bool server, bool check)
     {
-		if (!ma.canPlaceInitialTownPiece (v))
+		if (!ma.canPlaceInitialTownPiece (v) && check)
         {
 			return false;
 		}
@@ -1045,9 +1172,9 @@ public class MoveManager : NetworkBehaviour {
     }
 
     // Place an initial city
-	public bool placeInitialCity (Vertex v, List<GamePiece> pieces, bool server)
+	public bool placeInitialCity (Vertex v, List<GamePiece> pieces, bool server, bool check)
     {
-		if (!ma.canPlaceInitialTownPiece (v))
+		if (!ma.canPlaceInitialTownPiece (v) && check)
         {
 			return false;
 		}
@@ -1121,6 +1248,19 @@ public class MoveManager : NetworkBehaviour {
         Edge edge = BoardState.instance.edgePosition[location];
 		GameObject spawnedRoad = Instantiate<GameObject>(PrefabHolder.instance.road, location, Quaternion.identity);
         fixPieceRotationAndPosition(spawnedRoad);
+        if (edge.isRightPointing)
+        {
+            spawnedRoad.transform.Rotate(0f, 0f, -29f);
+        }
+        else if (edge.isLeftPointing)
+        {
+            spawnedRoad.transform.Rotate(0f, 0f, 31f);
+        }
+        else if (edge.isForwardPointing)
+        {
+            spawnedRoad.transform.Rotate(0f, 0f, 90f);
+        }
+
         spawnedRoad.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
 		BoardState.instance.spawnedObjects.Add(location, spawnedRoad);
 
@@ -1156,9 +1296,19 @@ public class MoveManager : NetworkBehaviour {
     {
         Edge edge = BoardState.instance.edgePosition[location];
 		GameObject spawnedBoat = Instantiate<GameObject>(PrefabHolder.instance.boat, location, Quaternion.identity);
-
-        spawnedBoat.transform.position += new Vector3(0f, 10f, 0f);
-
+        
+        if (edge.isRightPointing)
+        {
+            spawnedBoat.transform.Rotate(0f, 60f, 0f);
+        }
+        else if (edge.isLeftPointing)
+        {
+            spawnedBoat.transform.Rotate(0f, -60f, 0f);
+        }
+        else if (edge.isForwardPointing)
+        {
+            spawnedBoat.transform.Rotate(0f, 0f, 0f);
+        }
         spawnedBoat.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
 		BoardState.instance.spawnedObjects.Add(location, spawnedBoat);
 
@@ -1208,6 +1358,7 @@ public class MoveManager : NetworkBehaviour {
 
 		// Remove settlement at location
 		city.takeOffBoard ();
+		source.removeWall();
 
 		Player current = GameManager.instance.getCurrentPlayer();
 		List<GamePiece> pieces = current.getGamePieces();
@@ -1294,7 +1445,7 @@ public class MoveManager : NetworkBehaviour {
     }
 	
 	// Instantiate a knight of the given level at the given location 
-	private GameObject getKnightFromLevel(int level, Vector3 location, Enums.Color color) {
+	public GameObject getKnightFromLevel(int level, Vector3 location, Enums.Color color) {
 		GameObject knight;
 		switch (level) {
 		case 1:
@@ -1307,7 +1458,7 @@ public class MoveManager : NetworkBehaviour {
             {
                 meshRend.material.SetColor("_Color", translateColor(color));
             }
-			break;
+            break;
 		case 3:
 			knight = Instantiate<GameObject> (PrefabHolder.instance.levelThreeKnight, location, Quaternion.identity);
             foreach (MeshRenderer meshRend in knight.GetComponentsInChildren<MeshRenderer>())
@@ -1319,7 +1470,7 @@ public class MoveManager : NetworkBehaviour {
 			knight = null;
 			break;
 		}
-        knight.transform.position += new Vector3(0f, 10f, 0f);
+        knight.transform.position += new Vector3(0f, 5f, 0f);
         return knight;
 	}
 		
@@ -1387,6 +1538,38 @@ public class MoveManager : NetworkBehaviour {
         {
 			GameManager.instance.getPersonalPlayer().updateResourceRatio (getResourceFromPort (port), 2, current.getID());
 		}
+	}
+
+	private bool canMerchantChange(int plyr, ResourceType merchRes) {
+		Player p = GameManager.instance.getPlayer(plyr);
+
+		foreach (Vertex v in BoardState.instance.vertexPosition.Values) {
+			Enums.PortType port = v.getPortType ();
+
+			if (port != Enums.PortType.NONE && port != Enums.PortType.GENERIC) {
+				if (getResourceFromPort(port) == merchRes) {
+					return false;
+				}
+			}
+		}
+
+		return true;
+	}
+
+	private bool hasGeneric(int plyr, ResourceType merchRes) {
+
+		Player p = GameManager.instance.getPlayer(plyr);
+
+		foreach (Vertex v in BoardState.instance.vertexPosition.Values) {
+			Enums.PortType port = v.getPortType ();
+
+			if (port == Enums.PortType.GENERIC)
+			{
+				GameManager.instance.getPersonalPlayer().updateResourceRatio (merchRes, 3, p.getID());
+				return true;
+			}
+		}
+		return false;	
 	}
 
 	// Assign client authority

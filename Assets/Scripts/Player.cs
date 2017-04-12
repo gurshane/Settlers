@@ -4,11 +4,16 @@ using UnityEngine;
 using Enums;
 using UnityEngine.Networking;
 
-public class Player : NetworkBehaviour {
+public class Player : NetworkBehaviour
+{
+
+    public Trades trade;
 
     public GameObject myHud;
 
-	private MoveAuthorizer ma;
+    public GameObject tradePrefab;
+
+    private MoveAuthorizer ma;
     private ProgressAuthroizor pa;
     private Graph graph;
 
@@ -30,18 +35,24 @@ public class Player : NetworkBehaviour {
 
     [SyncVar]
     public int victoryPoints;
-    
+
     [SyncVar]
     private Enums.Status status;
 
     [SyncVar]
-    private int goldCount;
+    public int goldCount;
 
     [SyncVar]
     public int numFish;
 
     [SyncVar]
-    private int safeCardCount;
+    public bool ownsBoot;
+
+    [SyncVar]
+    public int progressCardSet;
+
+    [SyncVar]
+    public int safeCardCount;
 
     public List<GamePiece> pieces;
     public List<ProgressCardName> progressCards;
@@ -52,7 +63,7 @@ public class Player : NetworkBehaviour {
     public int[] resourceRatios;
     public int[] commodityRatios;
 
-    
+
     public int cityWallsLeft;
     public bool movedRoad;
     public bool aqueduct;
@@ -82,51 +93,66 @@ public class Player : NetworkBehaviour {
     [SyncVar]
     public bool b1 = false;
 
+
+    [SyncVar]
+    public int fleet = -1;
+
+    [SyncVar]
+    public int oldRatio = 4;
+
     [SyncVar]
     public int opponent;
 
-	[Command]
+    [Command]
     public void CmdInit(int iD)//call this if server is loaded after player
     {
         this.iD = iD;
-		this.myColor = (Enums.Color)iD;
+        this.myColor = (Enums.Color)iD;
     }
 
     // Final initialization step, assign colors, game manager, movemanager
-	public void Init() {
-		this.myColor = (Enums.Color)iD;
-		foreach (GamePiece piece in pieces) {
-			piece.setColor (myColor);
-		}
-	}
+    public void Init()
+    {
+        this.myColor = (Enums.Color)iD;
+        foreach (GamePiece piece in pieces)
+        {
+            piece.setColor(myColor);
+        }
+    }
 
     public void OnLoad()//
     {
         GameManager.instance.Init();
     }
 
-    public int getTotalResources() {
+    public int getTotalResources()
+    {
         int ret = 0;
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < 5; i++)
+        {
             ret += resources[i];
         }
         return ret;
     }
 
-    public int getTotalCommodities() {
+    public int getTotalCommodities()
+    {
         int ret = 0;
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i < 3; i++)
+        {
             ret += commodities[i];
         }
         return ret;
     }
 
-    public int getHandSize() {
+    public int getHandSize()
+    {
         return getTotalResources() + getTotalCommodities();
     }
 
-    public int maxHandSize() {
-        return (3-cityWallsLeft)*2 + 7;
+    public int maxHandSize()
+    {
+        return (3 - cityWallsLeft) * 2 + 7;
     }
 
     void Start()
@@ -134,6 +160,7 @@ public class Player : NetworkBehaviour {
 
         spawnedPieces = new Dictionary<Vector3, GamePiece>();
 
+        trade = null;
         // Create pieces
         pieces = new List<GamePiece>();
         for (int i = 0; i < 5; i++)
@@ -161,9 +188,12 @@ public class Player : NetworkBehaviour {
 
         progressCards = new List<ProgressCardName>();
         status = Enums.Status.ACTIVE;
-
-        this.resources = new int[5] { 10, 10, 10, 10, 10 };
-        this.commodities = new int[3] { 10, 10, 10 };
+        this.resourcesOffered = new int[5] { 0, 0, 0, 0, 0 };
+        this.resourcesWanted = new int[5] { 0, 0, 0, 0, 0, };
+        this.commoditiesOffered = new int[3] { 0, 0, 0 };
+        this.commoditiesWanted = new int[3] { 0, 0, 0 };
+        this.resources = new int[5] { 0, 0, 0, 0, 0 };
+        this.commodities = new int[3] { 0, 0, 0 };
         this.goldCount = 0;
         this.devFlipChart = new int[3] { 0, 0, 0 };
         this.resourceRatios = new int[5] { 4, 4, 4, 4, 4 };
@@ -178,14 +208,14 @@ public class Player : NetworkBehaviour {
         this.special = Enums.Special.NONE;
         this.opponent = -1;
 
-		this.ma = new MoveAuthorizer ();
+        this.ma = new MoveAuthorizer();
         this.pa = new ProgressAuthroizor();
         this.graph = new Graph();
 
 
         if (isLocalPlayer)
         {
-            
+
             gameObject.name = Network.player.ipAddress;
             Instantiate(myHud);
         }
@@ -194,159 +224,265 @@ public class Player : NetworkBehaviour {
 
     public void Update()
     {
-		if(!isLocalPlayer || GameManager.instance.getPlayerTurn() != iD)
+        if (!isLocalPlayer)
         {
-			return;   
+            return;
+        }
+        
+        if (trade != null)
+        {
+            if(Input.GetKeyDown("a"))
+            {
+                validateTrade();
+            } 
         }
 
-		Ray ray;
-		RaycastHit impact;
-		GameObject pieceHit = null;
+
+        if (!isLocalPlayer || GameManager.instance.getPlayerTurn() != iD)
+        {
+            return;
+        }
+
+        Ray ray;
+        RaycastHit impact;
+        GameObject pieceHit = null;
+
+
+        if (Input.GetKeyDown(KeyCode.Alpha1))
+        {
+            yearsOfPlenty();
+        }
+        else if (Input.GetKeyDown(KeyCode.Alpha2))
+        {
+            progressCardSavedGame();
+        }
+        else if (Input.GetKeyDown(KeyCode.Alpha3))
+        {
+            devChartSavedGame();
+        }
+        else if (Input.GetKeyDown(KeyCode.Alpha4))
+        {
+            knightSavedGame();
+        }
+        else if (Input.GetKeyDown(KeyCode.Alpha5))
+        {
+            barbarianSavedGame();
+        }
+        else if (Input.GetKeyDown(KeyCode.Alpha6))
+        {
+            winningSavedGame();
+        }
+
 
         // If game phase is phase one
-		if (GameManager.instance.getGamePhase () == Enums.GamePhase.SETUP_ONE) {
+        if (GameManager.instance.getGamePhase() == Enums.GamePhase.SETUP_ONE)
+        {
 
             // Get a mouse click
-			if (Input.GetButtonDown ("Fire1")) {
-				ray = Camera.main.ScreenPointToRay (Input.mousePosition);
-				if (Physics.Raycast (ray, out impact)) {
-					pieceHit = impact.collider.gameObject;
-				}
-			}
+            if (Input.GetButtonDown("Fire1"))
+            {
+                ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+                if (Physics.Raycast(ray, out impact))
+                {
+                    pieceHit = impact.collider.gameObject;
+                }
+            }
 
-			if (Object.ReferenceEquals(pieceHit, null)) {
-				return;
-			}
-				
+            if (Object.ReferenceEquals(pieceHit, null))
+            {
+                return;
+            }
+
             // Must place first settlement if it hasn't been placed yet
-			if (moveType == Enums.MoveType.PLACE_INITIAL_SETTLEMENT) {
+            if (moveType == Enums.MoveType.PLACE_INITIAL_SETTLEMENT)
+            {
 
-				if (!pieceHit.tag.Equals("Vertex")) {
-					return;
-				}
-				Vertex v = pieceHit.GetComponent<Vertex>();
+                if (!pieceHit.tag.Equals("Vertex"))
+                {
+                    return;
+                }
+                Vertex v = pieceHit.GetComponent<Vertex>();
 
-				if (ma.canPlaceInitialTownPiece (v)) {
-					CmdPlaceInitialSettlement (v.transform.position);
+                if (ma.canPlaceInitialTownPiece(v))
+                {
+                    CmdPlaceInitialSettlement(v.transform.position);
                     moveType = Enums.MoveType.NONE;
-				}
+                }
 
-            // Otherwise place first road
-			} else if (moveType == Enums.MoveType.PLACE_INITIAL_ROAD) {
+                // Otherwise place first road
+            }
+            else if (moveType == Enums.MoveType.PLACE_INITIAL_ROAD)
+            {
 
-				if (!pieceHit.tag.Equals("Edge")) {
-					return;
-				}
-				Edge e = pieceHit.GetComponent<Edge>();
+                if (!pieceHit.tag.Equals("Edge"))
+                {
+                    return;
+                }
+                Edge e = pieceHit.GetComponent<Edge>();
 
-				if (ma.canPlaceInitialRoad(e, this.myColor)) {
-					CmdPlaceInitialRoad (e.transform.position);
+                if (ma.canPlaceInitialRoad(e, this.myColor))
+                {
+                    CmdPlaceInitialRoad(e.transform.position);
                     moveType = Enums.MoveType.NONE;
-				}
-			} else if (moveType == Enums.MoveType.PLACE_INITIAL_SHIP) {
+                }
+            }
+            else if (moveType == Enums.MoveType.PLACE_INITIAL_SHIP)
+            {
 
-				if (!pieceHit.tag.Equals("Edge")) {
-					return;
-				}
-				Edge e = pieceHit.GetComponent<Edge>();
+                if (!pieceHit.tag.Equals("Edge"))
+                {
+                    return;
+                }
+                Edge e = pieceHit.GetComponent<Edge>();
 
-				if (ma.canPlaceInitialShip(e, this.myColor)) {
-					CmdPlaceInitialShip (e.transform.position);
+                if (ma.canPlaceInitialShip(e, this.myColor))
+                {
+                    CmdPlaceInitialShip(e.transform.position);
                     moveType = Enums.MoveType.NONE;
-				}
-			}
-		}
+                }
+            }
+        }
 
         // Game phase 2
-		if (GameManager.instance.getGamePhase () == Enums.GamePhase.SETUP_TWO) {
+        if (GameManager.instance.getGamePhase() == Enums.GamePhase.SETUP_TWO)
+        {
 
             // Get mouse click
-			if (Input.GetButtonDown ("Fire1")) {
-				ray = Camera.main.ScreenPointToRay (Input.mousePosition);
-				if (Physics.Raycast (ray, out impact)) {
-					pieceHit = impact.collider.gameObject;
-				}
-			}
+            if (Input.GetButtonDown("Fire1"))
+            {
+                ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+                if (Physics.Raycast(ray, out impact))
+                {
+                    pieceHit = impact.collider.gameObject;
+                }
+            }
 
-			if (Object.ReferenceEquals(pieceHit, null)) {
-				return;
-			}
+            if (Object.ReferenceEquals(pieceHit, null))
+            {
+                return;
+            }
 
             // Must place first settlement if it hasn't been placed yet
-			if (moveType == Enums.MoveType.PLACE_INITIAL_CITY) {
+            if (moveType == Enums.MoveType.PLACE_INITIAL_CITY)
+            {
 
-				if (!pieceHit.tag.Equals("Vertex")) {
-					return;
-				}
-				Vertex v = pieceHit.GetComponent<Vertex>();
+                if (!pieceHit.tag.Equals("Vertex"))
+                {
+                    return;
+                }
+                Vertex v = pieceHit.GetComponent<Vertex>();
 
-				if (ma.canPlaceInitialTownPiece (v)) {
-					CmdPlaceInitialCity (v.transform.position);
+                if (ma.canPlaceInitialTownPiece(v))
+                {
+                    CmdPlaceInitialCity(v.transform.position);
                     moveType = Enums.MoveType.NONE;
-				}
+                }
 
-            // Otherwise place first road
-			} else if (moveType == Enums.MoveType.PLACE_INITIAL_ROAD) {
+                // Otherwise place first road
+            }
+            else if (moveType == Enums.MoveType.PLACE_INITIAL_ROAD)
+            {
 
-				if (!pieceHit.tag.Equals("Edge")) {
-					return;
-				}
-				Edge e = pieceHit.GetComponent<Edge>();
+                if (!pieceHit.tag.Equals("Edge"))
+                {
+                    return;
+                }
+                Edge e = pieceHit.GetComponent<Edge>();
 
-				if (ma.canPlaceInitialRoad(e, this.myColor)) {
-					CmdPlaceInitialRoad (e.transform.position);
+                if (ma.canPlaceInitialRoad(e, this.myColor))
+                {
+                    CmdPlaceInitialRoad(e.transform.position);
                     moveType = Enums.MoveType.NONE;
-				}
-			} else if (moveType == Enums.MoveType.PLACE_INITIAL_SHIP) {
+                }
+            }
+            else if (moveType == Enums.MoveType.PLACE_INITIAL_SHIP)
+            {
 
-				if (!pieceHit.tag.Equals("Edge")) {
-					return;
-				}
-				Edge e = pieceHit.GetComponent<Edge>();
+                if (!pieceHit.tag.Equals("Edge"))
+                {
+                    return;
+                }
+                Edge e = pieceHit.GetComponent<Edge>();
 
-				if (ma.canPlaceInitialShip(e, this.myColor)) {
-					CmdPlaceInitialShip (e.transform.position);
+                if (ma.canPlaceInitialShip(e, this.myColor))
+                {
+                    CmdPlaceInitialShip(e.transform.position);
                     moveType = Enums.MoveType.NONE;
-				}
-			}
-		}
+                }
+            }
+        }
 
         // Main game phase one
-		if (GameManager.instance.getGamePhase () == Enums.GamePhase.PHASE_ONE) {
+        if (GameManager.instance.getGamePhase() == Enums.GamePhase.PHASE_ONE)
+        {
+
+            if (Input.GetKeyDown("t"))
+            {
+                int goldO = 0;
+                int goldW = 0;
+                if (Input.GetKeyDown("1"))
+                {
+                    goldO = 1;
+                }
+                else if (Input.GetKeyDown("2"))
+                {
+                    goldO = 2;
+                }
+                if (Input.GetKeyDown("3"))
+                {
+                    goldW = 1;
+                }
+                else if (Input.GetKeyDown("4"))
+                {
+                    goldW = 2;
+                }
+
+                CmdSpawnTrade(this.resources, this.resources, this.commodities, this.commodities, goldO, goldW);
+            }
 
             // Get mouse click
-			if (Input.GetButtonDown ("Fire1")) {
-				ray = Camera.main.ScreenPointToRay (Input.mousePosition);
-				if (Physics.Raycast (ray, out impact)) {
-					pieceHit = impact.collider.gameObject;
-				}
-			}
+            if (Input.GetButtonDown("Fire1"))
+            {
+                ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+                if (Physics.Raycast(ray, out impact))
+                {
+                    pieceHit = impact.collider.gameObject;
+                }
+            }
 
-			if (Object.ReferenceEquals(pieceHit, null)) {
-				return;
-			}
+            if (Object.ReferenceEquals(pieceHit, null))
+            {
+                return;
+            }
 
-            if (special == Enums.Special.MOVE_ROBBER) {
+            if (special == Enums.Special.MOVE_ROBBER)
+            {
 
                 Debug.Log("robber1");
-                if (!pieceHit.tag.Equals("MainHex") && !pieceHit.tag.Equals("IslandHex")) {
-					return;
-				}
+                if (!pieceHit.tag.Equals("MainHex") && !pieceHit.tag.Equals("IslandHex"))
+                {
+                    return;
+                }
                 Hex h = pieceHit.GetComponent<Hex>();
                 Debug.Log("robber2");
-                if (ma.canMoveRobber(h)) {
+                if (ma.canMoveRobber(h))
+                {
                     Debug.Log("robber3");
-					CmdMoveRobber (h.transform.position);
+                    CmdMoveRobber(h.transform.position);
 
                     bool stealable = false;
-                    foreach (Vertex vert in h.getVertices()){
+                    foreach (Vertex vert in h.getVertices())
+                    {
                         GamePiece vertPiece = vert.getOccupyingPiece();
-                        if (!Object.ReferenceEquals(vertPiece, null)) {
+                        if (!Object.ReferenceEquals(vertPiece, null))
+                        {
                             Debug.Log("step2");
-                            if (vertPiece.getColor() != myColor){
+                            if (vertPiece.getColor() != myColor)
+                            {
                                 Debug.Log("step3");
                                 if (vertPiece.getPieceType() == PieceType.CITY ||
-                                    vertPiece.getPieceType() == PieceType.SETTLEMENT) {
+                                    vertPiece.getPieceType() == PieceType.SETTLEMENT)
+                                {
 
                                     stealable = true;
                                     break;
@@ -355,42 +491,58 @@ public class Player : NetworkBehaviour {
                         }
                     }
 
-                    if (stealable) {
+                    if (stealable)
+                    {
                         setSpecial(Special.STEAL_RESOURCES_ROBBER, getID());
-                    } else {
-                        if (!b1) {
+                    }
+                    else
+                    {
+                        if (!b1)
+                        {
                             setSpecial(Special.NONE, getID());
-                            foreach(Player p in GameManager.instance.getPlayers()) {
+                            foreach (Player p in GameManager.instance.getPlayers())
+                            {
                                 GameManager.instance.getPersonalPlayer().setMoveType(MoveType.NONE, p.getID());
                             }
                             revertTurn();
                             endPhaseOne();
-                        } else {
+                        }
+                        else
+                        {
                             GameManager.instance.barbarianAttack();
                         }
                     }
-				}
-            } else if (special == Enums.Special.MOVE_PIRATE) {
-                if (!pieceHit.tag.Equals("WaterHex")) {
-					return;
-				}
+                }
+            }
+            else if (special == Enums.Special.MOVE_PIRATE)
+            {
+                if (!pieceHit.tag.Equals("WaterHex"))
+                {
+                    return;
+                }
                 Hex h = pieceHit.GetComponent<Hex>();
 
-                if (ma.canMovePirate(h)) {
-					CmdMovePirate (h.transform.position);
+                if (ma.canMovePirate(h))
+                {
+                    CmdMovePirate(h.transform.position);
 
                     bool stealable = false;
-                    foreach (Edge edge in BoardState.instance.edgePosition.Values) {
+                    foreach (Edge edge in BoardState.instance.edgePosition.Values)
+                    {
                         GamePiece edgePiece = edge.getOccupyingPiece();
-                        if (!Object.ReferenceEquals(edgePiece, null)) {
-                            if (edgePiece.getPieceType() == PieceType.ROAD && ((Road)edgePiece).getIsShip() && edgePiece.getColor() != myColor) {
+                        if (!Object.ReferenceEquals(edgePiece, null))
+                        {
+                            if (edgePiece.getPieceType() == PieceType.ROAD && ((Road)edgePiece).getIsShip() && edgePiece.getColor() != myColor)
+                            {
                                 Hex leftHex = edge.getLeftHex();
-                                if (Object.ReferenceEquals(leftHex, h)) {
+                                if (Object.ReferenceEquals(leftHex, h))
+                                {
                                     stealable = true;
                                     break;
                                 }
                                 Hex rightHex = edge.getRightHex();
-                                if (!Object.ReferenceEquals(rightHex, null)) {
+                                if (!Object.ReferenceEquals(rightHex, null))
+                                {
                                     stealable = true;
                                     break;
                                 }
@@ -398,476 +550,694 @@ public class Player : NetworkBehaviour {
                         }
                     }
 
-                    if (stealable) {
+                    if (stealable)
+                    {
                         setSpecial(Special.STEAL_RESOURCES_PIRATE, getID());
-                    } else {
-                        if (!b1) {
+                    }
+                    else
+                    {
+                        if (!b1)
+                        {
                             setSpecial(Special.NONE, getID());
-                            foreach(Player p in GameManager.instance.getPlayers()) {
+                            foreach (Player p in GameManager.instance.getPlayers())
+                            {
                                 GameManager.instance.getPersonalPlayer().setMoveType(MoveType.NONE, p.getID());
                             }
                             revertTurn();
                             endPhaseOne();
-                        } else {
+                        }
+                        else
+                        {
                             GameManager.instance.barbarianAttack();
                         }
                     }
-				}
-            } else if (special == Enums.Special.STEAL_RESOURCES_ROBBER) { 
+                }
+            }
+            else if (special == Enums.Special.STEAL_RESOURCES_ROBBER)
+            {
 
-                if (pieceHit.tag.Equals("Vertex")) {
+                if (pieceHit.tag.Equals("Vertex"))
+                {
 
                     Vertex v = pieceHit.GetComponent<Vertex>();
 
-                    if (ma.canStealRobber(v, myColor)) {
+                    if (ma.canStealRobber(v, myColor))
+                    {
                         int opp = (int)v.getOccupyingPiece().getColor();
-                        Player oppo  = GameManager.instance.getPlayer(opp);
+                        Player oppo = GameManager.instance.getPlayer(opp);
                         bool taken = false;
-                        for (int i = 0; i < 5; i++) {
-                            if(oppo.getResources()[i] > 0) {
+                        for (int i = 0; i < 5; i++)
+                        {
+                            if (oppo.getResources()[i] > 0)
+                            {
                                 GameManager.instance.getPersonalPlayer().changeResource((ResourceType)i, -1, oppo.getID());
                                 taken = true;
                                 changeResource((ResourceType)i, 1, getID());
                                 break;
                             }
                         }
-                        if (!taken) {
-                            for (int i = 0; i < 3; i++) {
-                                if(oppo.getCommodities()[i] > 0) {
+                        if (!taken)
+                        {
+                            for (int i = 0; i < 3; i++)
+                            {
+                                if (oppo.getCommodities()[i] > 0)
+                                {
                                     GameManager.instance.getPersonalPlayer().changeCommodity((CommodityType)i, -1, oppo.getID());
                                     changeCommodity((CommodityType)i, 1, getID());
                                     break;
                                 }
                             }
                         }
-                        if (!b1) {
+                        if (!b1)
+                        {
                             setSpecial(Special.NONE, getID());
-                            foreach(Player p in GameManager.instance.getPlayers()) {
+                            foreach (Player p in GameManager.instance.getPlayers())
+                            {
                                 GameManager.instance.getPersonalPlayer().setMoveType(MoveType.NONE, p.getID());
                             }
                             revertTurn();
                             endPhaseOne();
-                        } else {
+                        }
+                        else
+                        {
                             GameManager.instance.barbarianAttack();
                         }
                     }
-				}
-            } else if (special == Enums.Special.STEAL_RESOURCES_PIRATE) { 
-                if (pieceHit.tag.Equals("Edge")) {
+                }
+            }
+            else if (special == Enums.Special.STEAL_RESOURCES_PIRATE)
+            {
+                if (pieceHit.tag.Equals("Edge"))
+                {
 
                     Edge e = pieceHit.GetComponent<Edge>();
 
-                    if (ma.canStealPirate(e, myColor)) {
+                    if (ma.canStealPirate(e, myColor))
+                    {
                         int opp = (int)e.getOccupyingPiece().getColor();
-                        Player oppo  = GameManager.instance.getPlayer(opp);
+                        Player oppo = GameManager.instance.getPlayer(opp);
                         bool taken = false;
-                        for (int i = 0; i < 5; i++) {
-                            if(oppo.getResources()[i] > 0) {
+                        for (int i = 0; i < 5; i++)
+                        {
+                            if (oppo.getResources()[i] > 0)
+                            {
                                 GameManager.instance.getPersonalPlayer().changeResource((ResourceType)i, -1, oppo.getID());
                                 taken = true;
                                 changeResource((ResourceType)i, 1, getID());
                                 break;
                             }
                         }
-                        if (!taken) {
-                            for (int i = 0; i < 3; i++) {
-                                if(oppo.getCommodities()[i] > 0) {
+                        if (!taken)
+                        {
+                            for (int i = 0; i < 3; i++)
+                            {
+                                if (oppo.getCommodities()[i] > 0)
+                                {
                                     GameManager.instance.getPersonalPlayer().changeCommodity((CommodityType)i, -1, oppo.getID());
                                     changeCommodity((CommodityType)i, 1, getID());
                                     break;
                                 }
                             }
                         }
-                        if (!b1) {
+                        if (!b1)
+                        {
                             setSpecial(Special.NONE, getID());
-                            foreach(Player p in GameManager.instance.getPlayers()) {
+                            foreach (Player p in GameManager.instance.getPlayers())
+                            {
                                 GameManager.instance.getPersonalPlayer().setMoveType(MoveType.NONE, p.getID());
                             }
                             revertTurn();
                             endPhaseOne();
-                        } else {
+                        }
+                        else
+                        {
                             GameManager.instance.barbarianAttack();
                         }
                     }
-				} 
-            } else if (special == Enums.Special.CHOOSE_DESTROYED_CITY) {
-                if (!pieceHit.tag.Equals("Vertex")) {
-					return;
-				}
+                }
+            }
+            else if (special == Enums.Special.CHOOSE_DESTROYED_CITY)
+            {
+                if (!pieceHit.tag.Equals("Vertex"))
+                {
+                    return;
+                }
                 Vertex v = pieceHit.GetComponent<Vertex>();
 
-                if (ma.canDestroyCity(v, myColor)) {
-					CmdDestroyCity (v.transform.position);
+                if (ma.canDestroyCity(v, myColor))
+                {
+                    CmdDestroyCity(v.transform.position);
 
                     GameManager.instance.barbarianLossShortcut(getID() + 1);
-				}
+                }
             }
-		}
+        }
 
         // Main game phase two
-		if (GameManager.instance.getGamePhase () == Enums.GamePhase.PHASE_TWO) {
+        if (GameManager.instance.getGamePhase() == Enums.GamePhase.PHASE_TWO)
+        {
             // Get mouse click
 
-			if (Input.GetButtonDown ("Fire1")) {
-				ray = Camera.main.ScreenPointToRay (Input.mousePosition);
-				if (Physics.Raycast (ray, out impact)) {
-					pieceHit = impact.collider.gameObject;
-				}
-			}
+            if (Input.GetButtonDown("Fire1"))
+            {
+                ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+                if (Physics.Raycast(ray, out impact))
+                {
+                    pieceHit = impact.collider.gameObject;
+                }
+            }
 
-			if (Object.ReferenceEquals(pieceHit, null)) {
-				return;
-			}
+            if (Object.ReferenceEquals(pieceHit, null))
+            {
+                return;
+            }
 
-            if (special == Enums.Special.KNIGHT_DISPLACED) {
-                bool chosen = false;
-                if (!pieceHit.tag.Equals("Vertex")) {
-					return;
-				}
+            if (special == Enums.Special.KNIGHT_DISPLACED)
+            {
+                if (!pieceHit.tag.Equals("Vertex"))
+                {
+                    return;
+                }
                 Vertex v = pieceHit.GetComponent<Vertex>();
 
-                if (graph.areConnectedVertices (v, v1, myColor))
+               
+                if (ma.canForcedKnightMove(v1,v,myColor))
                 {
-                    if (Object.ReferenceEquals (v.getOccupyingPiece (), null))
+                    CmdAlternateDisplaceKnight(v.transform.position);
+
+                    foreach (Player p in GameManager.instance.players)
                     {
-                        chosen = true;
-                    }
-                }
-
-                if (Object.ReferenceEquals(v, v1)) chosen = false;
-
-                if (chosen) {
-					CmdAlternateDisplaceKnight (v.transform.position);
-
-                    foreach (Player p in GameManager.instance.players) {
                         GameManager.instance.getPersonalPlayer().setMoveType(MoveType.NONE, p.getID());
                     }
                     revertTurn();
                     moveType = Enums.MoveType.NONE;
-				}
-            } else if (special == Enums.Special.CHOOSE_METROPOLIS) {
+                }
+            }
+            else if (special == Enums.Special.CHOOSE_METROPOLIS)
+            {
 
-				if (!pieceHit.tag.Equals("Vertex")) {
-					return;
-				}
-				Vertex v = pieceHit.GetComponent<Vertex>();
+                if (!pieceHit.tag.Equals("Vertex"))
+                {
+                    return;
+                }
+                Vertex v = pieceHit.GetComponent<Vertex>();
 
-				if (ma.canChooseMetropolis (v, this.myColor)) {
+                if (ma.canChooseMetropolis(v, this.myColor))
+                {
 
                     setSpecial(Special.NONE, getID());
-                    foreach(Player p in GameManager.instance.getPlayers()) {
+                    foreach (Player p in GameManager.instance.getPlayers())
+                    {
                         GameManager.instance.getPersonalPlayer().setMoveType(MoveType.NONE, p.getID());
                     }
 
-					CmdChooseMetropolis (v.transform.position);
-				}
+                    CmdChooseMetropolis(v.transform.position);
+                }
 
-            // Otherwise place first road
-			} else if (moveType == Enums.MoveType.BUILD_SETTLEMENT) {
+                // Otherwise place first road
+            }
+            else if (moveType == Enums.MoveType.BUILD_SETTLEMENT)
+            {
 
-				if (!pieceHit.tag.Equals("Vertex")) {
-					return;
-				}
-				Vertex v = pieceHit.GetComponent<Vertex>();
-
-				if (ma.canBuildSettlement (v, this.resources, this.pieces, this.myColor)) {
-					CmdBuildSettlement (v.transform.position);
-                    moveType = Enums.MoveType.NONE;
-				}
-
-            // Otherwise place first road
-			} else if (moveType == Enums.MoveType.BUILD_ROAD) {
-
-				if (!pieceHit.tag.Equals("Edge")) {
-					return;
-				}
-				Edge e = pieceHit.GetComponent<Edge>();
-
-				if (ma.canBuildRoad(e, this.resources, this.pieces, this.myColor)) {
-					CmdBuildRoad (e.transform.position);
-                    moveType = Enums.MoveType.NONE;
-				}
-			} else if (moveType == Enums.MoveType.MOVE_KNIGHT) {
-
-				if (!pieceHit.tag.Equals("Vertex")) {
-					return;
-				}
+                if (!pieceHit.tag.Equals("Vertex"))
+                {
+                    return;
+                }
                 Vertex v = pieceHit.GetComponent<Vertex>();
 
-                if (Object.ReferenceEquals(v1, null)) {
+                if (ma.canBuildSettlement(v, this.resources, this.pieces, this.myColor))
+                {
+                    CmdBuildSettlement(v.transform.position);
+                    moveType = Enums.MoveType.NONE;
+                }
+
+                // Otherwise place first road
+            }
+            else if (moveType == Enums.MoveType.BUILD_ROAD)
+            {
+
+                if (!pieceHit.tag.Equals("Edge"))
+                {
+                    return;
+                }
+                Edge e = pieceHit.GetComponent<Edge>();
+
+                if (ma.canBuildRoad(e, this.resources, this.pieces, this.myColor))
+                {
+                    CmdBuildRoad(e.transform.position);
+                    moveType = Enums.MoveType.NONE;
+                }
+            }
+            else if (moveType == Enums.MoveType.MOVE_KNIGHT)
+            {
+
+                if (!pieceHit.tag.Equals("Vertex"))
+                {
+                    return;
+                }
+                Vertex v = pieceHit.GetComponent<Vertex>();
+
+                if (Object.ReferenceEquals(v1, null))
+                {
                     SetV1(v, getID());
-                } else {
-                    if (ma.canKnightMove(v1, v, this.myColor)) {
-                        CmdMoveKnight (v.transform.position);
+                }
+                else
+                {
+                    if (ma.canKnightMove(v1, v, this.myColor))
+                    {
+                        CmdMoveKnight(v.transform.position);
                         moveType = Enums.MoveType.NONE;
                     }
                 }
-			} else if (moveType == Enums.MoveType.DISPLACE_KNIGHT) {
+            }
+            else if (moveType == Enums.MoveType.DISPLACE_KNIGHT)
+            {
 
-				if (!pieceHit.tag.Equals("Vertex")) {
-					return;
-				}
+                if (!pieceHit.tag.Equals("Vertex"))
+                {
+                    return;
+                }
                 Vertex v = pieceHit.GetComponent<Vertex>();
 
-                if (Object.ReferenceEquals(v1, null)) {
+                if (Object.ReferenceEquals(v1, null))
+                {
                     SetV1(v, getID());
-                } else {
-                    if (ma.canKnightDisplace(v1, v, this.myColor)) {
+                }
+                else
+                {
+                    if (ma.canKnightDisplace(v1, v, this.myColor))
+                    {
                         Debug.Log("knight displaced");
                         Debug.Log(v1 + " " + v);
-                        CmdDisplaceKnight (v.transform.position);
+                        CmdDisplaceKnight(v.transform.position);
                         moveType = Enums.MoveType.NONE;
                     }
                 }
-			} else if (moveType == Enums.MoveType.UPGRADE_KNIGHT) {
+            }
+            else if (moveType == Enums.MoveType.UPGRADE_KNIGHT)
+            {
 
-				if (!pieceHit.tag.Equals("Vertex")) {
-					return;
-				}
-				Vertex v = pieceHit.GetComponent<Vertex>();
+                if (!pieceHit.tag.Equals("Vertex"))
+                {
+                    return;
+                }
+                Vertex v = pieceHit.GetComponent<Vertex>();
 
-				if (ma.canUpgradeKnight (this.resources, this.devFlipChart, v, this.pieces, this.myColor)) {
-					CmdUpgradeKnight (v.transform.position);
+                if (ma.canUpgradeKnight(this.resources, this.devFlipChart, v, this.pieces, this.myColor))
+                {
+                    CmdUpgradeKnight(v.transform.position);
                     moveType = Enums.MoveType.NONE;
-				}
-			} else if (moveType == Enums.MoveType.ACTIVATE_KNIGHT) {
+                }
+            }
+            else if (moveType == Enums.MoveType.ACTIVATE_KNIGHT)
+            {
 
-				if (!pieceHit.tag.Equals("Vertex")) {
-					return;
-				}
-				Vertex v = pieceHit.GetComponent<Vertex>();
+                if (!pieceHit.tag.Equals("Vertex"))
+                {
+                    return;
+                }
+                Vertex v = pieceHit.GetComponent<Vertex>();
 
-				if (ma.canActivateKnight (this.resources, v, this.myColor)) {
-					CmdActivateKnight (v.transform.position);
+                if (ma.canActivateKnight(this.resources, v, this.myColor))
+                {
+                    CmdActivateKnight(v.transform.position);
                     moveType = Enums.MoveType.NONE;
-				}
-			} else if (moveType == Enums.MoveType.BUILD_CITY) {
+                }
+            }
+            else if (moveType == Enums.MoveType.BUILD_CITY)
+            {
 
                 Debug.Log("hello4");
 
-				if (!pieceHit.tag.Equals("Vertex")) {
-					return;
-				}
-				Vertex v = pieceHit.GetComponent<Vertex>();
+                if (!pieceHit.tag.Equals("Vertex"))
+                {
+                    return;
+                }
+                Vertex v = pieceHit.GetComponent<Vertex>();
                 Debug.Log("hello5");
 
-				if (ma.canBuildCity (v, this.resources, this.pieces, this.myColor)) {
-					CmdBuildCity (v.transform.position);
+                if (ma.canBuildCity(v, this.resources, this.pieces, this.myColor))
+                {
+                    CmdBuildCity(v.transform.position);
                     moveType = Enums.MoveType.NONE;
-				}
-			} else if (moveType == Enums.MoveType.BUILD_CITY_WALL) {
+                }
+            }
+            else if (moveType == Enums.MoveType.BUILD_CITY_WALL)
+            {
 
-				if (!pieceHit.tag.Equals("Vertex")) {
-					return;
-				}
-				Vertex v = pieceHit.GetComponent<Vertex>();
+                if (!pieceHit.tag.Equals("Vertex"))
+                {
+                    return;
+                }
+                Vertex v = pieceHit.GetComponent<Vertex>();
 
-				if (ma.canBuildCityWall (v, this.resources, this.cityWallsLeft, this.myColor)) {
-					CmdBuildCityWall (v.transform.position);
+                if (ma.canBuildCityWall(v, this.resources, this.cityWallsLeft, this.myColor))
+                {
+                    CmdBuildCityWall(v.transform.position);
                     moveType = Enums.MoveType.NONE;
-				}
-			} else if (moveType == Enums.MoveType.BUILD_KNIGHT) {
+                }
+            }
+            else if (moveType == Enums.MoveType.BUILD_KNIGHT)
+            {
 
-				if (!pieceHit.tag.Equals("Vertex")) {
-					return;
-				}
-				Vertex v = pieceHit.GetComponent<Vertex>();
+                if (!pieceHit.tag.Equals("Vertex"))
+                {
+                    return;
+                }
+                Vertex v = pieceHit.GetComponent<Vertex>();
 
-				if (ma.canBuildKnight (v, this.resources, this.pieces, this.myColor)) {
-					CmdBuildKnight (v.transform.position);
+                if (ma.canBuildKnight(v, this.resources, this.pieces, this.myColor))
+                {
+                    CmdBuildKnight(v.transform.position);
                     moveType = Enums.MoveType.NONE;
-				}
-			} else if (moveType == Enums.MoveType.BUILD_SHIP) {
+                }
+            }
+            else if (moveType == Enums.MoveType.BUILD_SHIP)
+            {
 
-				if (!pieceHit.tag.Equals("Edge")) {
-					return;
-				}
-				Edge e = pieceHit.GetComponent<Edge>();
+                if (!pieceHit.tag.Equals("Edge"))
+                {
+                    return;
+                }
+                Edge e = pieceHit.GetComponent<Edge>();
 
-				if (ma.canBuildShip(e, this.resources, this.pieces, this.myColor)) {
+                if (ma.canBuildShip(e, this.resources, this.pieces, this.myColor))
+                {
                     Debug.Log("ship1");
-					CmdBuildShip (e.transform.position);
+                    CmdBuildShip(e.transform.position);
                     moveType = Enums.MoveType.NONE;
-				}
-			} else if (moveType == Enums.MoveType.CHASE_ROBBER) {
+                }
+            }
+            else if (moveType == Enums.MoveType.CHASE_ROBBER)
+            {
 
-                if (Object.ReferenceEquals(v1, null)) {
-                    if (!pieceHit.tag.Equals("Vertex")) {
+                if (Object.ReferenceEquals(v1, null))
+                {
+                    if (!pieceHit.tag.Equals("Vertex"))
+                    {
                         return;
                     }
                     Vertex v = pieceHit.GetComponent<Vertex>();
                     SetV1(v, getID());
-                } else {
-                    if (!pieceHit.tag.Equals("MainHex") && !pieceHit.tag.Equals("MainHex")) {
+                }
+                else
+                {
+                    if (!pieceHit.tag.Equals("MainHex") && !pieceHit.tag.Equals("MainHex"))
+                    {
                         return;
                     }
                     Hex h = pieceHit.GetComponent<Hex>();
-                    if (ma.canChaseRobber(v1, this.myColor)) {
-                        CmdChaseRobber (h.transform.position);
+                    if (ma.canChaseRobber(v1, this.myColor))
+                    {
+                        CmdChaseRobber(h.transform.position);
                         moveType = Enums.MoveType.NONE;
                     }
                 }
-			} else if (moveType == Enums.MoveType.MOVE_SHIP) {
+            }
+            else if (moveType == Enums.MoveType.MOVE_SHIP)
+            {
 
-				if (!pieceHit.tag.Equals("Edge")) {
-					return;
-				}
+                if (!pieceHit.tag.Equals("Edge"))
+                {
+                    return;
+                }
                 Edge e = pieceHit.GetComponent<Edge>();
 
-                if (Object.ReferenceEquals(e1, null)) {
+                if (Object.ReferenceEquals(e1, null))
+                {
                     SetE1(e, getID());
-                } else {
-                    if (ma.canShipMove(e1, e, this.myColor)) {
+                }
+                else
+                {
+                    if (ma.canShipMove(e1, e, this.myColor))
+                    {
                         Debug.Log("heywhatsup");
-                        CmdMoveShip (e.transform.position);
+                        CmdMoveShip(e.transform.position);
                         moveType = Enums.MoveType.NONE;
                     }
                 }
-			} else if (moveType == Enums.MoveType.FISH_2) {
+            }
+            else if (moveType == Enums.MoveType.FISH_2)
+            {
 
-				if (!pieceHit.tag.Equals("LandHex") && !pieceHit.tag.Equals("IslandHex") && !pieceHit.tag.Equals("WaterHex")) {
-					return;
-				}
+                if (!pieceHit.tag.Equals("MainHex") && !pieceHit.tag.Equals("LandHex") && !pieceHit.tag.Equals("IslandHex") && !pieceHit.tag.Equals("WaterHex"))
+                {
+                    return;
+                }
                 Hex h = pieceHit.GetComponent<Hex>();
 
                 bool robber = false;
                 bool pirate = false;
 
                 GamePiece thief = h.getOccupyingPiece();
-                if (!Object.ReferenceEquals(thief, null)) {
+                Debug.Log("thief");
+                if (!Object.ReferenceEquals(thief, null))
+                {
                     if (thief.getPieceType() == PieceType.ROBBER) robber = true;
                     else if (thief.getPieceType() == PieceType.PIRATE) pirate = true;
+                    Debug.Log("robber " + robber + " pirate " + pirate + " thief " + thief.getPieceType());
                 }
 
                 if (numFish < 2) return;
 
-                if (robber) {
-                    CmdRemoveRobber ();
+                if (robber)
+                {
+                    CmdRemoveRobber();
                     moveType = Enums.MoveType.NONE;
-                } else if (pirate) {
+                }
+                else if (pirate)
+                {
                     CmdRemovePirate();
                     moveType = Enums.MoveType.NONE;
                 }
-			} else if (moveType == Enums.MoveType.FISH_5) {
+            }
+            else if (moveType == Enums.MoveType.FISH_5)
+            {
 
-				if (!pieceHit.tag.Equals("Edge")) {
-					return;
-				}
+                if (!pieceHit.tag.Equals("Edge"))
+                {
+                    return;
+                }
                 Edge e = pieceHit.GetComponent<Edge>();
 
                 if (numFish < 5) return;
 
-                if (ma.canFishRoad(e, this.numFish, this.pieces, this.myColor)) {
-                    CmdFishRoad (e.transform.position);
+                if (ma.canFishRoad(e, this.numFish, this.pieces, this.myColor))
+                {
+                    CmdFishRoad(e.transform.position);
                     moveType = Enums.MoveType.NONE;
                 }
-			} else if (moveType == Enums.MoveType.PROGRESS_BISHOP) {
+            }
+            else if (moveType == Enums.MoveType.PROGRESS_BISHOP)
+            {
 
-				if (!pieceHit.tag.Equals("Hex")) {
-					return;
-				}
+                if (!pieceHit.tag.Equals("MainHex") && !pieceHit.tag.Equals("IslandHex"))
+                {
+                    return;
+                }
                 Hex h = pieceHit.GetComponent<Hex>();
 
-                if (ma.canMoveRobber(h)) {
-                    CmdBishop (h.transform.position);
+                if (ma.canMoveRobber(h))
+                {
+                    CmdBishop(h.transform.position);
                     moveType = Enums.MoveType.NONE;
                 }
-			} else if (moveType == Enums.MoveType.PROGRESS_DIPLOMAT) {
-                if (!pieceHit.tag.Equals("Edge")) {
-					return;
-				}
+            }
+            else if (moveType == Enums.MoveType.PROGRESS_DIPLOMAT)
+            {
+                if (!pieceHit.tag.Equals("Edge"))
+                {
+                    return;
+                }
                 Edge e = pieceHit.GetComponent<Edge>();
 
-                if (Object.ReferenceEquals(e1, null)) {
-                    SetE1(e, getID());
+                if (pa.canDiplomatRemove(e, this.myColor))
+                {
+                    CmdDiplomatRemove(e.transform.position);
+                    moveType = Enums.MoveType.NONE;
                 } else {
-                    if (pa.canRoadMove(e1, e, this.myColor)) {
-                        CmdDiplomat (e.transform.position);
-                        moveType = Enums.MoveType.NONE;
+
+                    if (Object.ReferenceEquals(e1, null))
+                    {
+                        SetE1(e, getID());
+                    }
+                    else
+                    {
+                        if (pa.canRoadMove(e1, e, this.myColor))
+                        {
+                            CmdDiplomat(e.transform.position);
+                            moveType = Enums.MoveType.NONE;
+                        }
                     }
                 }
-            } else if (moveType == Enums.MoveType.PROGRESS_INTRIGUE) {
+            }
+            else if (moveType == Enums.MoveType.PROGRESS_INTRIGUE)
+            {
 
-				if (!pieceHit.tag.Equals("Vertex")) {
-					return;
-				}
+                if (!pieceHit.tag.Equals("Vertex"))
+                {
+                    return;
+                }
                 Vertex v = pieceHit.GetComponent<Vertex>();
-                if (pa.canIntrigueKnight(v, this.myColor)) {
-                    CmdIntrigue (v.transform.position);
+                if (pa.canIntrigueKnight(v, this.myColor))
+                {
+                    CmdIntrigue(v.transform.position);
                     moveType = Enums.MoveType.NONE;
                 }
-            } else if (moveType == Enums.MoveType.PROGRESS_ENGINEER) {
+            }
+            else if (moveType == Enums.MoveType.PROGRESS_ENGINEER)
+            {
 
-				if (!pieceHit.tag.Equals("Vertex")) {
-					return;
-				}
+                if (!pieceHit.tag.Equals("Vertex"))
+                {
+                    return;
+                }
                 Vertex v = pieceHit.GetComponent<Vertex>();
-                if (pa.canEngineer(v, this.cityWallsLeft, this.myColor)) {
-                    CmdIntrigue (v.transform.position);
+                if (pa.canEngineer(v, this.cityWallsLeft, this.myColor))
+                {
+                    CmdEngineer(v.transform.position);
                     moveType = Enums.MoveType.NONE;
                 }
-            } else if (moveType == Enums.MoveType.PROGRESS_INVENTOR) {
+            }
+            else if (moveType == Enums.MoveType.PROGRESS_INVENTOR)
+            {
 
-				if (!pieceHit.tag.Equals("Hex")) {
-					return;
-				}
+                if (!pieceHit.tag.Equals("MainHex") && !pieceHit.tag.Equals("IslandHex"))
+                {
+                    return;
+                }
                 Hex h = pieceHit.GetComponent<Hex>();
 
-                if (Object.ReferenceEquals(h1, null)) {
+                if (Object.ReferenceEquals(h1, null))
+                {
                     SetH1(h, getID());
-                } else {
-                    if (pa.canInventor(h1, h)) {
-                        CmdInventor (h.transform.position);
+                }
+                else
+                {
+                    if (pa.canInventor(h1, h))
+                    {
+                        CmdInventor(h.transform.position);
                         moveType = Enums.MoveType.NONE;
                     }
                 }
-			} else if (moveType == Enums.MoveType.PROGRESS_MEDICINE) {
+            }
+            else if (moveType == Enums.MoveType.PROGRESS_MEDICINE)
+            {
 
-				if (!pieceHit.tag.Equals("Vertex")) {
-					return;
-				}
+                if (!pieceHit.tag.Equals("Vertex"))
+                {
+                    return;
+                }
                 Vertex v = pieceHit.GetComponent<Vertex>();
-                if (pa.canMedicine(v, this.resources, this.pieces, this.myColor)) {
-                    CmdMedicine (v.transform.position);
+                if (pa.canMedicine(v, this.resources, this.pieces, this.myColor))
+                {
+                    Debug.Log("medicine " + v);
+                    CmdMedicine(v.transform.position);
                     moveType = Enums.MoveType.NONE;
                 }
-            } else if (moveType == Enums.MoveType.PROGRESS_ROAD_BUILDING_1) {
+            }
+            else if (moveType == Enums.MoveType.PROGRESS_ROAD_BUILDING_1)
+            {
 
-				if (!pieceHit.tag.Equals("Edge")) {
-					return;
-				}
+                if (!pieceHit.tag.Equals("Edge"))
+                {
+                    return;
+                }
                 Edge e = pieceHit.GetComponent<Edge>();
-                if (pa.canRoadBuilding(e, this.pieces, this.myColor)) {
-                    CmdRoadBuilding (e.transform.position);
+                if (pa.canRoadBuilding(e, this.pieces, this.myColor))
+                {
+                    CmdRoadBuilding(e.transform.position);
                     moveType = Enums.MoveType.PROGRESS_ROAD_BUILDING_2;
                 }
-            } else if (moveType == Enums.MoveType.PROGRESS_ROAD_BUILDING_2) {
+            }
+            else if (moveType == Enums.MoveType.PROGRESS_ROAD_BUILDING_2)
+            {
 
-				if (!pieceHit.tag.Equals("Edge")) {
-					return;
-				}
+                if (!pieceHit.tag.Equals("Edge"))
+                {
+                    return;
+                }
                 Edge e = pieceHit.GetComponent<Edge>();
-                if (pa.canRoadBuilding(e, this.pieces, this.myColor)) {
-                    CmdRoadBuilding (e.transform.position);
+                if (pa.canRoadBuilding(e, this.pieces, this.myColor))
+                {
+                    CmdRoadBuilding(e.transform.position);
+                    moveType = Enums.MoveType.NONE;
+                }
+            }
+            else if (moveType == Enums.MoveType.PROGRESS_MERCHANT)
+            {
+
+                if (!pieceHit.tag.Equals("MainHex") && !pieceHit.tag.Equals("LandHex") && !pieceHit.tag.Equals("IslandHex"))
+                {
+                    return;
+                }
+                Hex h = pieceHit.GetComponent<Hex>();
+                if (ma.canPlaceMerchant(h))
+                {
+                    CmdPlaceMerchant(h.transform.position);
+                    moveType = Enums.MoveType.NONE;
+                }
+            }
+            else if (moveType == Enums.MoveType.PROGRESS_SMITH_1)
+            {
+
+                if (!pieceHit.tag.Equals("Vertex"))
+                {
+                    return;
+                }
+                Vertex v = pieceHit.GetComponent<Vertex>();
+                if (pa.canSmith(this.devFlipChart, v, this.pieces, this.myColor))
+                {
+                    CmdSmith(v.transform.position);
+                    moveType = Enums.MoveType.PROGRESS_SMITH_2;
+                }
+            }
+            else if (moveType == Enums.MoveType.PROGRESS_SMITH_2)
+            {
+
+                if (!pieceHit.tag.Equals("Vertex"))
+                {
+                    return;
+                }
+                Vertex v = pieceHit.GetComponent<Vertex>();
+                if (pa.canSmith(this.devFlipChart, v, this.pieces, this.myColor))
+                {
+                    CmdSmith(v.transform.position);
                     moveType = Enums.MoveType.NONE;
                 }
             }
         }
     }
 
-    public void tradeWithBank()
-    {
-        Trades newTrade = new Trades();
-        newTrade.resourcesOffered = this.resourcesOffered;
-        newTrade.commoditiesOffered = this.commoditiesOffered;
-        newTrade.resourcesWanted = this.resourcesWanted;
-        newTrade.commoditiesWanted = this.commoditiesWanted;
-        newTrade.goldOffered = this.goldOffered;
-        newTrade.goldWanted = this.goldWanted;
-        newTrade.offering = this.iD;
 
-        MoveManager.instance.tradeWithBank(this.resourceRatios, this.commodityRatios, newTrade);
+
+    [Command]
+    public void CmdTradeWithBank(int[] resourcesOffered, int[] resourcesDemanded, int[] commoditiesOffered, int[] commoditiesDemanded, int goldOffered, int goldDemanded, int playerId)
+    {
+        GameObject trade = (GameObject)GameObject.Instantiate(tradePrefab);
+        trade.GetComponent<Trades>().init(resourcesOffered, resourcesDemanded, commoditiesOffered, commoditiesDemanded, goldOffered, goldDemanded, GameManager.instance.getPlayers().Count, this);
+        NetworkServer.Spawn(trade);
+        trade.GetComponent<Trades>().RpcSetPlayer(this.iD);
+        MoveManager.instance.tradeWithBank(this.resourceRatios, this.commodityRatios, trade.GetComponent<Trades>());
+        CmdDestroyObject(trade.GetComponent<Trades>().netId);
     }
+
+    
+    public void tradeWithBank(int[] p_resourcesOffered, int[] p_resourcesWanted, int[] p_commoditiesOffered, int[] p_commoditiesWanted, int p_goldOffered, int p_goldWanted)
+    {
+        Trade newTrade = new Trade();
+        newTrade.resourcesOffered = p_resourcesOffered;
+        newTrade.resourcesWanted = p_resourcesWanted;
+        newTrade.commoditiesOffered = p_commoditiesOffered;
+        newTrade.commoditiesWanted = p_commoditiesWanted;
+        newTrade.goldOffered = p_goldOffered;
+        newTrade.goldWanted = p_goldWanted;
+        newTrade.offeringPlayer = this.iD;
+
+        Bank.instance.tradeWithBank(this.resourceRatios, this.commodityRatios, newTrade);
+    }
+
+
 
     public int getID()
     {
@@ -891,7 +1261,7 @@ public class Player : NetworkBehaviour {
         List<GamePiece> notOnBoard = new List<GamePiece>();
         for (int i = 0; i < pieces.Count; i++)
         {
-            if (pieces[i].isOnBoard()==false)
+            if (pieces[i].isOnBoard() == false)
             {
                 notOnBoard.Add(pieces[i]);
             }
@@ -931,7 +1301,7 @@ public class Player : NetworkBehaviour {
 
     public int[] getResources()//return player's resources
     {
-        return this.resources; 
+        return this.resources;
     }
 
     public int[] getCommodities()//return player's commodities
@@ -939,17 +1309,17 @@ public class Player : NetworkBehaviour {
         return this.commodities;
     }
 
-	public int[] getResourceRatios()//return player's trade ratios with bank for resources (ie ratios obtained from ports)
-	{
-		return this.resourceRatios; 
-	}
+    public int[] getResourceRatios()//return player's trade ratios with bank for resources (ie ratios obtained from ports)
+    {
+        return this.resourceRatios;
+    }
 
-	public int[] getCommodityRatios()//return player's trade ratios with bank for commodities
-	{
-		return this.commodityRatios;
-	}
+    public int[] getCommodityRatios()//return player's trade ratios with bank for commodities
+    {
+        return this.commodityRatios;
+    }
 
-    public int [] getDevFlipChart()//return array of progress in the development flip chart
+    public int[] getDevFlipChart()//return array of progress in the development flip chart
     {
         return this.devFlipChart;
     }
@@ -961,8 +1331,8 @@ public class Player : NetworkBehaviour {
 
     public bool changeVictoryPoints(int num, int plyr)
     {//decrease victory points
-        //if (!isLocalPlayer)
-            //return false;
+     //if (!isLocalPlayer)
+     //return false;
         if (GameManager.instance.getPlayer(plyr).victoryPoints + num < 0)
         {
             return false;
@@ -978,18 +1348,82 @@ public class Player : NetworkBehaviour {
     }
 
     [ClientRpc]
-    public void RpcChangeVP(int num, int plyr) {
+    public void RpcChangeVP(int num, int plyr)
+    {
         GameManager.instance.getPlayer(plyr).victoryPoints += num;
+    }
+
+    public void hasBoot(bool doesHaveBoot, int player)
+    {
+        CmdHasBoot(doesHaveBoot, player);
+    }
+
+    [Command]
+    public void CmdHasBoot(bool doesHaveBoot, int player)
+    {
+        RpcHasBoot(doesHaveBoot, player);
+    }
+
+    [ClientRpc]
+    public void RpcHasBoot(bool doesHaveBoot, int player)
+    {
+        GameManager.instance.getPlayer(player).ownsBoot = doesHaveBoot;
     }
 
     public bool changeFishCount(int num, int plyr)
     {
-        if((GameManager.instance.getPlayer(plyr).numFish + num) < 0)
+        if ((GameManager.instance.getPlayer(plyr).numFish + num) < 0)
         {
             return false;
         }
         CmdChangeFishCount(num, plyr);
         return true;
+    }
+
+    public bool changeGoldOffered(int num, int player)
+    {
+        if (GameManager.instance.getPlayer(player).goldOffered + num < 0)
+        {
+            return false;
+        }
+
+        CmdChangeGoldOffered(num, player);
+        return true;
+    }
+
+    [Command]
+    public void CmdChangeGoldOffered(int num, int player)
+    {
+        RpcChangeGoldOffered(num, player);
+    }
+
+    [ClientRpc]
+    public void RpcChangeGoldOffered(int num, int player)
+    {
+        GameManager.instance.getPlayer(player).goldOffered += num;
+    }
+
+    public bool changeGoldWanted(int num, int player)
+    {
+        if (GameManager.instance.getPlayer(player).goldWanted + num < 0)
+        {
+            return false;
+        }
+
+        CmdChangeGoldWanted(num, player);
+        return true;
+    }
+
+    [Command]
+    public void CmdChangeGoldWanted(int num, int player)
+    {
+        RpcChangeGoldWanted(num, player);
+    }
+
+    [ClientRpc]
+    public void RpcChangeGoldWanted(int num, int player)
+    {
+        GameManager.instance.getPlayer(player).goldWanted += num;
     }
 
     [Command]
@@ -999,8 +1433,9 @@ public class Player : NetworkBehaviour {
     }
 
     [ClientRpc]
-    public void RpcChangeFishCount(int num, int plyr) {
-         GameManager.instance.getPlayer(plyr).numFish += num;       
+    public void RpcChangeFishCount(int num, int plyr)
+    {
+        GameManager.instance.getPlayer(plyr).numFish += num;
     }
 
     public int getGoldCount()//return gold count
@@ -1025,7 +1460,8 @@ public class Player : NetworkBehaviour {
     }
 
     [ClientRpc]
-    public void RpcChangeGold(int num, int plyr) {
+    public void RpcChangeGold(int num, int plyr)
+    {
         GameManager.instance.getPlayer(plyr).goldCount += num;
     }
 
@@ -1033,26 +1469,27 @@ public class Player : NetworkBehaviour {
     {
         return this.safeCardCount;
     }
-    
+
 
     public Enums.Color getColor()
     {
         return this.myColor;
     }
 
-   
+
 
     public Enums.Status getStatus()
     {
-        return this.status; 
+        return this.status;
     }
 
     public Enums.MoveType getMoveType()
     {
-        return this.moveType; 
+        return this.moveType;
     }
 
-    public void setMoveType(Enums.MoveType mType, int plyr) {
+    public void setMoveType(Enums.MoveType mType, int plyr)
+    {
         CmdSetMoveType(mType, plyr);
     }
 
@@ -1063,16 +1500,19 @@ public class Player : NetworkBehaviour {
     }
 
     [ClientRpc]
-    public void RpcSetMoveType(Enums.MoveType mType, int plyr) {
-        GameManager.instance.getPlayer(plyr).moveType = mType;         
+    public void RpcSetMoveType(Enums.MoveType mType, int plyr)
+    {
+        Debug.Log(mType);
+        GameManager.instance.getPlayer(plyr).moveType = mType;
     }
 
     public Enums.Special getSpecial()
     {
-        return this.special; 
+        return this.special;
     }
 
-    public void setSpecial(Enums.Special spec, int plyr) {
+    public void setSpecial(Enums.Special spec, int plyr)
+    {
         CmdSetSpecial(spec, plyr);
         Debug.Log("spec1");
     }
@@ -1094,10 +1534,11 @@ public class Player : NetworkBehaviour {
 
     public int getOldTurn()
     {
-        return this.oldTurn; 
+        return this.oldTurn;
     }
 
-    public void setOldTurn(int turn) {
+    public void setOldTurn(int turn)
+    {
         CmdSetOldTurn(turn);
     }
 
@@ -1108,18 +1549,44 @@ public class Player : NetworkBehaviour {
     }
 
     [ClientRpc]
-    public void RpcSetOldTurn(int turn) {
-        foreach (Player p in GameManager.instance.getPlayers()) {
+    public void RpcSetOldTurn(int turn)
+    {
+        foreach (Player p in GameManager.instance.getPlayers())
+        {
             p.oldTurn = turn;
-         }
+        }
+    }
+
+    public void giveBoot(int targetPlayer)
+    {
+        if(((this.iD) == targetPlayer))
+        {
+            return;
+        }
+
+        if(!this.ownsBoot || ((this.iD) != GameManager.instance.getPlayerTurn()))
+        {
+            return;
+        }
+
+        int theirVps = GameManager.instance.getPlayer(targetPlayer).victoryPoints;
+
+        if(theirVps != this.victoryPoints)
+        {
+            return;
+        }
+
+        GameManager.instance.getPersonalPlayer().hasBoot(false, this.iD);
+        GameManager.instance.getPersonalPlayer().hasBoot(true, targetPlayer);
     }
 
     public int getI1()
     {
-        return this.i1; 
+        return this.i1;
     }
 
-    public void setI1(int i, int plyr) {
+    public void setI1(int i, int plyr)
+    {
         CmdSetI1(i, plyr);
     }
 
@@ -1130,15 +1597,93 @@ public class Player : NetworkBehaviour {
     }
 
     [ClientRpc]
-    public void RpcSetI1(int i, int plyr) {
+    public void RpcSetI1(int i, int plyr)
+    {
         GameManager.instance.getPlayer(plyr).i1 = i;
     }
 
-    public Enums.DevChartType getMetropolis() {
+    public void setFleet(int i, int plyr)
+    {
+        CmdSetFleet(i, plyr);
+    }
+
+    [Command]
+    public void CmdSetFleet(int i, int plyr)
+    {
+        RpcSetFleet(i, plyr);
+    }
+
+    [ClientRpc]
+    public void RpcSetFleet(int i, int plyr)
+    {
+        if (i >= 0 && i < 5)
+        {
+            GameManager.instance.getPlayer(plyr).oldRatio = GameManager.instance.getPlayer(plyr).getResourceRatios()[i];
+        }
+        else if (i >= 5 && i < 8) {
+            GameManager.instance.getPlayer(plyr).oldRatio = GameManager.instance.getPlayer(plyr).getCommodityRatios()[i - 5];
+        }
+
+        GameManager.instance.getPlayer(plyr).fleet = i;
+        if (i >= 0 && i < 5)
+        {
+            updateResourceRatio((ResourceType)i, 2, plyr);
+        }
+        else if (i >= 5 && i < 8) {
+            updateCommodityRatio((CommodityType)(i - 5), 2, plyr);
+        }
+    }
+
+    public void resetFleet(int plyr)
+    {
+        CmdResetFleet(plyr);
+    }
+
+    [Command]
+    public void CmdResetFleet(int plyr)
+    {
+        RpcResetFleet(plyr);
+    }
+
+    [ClientRpc]
+    public void RpcResetFleet(int plyr)
+    {
+        if (fleet >= 0 && fleet < 5)
+        {
+            updateResourceRatio((ResourceType)fleet, GameManager.instance.getPlayer(plyr).oldRatio, plyr);
+        }
+        else if (fleet >= 5 && fleet < 8) {
+            updateCommodityRatio((CommodityType)(fleet - 5), GameManager.instance.getPlayer(plyr).oldRatio, plyr);
+        }
+
+        GameManager.instance.getPlayer(plyr).fleet = -1;
+        GameManager.instance.getPlayer(plyr).oldRatio = 4;
+    }
+
+    public void setMerchantController(int plyr)
+    {
+        CmdSetMerchantController(plyr);
+    }
+
+    [Command]
+    public void CmdSetMerchantController(int plyr)
+    {
+        RpcSetMerchantController(plyr);
+    }
+
+    [ClientRpc]
+    public void RpcSetMerchantController(int plyr)
+    {
+        GameManager.instance.merchantController = plyr;
+    }
+
+    public Enums.DevChartType getMetropolis()
+    {
         return this.metropType;
     }
 
-    public void setMetropolis(Enums.DevChartType d, int plyr) {
+    public void setMetropolis(Enums.DevChartType d, int plyr)
+    {
         CmdSetMetropolis(d, plyr);
     }
 
@@ -1156,10 +1701,11 @@ public class Player : NetworkBehaviour {
 
     public int getOpponent()
     {
-        return this.opponent; 
+        return this.opponent;
     }
 
-    public void setOpponent(int i, int plyr) {
+    public void setOpponent(int i, int plyr)
+    {
         CmdSetOpponent(i, plyr);
     }
 
@@ -1169,7 +1715,7 @@ public class Player : NetworkBehaviour {
         RpcSetOpponent(i, plyr);
     }
 
-     [ClientRpc]
+    [ClientRpc]
     public void RpcSetOpponent(int i, int plyr)
     {
         GameManager.instance.getPlayer(plyr).opponent = i;
@@ -1177,10 +1723,11 @@ public class Player : NetworkBehaviour {
 
     public bool getB1()
     {
-        return this.b1; 
+        return this.b1;
     }
 
-    public void setB1(bool b, int plyr) {
+    public void setB1(bool b, int plyr)
+    {
         CmdSetB1(b, plyr);
     }
 
@@ -1196,7 +1743,8 @@ public class Player : NetworkBehaviour {
         GameManager.instance.getPlayer(plyr).b1 = b;
     }
 
-    public void setSpecialTurn(int turn) {
+    public void setSpecialTurn(int turn)
+    {
         CmdSetSpecialTurn(turn);
     }
 
@@ -1207,11 +1755,13 @@ public class Player : NetworkBehaviour {
     }
 
     [ClientRpc]
-    public void RpcSetSpecialTurn(int turn) {
+    public void RpcSetSpecialTurn(int turn)
+    {
         GameManager.instance.setSpecialTurn(turn, isServer);
     }
 
-    public void setMetropolisPlayer(Enums.DevChartType d, Vertex v) {
+    public void setMetropolisPlayer(Enums.DevChartType d, Vertex v)
+    {
         CmdSetMetropolisPlayer(d, v.transform.position);
     }
 
@@ -1222,11 +1772,37 @@ public class Player : NetworkBehaviour {
     }
 
     [ClientRpc]
-    public void RpcSetMetropolisPlayer(Enums.DevChartType d, Vector3 v) {
+    public void RpcSetMetropolisPlayer(Enums.DevChartType d, Vector3 v)
+    {
         GameManager.instance.setMetropolisPlayer(d, BoardState.instance.vertexPosition[v]);
     }
 
-    public void deactivateKnights() {
+    public void activateKnights(int plyr)
+    {
+        CmdActivateKnights(plyr);
+    }
+
+    [Command]
+    public void CmdActivateKnights(int plyr)
+    {
+        RpcActivateKnights(plyr);
+    }
+
+    [ClientRpc]
+    public void RpcActivateKnights(int plyr)
+    {
+        foreach (GamePiece piece in GameManager.instance.getPlayer(plyr).getGamePieces())
+        {
+            if (piece.getPieceType() == PieceType.KNIGHT && piece.isOnBoard())
+            {
+                Knight k = (Knight)piece;
+                k.activateKnight();
+            }
+        }
+    }
+
+    public void deactivateKnights()
+    {
         CmdDeactivateKnights();
     }
 
@@ -1237,10 +1813,14 @@ public class Player : NetworkBehaviour {
     }
 
     [ClientRpc]
-    public void RpcDeactivateKnights() {
-        foreach (Player p in GameManager.instance.getPlayers()) {
-            foreach (GamePiece piece in p.getGamePieces()) {
-                if (piece.getPieceType() == PieceType.KNIGHT) {
+    public void RpcDeactivateKnights()
+    {
+        foreach (Player p in GameManager.instance.getPlayers())
+        {
+            foreach (GamePiece piece in p.getGamePieces())
+            {
+                if (piece.getPieceType() == PieceType.KNIGHT)
+                {
                     Knight k = (Knight)piece;
                     k.deactivateKnight();
                 }
@@ -1248,7 +1828,8 @@ public class Player : NetworkBehaviour {
         }
     }
 
-    public void revertTurn() {
+    public void revertTurn()
+    {
         Debug.Log("prevert1" + GameManager.instance.getPlayerTurn());
         CmdRevertTurn();
     }
@@ -1260,12 +1841,14 @@ public class Player : NetworkBehaviour {
     }
 
     [ClientRpc]
-    public void RpcRevertTurn() {
+    public void RpcRevertTurn()
+    {
         GameManager.instance.setSpecialTurn(oldTurn, isServer);
-        Debug.Log("prevert" + GameManager.instance.getPlayerTurn()); 
+        Debug.Log("prevert" + GameManager.instance.getPlayerTurn());
     }
 
-    public void endPhaseOne() {
+    public void endPhaseOne()
+    {
         Debug.Log("epo1");
         if (GameManager.instance.getGamePhase() == GamePhase.PHASE_ONE) CmdEndPhaseOne(isServer);
     }
@@ -1278,12 +1861,31 @@ public class Player : NetworkBehaviour {
     }
 
     [ClientRpc]
-    public void RpcEndPhaseOne(bool server) {
+    public void RpcEndPhaseOne(bool server)
+    {
         Debug.Log("epo3");
         GameManager.instance.setGamePhase(GamePhase.PHASE_TWO, server);
     }
 
-    public void moveBarbarian() {
+    public void moveBarbarianToPosition(int position)
+    {
+        CmdMoveBarbarianToPosition(position);
+    }
+
+    [Command]
+    public void CmdMoveBarbarianToPosition(int position)
+    {
+        RpcMoveBarbarianToPosition(position);
+    }
+
+    [ClientRpc]
+    public void RpcMoveBarbarianToPosition(int position)
+    {
+        GameManager.instance.barbarianPos = position;
+    }
+
+    public void moveBarbarian()
+    {
         CmdMoveBarbarian();
     }
 
@@ -1294,11 +1896,15 @@ public class Player : NetworkBehaviour {
     }
 
     [ClientRpc]
-    public void RpcMoveBarbarian() {
-        if (GameManager.instance.getBarbarianPosition() + 1 == 7) {
+    public void RpcMoveBarbarian()
+    {
+        if (GameManager.instance.getBarbarianPosition() + 1 == 7)
+        {
             GameManager.instance.barbarianPos = 0;
             GameManager.instance.barbarianHasAttacked = true;
-        } else {
+        }
+        else
+        {
             GameManager.instance.barbarianPos++;
         }
     }
@@ -1352,6 +1958,23 @@ public class Player : NetworkBehaviour {
     public void RpcSetH1(Vector3 hReplace, int plyr)
     {
         GameManager.instance.getPlayer(plyr).h1 = BoardState.instance.hexPosition[hReplace];
+    }
+
+    public void ResetH1(int plyr)
+    {
+        CmdResetH1(plyr);
+    }
+
+    [Command]
+    public void CmdResetH1(int plyr)
+    {
+        RpcResetH1(plyr);
+    }
+
+    [ClientRpc]
+    public void RpcResetH1(int plyr)
+    {
+        GameManager.instance.getPlayer(plyr).h1 = null;
     }
 
     public void SetE1(Edge eReplace, int plyr)
@@ -1410,9 +2033,10 @@ public class Player : NetworkBehaviour {
         this.safeCardCount -= count;
     }
 
-	public int getCityWallCount() {
-		return this.cityWallsLeft;
-	}
+    public int getCityWallCount()
+    {
+        return this.cityWallsLeft;
+    }
 
     public bool hasMovedRoad()
     {
@@ -1424,17 +2048,17 @@ public class Player : NetworkBehaviour {
         this.movedRoad = true;
     }
 
-	public void roadNotMoved()
-	{
-		this.movedRoad = false;
-	}
+    public void roadNotMoved()
+    {
+        this.movedRoad = false;
+    }
 
     public bool getAqueduct()
     {
         return this.aqueduct;
     }
 
-     public void makeAqueduct(int plyr)
+    public void makeAqueduct(int plyr)
     {
         CmdMakeAqueduct(plyr);
     }
@@ -1510,16 +2134,15 @@ public class Player : NetworkBehaviour {
         GameManager.instance.alchemistRolled(a, b, isServer);
     }
 
-    public bool changeResourceOffer(ResourceType resource, int num, int player)
+    public void changeResourceOffer(ResourceType resource, int num, int player)
     {
         int resPosition = (int)resource;
         if (GameManager.instance.getPlayer(player).resourcesOffered[resPosition] + num < 0)
         {
-            return false;
+            return;
         }
 
         CmdChangeResourceOffer(resource, num, player);
-        return true;
     }
 
     [Command]
@@ -1535,16 +2158,15 @@ public class Player : NetworkBehaviour {
         GameManager.instance.getPlayer(player).resourcesOffered[resP] += num;
     }
 
-    public bool changeResourceWanted(ResourceType resource, int num, int player)
+    public void changeResourceWanted(ResourceType resource, int num, int player)
     {
         int resPosition = (int)resource;
         if (GameManager.instance.getPlayer(player).resourcesWanted[resPosition] + num < 0)
         {
-            return false;
+            return;
         }
 
         CmdChangeResourceWanted(resource, num, player);
-        return true;
     }
 
     [Command]
@@ -1560,16 +2182,15 @@ public class Player : NetworkBehaviour {
         GameManager.instance.getPlayer(player).resourcesWanted[resP] += num;
     }
 
-    public bool changeCommodityOffered(CommodityType commodity, int num, int player)
+    public void changeCommodityOffered(CommodityType commodity, int num, int player)
     {
         int comPosition = (int)commodity;
         if (GameManager.instance.getPlayer(player).commoditiesOffered[comPosition] + num < 0)
         {
-            return false;
+            return;
         }
 
         CmdChangeCommodityOffered(commodity, num, player);
-        return true;
     }
 
     [Command]
@@ -1585,16 +2206,15 @@ public class Player : NetworkBehaviour {
         GameManager.instance.getPlayer(player).commoditiesOffered[comP] += num;
     }
 
-    public bool changeCommodityWanted(CommodityType commodity, int num, int player)
+    public void changeCommodityWanted(CommodityType commodity, int num, int player)
     {
         int comPosition = (int)commodity;
         if (GameManager.instance.getPlayer(player).commoditiesWanted[comPosition] + num < 0)
         {
-            return false;
+            return;
         }
 
         CmdChangeCommodityWanted(commodity, num, player);
-        return true;
     }
 
     [Command]
@@ -1618,12 +2238,14 @@ public class Player : NetworkBehaviour {
             return false;
         }
         CmdChangeResource(resource, num, plyr);
+        //GameManager.instance.getPlayer(plyr).resources[(int)resource] += num;
         return true;
     }
 
     [Command]
     public void CmdChangeResource(ResourceType resourceType, int num, int plyr)
     {
+        //GameManager.instance.getPlayer(plyr).resources[(int)resourceType] += num;
         RpcChangeResource(resourceType, num, plyr);
     }
 
@@ -1632,6 +2254,23 @@ public class Player : NetworkBehaviour {
     {
         int resP = (int)resourceType;
         GameManager.instance.getPlayer(plyr).resources[resP] += num;
+    }
+
+    public void emptyProgressCards(int player)
+    {
+        CmdEmptyProgressCards(player);
+    }
+
+    [Command]
+    public void CmdEmptyProgressCards(int player)
+    {
+        RpcEmptyProgressCards(player);
+    }
+
+    [ClientRpc]
+    public void RpcEmptyProgressCards(int player)
+    {
+        GameManager.instance.getPlayer(player).progressCards.Clear();
     }
 
     public void addProgressCard(ProgressCardName cardName, int plyr)
@@ -1655,7 +2294,8 @@ public class Player : NetworkBehaviour {
     {
         List<ProgressCardName> progs = GameManager.instance.getPlayer(plyr).getProgressCards();
         bool exists = false;
-        foreach (ProgressCardName prog in progs) {
+        foreach (ProgressCardName prog in progs)
+        {
             if (cardName == prog) exists = true;
         }
 
@@ -1697,7 +2337,8 @@ public class Player : NetworkBehaviour {
     }
 
     [ClientRpc]
-    public void RpcChangeCityWalls(int num, int plyr) {
+    public void RpcChangeCityWalls(int num, int plyr)
+    {
         GameManager.instance.getPlayer(plyr).cityWallsLeft += num;
     }
 
@@ -1738,7 +2379,7 @@ public class Player : NetworkBehaviour {
         int comP = (int)commodityType;
         GameManager.instance.getPlayer(plyr).commodityRatios[comP] = newRatio;
     }
-    
+
 
     public bool changeCommodity(CommodityType commodityType, int num, int plyr)
     {
@@ -1747,6 +2388,8 @@ public class Player : NetworkBehaviour {
         {
             return false;//if there arent return false to denote an error
         }
+        //int comP = (int)commodityType;
+        //GameManager.instance.getPlayer(plyr).commodities[comP] += num;
         CmdChangeCommodity(commodityType, num, plyr);
         return true;
     }
@@ -1754,6 +2397,8 @@ public class Player : NetworkBehaviour {
     [Command]
     public void CmdChangeCommodity(CommodityType commodityType, int num, int plyr)
     {
+        //int comP = (int)commodityType;
+        //GameManager.instance.getPlayer(plyr).commodities[comP] += num;
         RpcChangeCommodity(commodityType, num, plyr);
     }
 
@@ -1764,7 +2409,8 @@ public class Player : NetworkBehaviour {
         GameManager.instance.getPlayer(plyr).commodities[comP] += num;
     }
 
-    public void endTurn() {
+    public void endTurn()
+    {
         if (GameManager.instance.getPlayerTurn() != iD) { return; }
         if (GameManager.instance.getGamePhase() == GamePhase.PHASE_ONE) { return; }
         if (moveType == MoveType.SPECIAL) { return; }
@@ -1774,40 +2420,83 @@ public class Player : NetworkBehaviour {
                 moveType != MoveType.PLACE_INITIAL_SHIP &&
                 moveType != MoveType.NONE)) { return; }
 
+        if (!ownsBoot) {
+            if (victoryPoints >= 13) {
+
+                Player winner = GameManager.instance.getCurrentPlayer();
+
+                foreach (Player p in GameManager.instance.getPlayers()) {
+                    GameManager.instance.getPersonalPlayer().setMoveType(MoveType.SPECIAL, p.getID());
+                }
+
+                winner.setSpecial(Special.YOU_WIN, winner.getID());
+
+                foreach (Player p in GameManager.instance.getPlayers()) {
+                    if(!Object.ReferenceEquals(p, winner)) winner.setSpecial(Special.YOU_LOSE, p.getID());
+                }
+                return;
+            }
+        } else if (victoryPoints >= 14 ) {
+
+            Player winner = GameManager.instance.getCurrentPlayer();
+
+            foreach (Player p in GameManager.instance.getPlayers()) {
+                GameManager.instance.getPersonalPlayer().setMoveType(MoveType.SPECIAL, p.getID());
+            }
+
+            winner.setSpecial(Special.YOU_WIN, winner.getID());
+
+            foreach (Player p in GameManager.instance.getPlayers()) {
+                if(!Object.ReferenceEquals(p, winner)) winner.setSpecial(Special.YOU_LOSE, p.getID());
+            }
+            return;
+        }
+
         moveType = Enums.MoveType.NONE;
 
-        if (GameManager.instance.getGamePhase() == GamePhase.SETUP_ONE) {
+        if (GameManager.instance.getGamePhase() == GamePhase.SETUP_ONE)
+        {
             moveType = Enums.MoveType.PLACE_INITIAL_CITY;
         }
         special = Enums.Special.NONE;
         movedRoad = false;
+        resetFleet(getID());
 
-        if (progressCards.Count > 4) {
+        if (progressCards.Count > 4)
+        {
 
             // Those players discard down to 4 progress cards
 
         }
 
         // Set some turn specific booleans to false
-        foreach (GamePiece piece in pieces) {
-            if (piece.getPieceType () == Enums.PieceType.KNIGHT) {
+        foreach (GamePiece piece in pieces)
+        {
+            if (piece.getPieceType() == Enums.PieceType.KNIGHT)
+            {
                 Knight k = (Knight)piece;
-                k.notActivatedThisTurn ();
-                k.notUpgradedThisTurn ();
-            } else if (piece.getPieceType () == Enums.PieceType.ROAD) {
+                k.notActivatedThisTurn();
+                k.notUpgradedThisTurn();
+            }
+            else if (piece.getPieceType() == Enums.PieceType.ROAD)
+            {
                 Road r = (Road)piece;
-                r.notBuiltThisTurn ();
+                r.notBuiltThisTurn();
             }
         }
-
-		CmdEndTurn();
+        if (trade!=null)
+        {
+            CmdDestroyObject(trade.netId);
+            trade = null;
+        }
+        CmdEndTurn();
     }
 
     [Command]
     public void CmdEndTurn()
     {
 
-		GameManager.instance.SetPlayerTurn(this.isServer);
+        GameManager.instance.SetPlayerTurn(this.isServer);
     }
 
     [ClientRpc]
@@ -1851,171 +2540,475 @@ public class Player : NetworkBehaviour {
     {
         Debug.Log("Winners");
     }
-		
+
     // Commands to move manager
-	[Command]
-	public void CmdPlaceInitialSettlement(Vector3 location) {
-		MoveManager.instance.placeInitialSettlement (BoardState.instance.vertexPosition [location], this.pieces, this.isServer);
-	}
-
-	[Command]
-	public void CmdPlaceInitialCity(Vector3 location) {
-		MoveManager.instance.placeInitialCity (BoardState.instance.vertexPosition [location], this.pieces, this.isServer);
-	}
-
-	[Command]
-	public void CmdPlaceInitialRoad(Vector3 location) {
-		MoveManager.instance.placeInitialRoad (BoardState.instance.edgePosition [location], this.myColor, this.pieces, this.isServer);
-	}
-
-	[Command]
-	public void CmdPlaceInitialShip(Vector3 location) {
-		MoveManager.instance.placeInitialShip (BoardState.instance.edgePosition [location], this.myColor, this.pieces, this.isServer);
-	}
+    [Command]
+    public void CmdPlaceInitialSettlement(Vector3 location)
+    {
+        MoveManager.instance.placeInitialSettlement(BoardState.instance.vertexPosition[location], this.pieces, this.isServer, true);
+    }
 
     [Command]
-	public void CmdBuildSettlement(Vector3 location) {
-		MoveManager.instance.buidSettlement (BoardState.instance.vertexPosition [location], this.resources, this.pieces, this.myColor, this.isServer);
-	}
-
-	[Command]
-	public void CmdBuildRoad(Vector3 location) {
-		MoveManager.instance.buildRoad (BoardState.instance.edgePosition [location], this.resources, this.pieces, this.myColor, this.isServer);
-	}
+    public void CmdPlaceInitialCity(Vector3 location)
+    {
+        MoveManager.instance.placeInitialCity(BoardState.instance.vertexPosition[location], this.pieces, this.isServer, true);
+    }
 
     [Command]
-	public void CmdFishRoad(Vector3 location) {
-		MoveManager.instance.fishRoad (BoardState.instance.edgePosition [location], this.numFish, this.pieces, this.myColor, this.isServer);
-	}
+    public void CmdPlaceInitialRoad(Vector3 location)
+    {
+        MoveManager.instance.placeInitialRoad(BoardState.instance.edgePosition[location], this.myColor, this.pieces, this.isServer);
+    }
 
     [Command]
-	public void CmdMoveKnight(Vector3 location) {
-		MoveManager.instance.moveKnight(v1, BoardState.instance.vertexPosition [location], this.myColor, this.isServer);
-	}
+    public void CmdPlaceInitialShip(Vector3 location)
+    {
+        MoveManager.instance.placeInitialShip(BoardState.instance.edgePosition[location], this.myColor, this.pieces, this.isServer);
+    }
 
     [Command]
-	public void CmdDisplaceKnight(Vector3 location) {
-		MoveManager.instance.displaceKnight(v1, BoardState.instance.vertexPosition [location], this.myColor, this.isServer);
-	}
+    public void CmdBuildSettlement(Vector3 location)
+    {
+        MoveManager.instance.buidSettlement(BoardState.instance.vertexPosition[location], this.resources, this.pieces, this.myColor, this.isServer, true);
+    }
 
     [Command]
-	public void CmdUpgradeKnight(Vector3 location) {
-		MoveManager.instance.upgradeKnight(this.resources, this.devFlipChart, BoardState.instance.vertexPosition [location], this.pieces, this.myColor, this.isServer);
-	}
+    public void CmdBuildRoad(Vector3 location)
+    {
+        MoveManager.instance.buildRoad(BoardState.instance.edgePosition[location], this.resources, this.pieces, this.myColor, this.isServer, true);
+    }
 
     [Command]
-	public void CmdActivateKnight(Vector3 location) {
-		MoveManager.instance.activateKnight(this.resources, BoardState.instance.vertexPosition [location], this.myColor, this.isServer);
-	}
+    public void CmdFishRoad(Vector3 location)
+    {
+        MoveManager.instance.fishRoad(BoardState.instance.edgePosition[location], this.numFish, this.pieces, this.myColor, this.isServer);
+    }
 
     [Command]
-    public void CmdUpgradeDevelopmentChart(Enums.DevChartType dev) {
+    public void CmdMoveKnight(Vector3 location)
+    {
+        MoveManager.instance.moveKnight(v1, BoardState.instance.vertexPosition[location], this.myColor, this.isServer);
+    }
+
+    [Command]
+    public void CmdDisplaceKnight(Vector3 location)
+    {
+        MoveManager.instance.displaceKnight(v1, BoardState.instance.vertexPosition[location], this.myColor, this.isServer);
+    }
+
+    [Command]
+    public void CmdUpgradeKnight(Vector3 location)
+    {
+        MoveManager.instance.upgradeKnight(this.resources, this.devFlipChart, BoardState.instance.vertexPosition[location], this.pieces, this.myColor, this.isServer, true);
+    }
+
+    [Command]
+    public void CmdActivateKnight(Vector3 location)
+    {
+        MoveManager.instance.activateKnight(this.resources, BoardState.instance.vertexPosition[location], this.myColor, this.isServer, true);
+    }
+
+    [Command]
+    public void CmdUpgradeDevelopmentChart(Enums.DevChartType dev)
+    {
         MoveManager.instance.upgradeDevChart(dev, this.commodities, this.pieces, this.devFlipChart, this.isServer);
     }
 
     [Command]
-    public void CmdCrane(Enums.DevChartType dev) {
+    public void CmdCrane(Enums.DevChartType dev)
+    {
         ProgressCards.instance.crane(dev, this.commodities, this.pieces, this.devFlipChart, this.isServer);
     }
 
     [Command]
-	public void CmdBuildCity(Vector3 location) {
+    public void CmdBuildCity(Vector3 location)
+    {
         Debug.Log("hello3");
-		MoveManager.instance.buildCity (BoardState.instance.vertexPosition [location], this.resources, this.pieces, this.myColor, this.isServer);
-	}
-
-    [Command]
-	public void CmdBuildCityWall(Vector3 location) {
-		MoveManager.instance.buildCityWall (BoardState.instance.vertexPosition [location], this.resources, this.cityWallsLeft, this.myColor, this.isServer);
-	}
-
-    [Command]
-	public void CmdBuildKnight(Vector3 location) {
-		MoveManager.instance.buildKnight (BoardState.instance.vertexPosition [location], this.resources, this.pieces, this.myColor, this.isServer);
-	}
-
-    [Command]
-	public void CmdBuildShip(Vector3 location) {
-		MoveManager.instance.buildShip (BoardState.instance.edgePosition [location], this.resources, this.pieces, this.myColor, this.isServer);
-	}
-
-    [Command]
-	public void CmdMoveShip(Vector3 location) {
-		MoveManager.instance.moveShip (e1, BoardState.instance.edgePosition [location], this.myColor, this.isServer);
-	}
-
-    [Command]
-    public void CmdChaseRobber(Vector3 location) {
-		MoveManager.instance.chaseRobber (v1, BoardState.instance.hexPosition [location], this.myColor, this.isServer);        
+        MoveManager.instance.buildCity(BoardState.instance.vertexPosition[location], this.resources, this.pieces, this.myColor, this.isServer, true);
     }
 
     [Command]
-    public void CmdAlternateDisplaceKnight(Vector3 location) {
-		MoveManager.instance.alternateDisplaceKnight (BoardState.instance.vertexPosition [location], i1, b1, myColor, isServer);        
+    public void CmdBuildCityWall(Vector3 location)
+    {
+        MoveManager.instance.buildCityWall(BoardState.instance.vertexPosition[location], this.resources, this.cityWallsLeft, this.myColor, this.isServer);
     }
 
     [Command]
-    public void CmdMoveRobber(Vector3 location) {
-		MoveManager.instance.moveRobber (BoardState.instance.hexPosition [location], isServer);        
+    public void CmdBuildKnight(Vector3 location)
+    {
+        MoveManager.instance.buildKnight(BoardState.instance.vertexPosition[location], this.resources, this.pieces, this.myColor, this.isServer, true);
     }
 
     [Command]
-    public void CmdBishop(Vector3 location) {
-		ProgressCards.instance.bishop (BoardState.instance.hexPosition [location], this.myColor, isServer);        
+    public void CmdBuildShip(Vector3 location)
+    {
+        MoveManager.instance.buildShip(BoardState.instance.edgePosition[location], this.resources, this.pieces, this.myColor, this.isServer, true);
     }
 
     [Command]
-    public void CmdDiplomat(Vector3 location) {
-		ProgressCards.instance.diplomat (e1, BoardState.instance.edgePosition [location], this.myColor, isServer);        
+    public void CmdMoveShip(Vector3 location)
+    {
+        MoveManager.instance.moveShip(e1, BoardState.instance.edgePosition[location], this.myColor, this.isServer);
     }
 
     [Command]
-    public void CmdRoadBuilding(Vector3 location) {
-		ProgressCards.instance.roadBuilding (BoardState.instance.edgePosition [location], this.pieces, this.myColor, isServer);        
+    public void CmdChaseRobber(Vector3 location)
+    {
+        MoveManager.instance.chaseRobber(v1, BoardState.instance.hexPosition[location], this.myColor, this.isServer);
     }
 
     [Command]
-    public void CmdIntrigue(Vector3 location) {
-		ProgressCards.instance.intrigue (BoardState.instance.vertexPosition [location], this.myColor, isServer);        
+    public void CmdAlternateDisplaceKnight(Vector3 location)
+    {
+        MoveManager.instance.alternateDisplaceKnight(BoardState.instance.vertexPosition[location], i1, b1, myColor, isServer);
     }
 
     [Command]
-    public void CmdEngineer(Vector3 location) {
-		ProgressCards.instance.engineer (BoardState.instance.vertexPosition [location], this.cityWallsLeft, this.myColor, isServer);        
+    public void CmdMoveRobber(Vector3 location)
+    {
+        MoveManager.instance.moveRobber(BoardState.instance.hexPosition[location], isServer);
     }
 
     [Command]
-    public void CmdMedicine (Vector3 location) {
-		ProgressCards.instance.medicine (BoardState.instance.vertexPosition [location], this.resources, this.pieces, this.myColor, isServer);        
+    public void CmdBishop(Vector3 location)
+    {
+        ProgressCards.instance.bishop(BoardState.instance.hexPosition[location], this.myColor, isServer);
     }
 
     [Command]
-    public void CmdInventor(Vector3 location) {
-		ProgressCards.instance.inventor (h1, BoardState.instance.hexPosition [location], isServer);        
+    public void CmdDiplomat(Vector3 location)
+    {
+        ProgressCards.instance.diplomat(e1, BoardState.instance.edgePosition[location], this.myColor, isServer);
     }
 
     [Command]
-    public void CmdMovePirate(Vector3 location) {
-		MoveManager.instance.movePirate (BoardState.instance.hexPosition [location], isServer);        
+    public void CmdDiplomatRemove(Vector3 location)
+    {
+        ProgressCards.instance.diplomatRemove(BoardState.instance.edgePosition[location], this.myColor, isServer);
     }
 
     [Command]
-    public void CmdDestroyCity (Vector3 location) {
-		MoveManager.instance.destroyCity (BoardState.instance.vertexPosition [location], myColor, isServer);        
+    public void CmdRoadBuilding(Vector3 location)
+    {
+        ProgressCards.instance.roadBuilding(BoardState.instance.edgePosition[location], this.pieces, this.myColor, isServer);
     }
 
     [Command]
-    public void CmdChooseMetropolis (Vector3 location) {
-		MoveManager.instance.chooseMetropolis (BoardState.instance.vertexPosition [location], myColor, getMetropolis(), isServer);        
+    public void CmdIntrigue(Vector3 location)
+    {
+        ProgressCards.instance.intrigue(BoardState.instance.vertexPosition[location], this.myColor, isServer);
     }
 
     [Command]
-    public void CmdRemoveRobber () {
-		MoveManager.instance.removeRobber (isServer);        
+    public void CmdEngineer(Vector3 location)
+    {
+        ProgressCards.instance.engineer(BoardState.instance.vertexPosition[location], this.cityWallsLeft, this.myColor, isServer);
     }
 
     [Command]
-    public void CmdRemovePirate () {
-		MoveManager.instance.removePirate (isServer);        
+    public void CmdSmith(Vector3 location)
+    {
+        ProgressCards.instance.smith(this.devFlipChart, BoardState.instance.vertexPosition[location], this.pieces, this.myColor, isServer);
     }
+
+    [Command]
+    public void CmdMedicine(Vector3 location)
+    {
+        Debug.Log("cmdmedicine " + location);
+        Debug.Log("cmdmedicine " + BoardState.instance.vertexPosition[location]);
+        ProgressCards.instance.medicine(BoardState.instance.vertexPosition[location], this.resources, this.pieces, this.myColor, isServer);
+    }
+
+    [Command]
+    public void CmdInventor(Vector3 location)
+    {
+        ProgressCards.instance.inventor(h1, BoardState.instance.hexPosition[location], isServer);
+    }
+
+    [Command]
+    public void CmdMovePirate(Vector3 location)
+    {
+        MoveManager.instance.movePirate(BoardState.instance.hexPosition[location], isServer);
+    }
+
+    [Command]
+    public void CmdDestroyCity(Vector3 location)
+    {
+        MoveManager.instance.destroyCity(BoardState.instance.vertexPosition[location], myColor, isServer);
+    }
+
+    [Command]
+    public void CmdChooseMetropolis(Vector3 location)
+    {
+        MoveManager.instance.chooseMetropolis(BoardState.instance.vertexPosition[location], myColor, getMetropolis(), isServer);
+    }
+
+    [Command]
+    public void CmdRemoveRobber()
+    {
+        MoveManager.instance.removeRobber(isServer);
+    }
+
+    [Command]
+    public void CmdRemovePirate()
+    {
+        MoveManager.instance.removePirate(isServer);
+    }
+
+    [Command]
+    public void CmdPlaceMerchant(Vector3 location)
+    {
+        MoveManager.instance.placeMerchant(BoardState.instance.hexPosition[location], isServer);
+    }
+
+    [Command]//call from Player on client to spawn a trade on all machines 
+    public void CmdSpawnTrade(int[] resourcesOffered, int[] resourcesDemanded, int[] commoditiesOffered, int[] commoditiesDemanded, int goldOffered, int goldDemanded)
+    {
+        List<Player> players = GameManager.instance.getPlayers();
+        GameObject trade = (GameObject)GameObject.Instantiate(tradePrefab);
+        trade.GetComponent<Trades>().init(resourcesOffered, resourcesDemanded, commoditiesOffered, commoditiesDemanded, goldOffered, goldDemanded, GameManager.instance.getPlayers().Count, this);
+        NetworkServer.Spawn(trade);
+        trade.GetComponent<Trades>().RpcSetPlayer(this.iD);
+    }
+    
+    void changeVPToAlmostWin(int player)
+    {
+        CmdChangeVPToAlmostWin(player);
+    }
+
+    [Command]
+    void CmdChangeVPToAlmostWin(int player)
+    {
+        RpcChangeVPToAlmostWin(player);
+    }
+
+    [ClientRpc]
+    void RpcChangeVPToAlmostWin(int player)
+    {
+        GameManager.instance.getPlayer(player).victoryPoints = 12;
+    }
+
+    [Command]
+    public void CmdDeclineTrade()
+    {
+        int result = trade.DecDeclined();
+        if (result <= 0)
+        {
+            CmdDestroyObject(trade.netId);
+        }
+    }
+
+    public bool validateTrade()
+    {
+        for (int i = 0; i<trade.getResourcesWanted().Count; i++)
+        {
+            if (resources[i]<trade.getResourcesWanted()[i])
+            {
+                Debug.Log("Failure");
+                return false;
+            }
+        }
+        for (int j = 0; j<trade.getCommoditiesWanted().Count; j++)
+        {
+            if (commodities[j] < trade.getCommoditiesWanted()[j])
+            {
+                Debug.Log("Failure");
+                return false;
+            }
+        }
+        acceptTrade(trade);
+        return true;
+    }
+
+    public void acceptTrade(Trades trade)
+    {
+        Player offered = trade.getPlayerOffering();
+        for (int i = 0; i < trade.getResourcesOffered().Count; i++)
+        {
+            offered.changeResource((Enums.ResourceType)i, -trade.getResourcesOffered()[i], offered.iD);
+            offered.changeResource((Enums.ResourceType)i, trade.getResourcesWanted()[i], offered.iD);
+            this.changeResource((Enums.ResourceType)i, trade.getResourcesOffered()[i], this.iD);
+            this.changeResource((Enums.ResourceType)i, -trade.getResourcesWanted()[i], this.iD);
+        }
+        for (int i = 0; i < trade.getCommoditiesOffered().Count; i++)
+        {
+            offered.changeCommodity((Enums.CommodityType)i, -trade.getCommoditiesOffered()[i], offered.iD);
+            offered.changeCommodity((Enums.CommodityType)i, trade.getCommoditiesWanted()[i], offered.iD);
+            this.changeCommodity((Enums.CommodityType)i, trade.getCommoditiesOffered()[i], this.iD);
+            this.changeCommodity((Enums.CommodityType)i, -trade.getCommoditiesWanted()[i], this.iD);
+        }
+        offered.changeGoldCount(trade.getGoldWanted() - trade.getGoldOffered(), offered.iD);
+        this.changeGoldCount(trade.getGoldOffered() - trade.getGoldWanted(), this.iD);
+        Debug.Log(trade.netId);
+        CmdDestroyObject(trade.netId);//destroy the trade 
+    }
+
+    public bool canTrade(Enums.ResourceType resource, int toTrade)
+    {
+        if (this.resources[(int) resource] >= toTrade)
+        {
+            return true;
+        }
+        return false;
+    }
+
+    public bool canTrade(Enums.CommodityType commodity, int toTrade)
+    {
+        if (this.commodities[(int)commodity] >= toTrade)
+        {
+            return true;
+        }
+        return false;
+    }
+
+    void yearsOfPlenty()
+    {
+        
+        for(int j = 0; j < 5; j++)
+        {
+            GameManager.instance.getPersonalPlayer().changeResource((ResourceType)j, 10, getID());
+        }
+
+        for (int j = 0; j < 3; j++)
+        {
+            GameManager.instance.getPersonalPlayer().changeCommodity((CommodityType)j, 10, getID());
+        }
+
+        GameManager.instance.getPersonalPlayer().changeGoldCount(10, getID());
+        GameManager.instance.getPersonalPlayer().changeFishCount(10, getID());
+
+    }
+
+    void progressCardSavedGame()
+    {
+
+        GameManager.instance.getCurrentPlayer().emptyProgressCards(0);
+
+        if(this.progressCardSet == 0)
+        {
+            GameManager.instance.getCurrentPlayer().addProgressCard(ProgressCardName.ALCHEMIST, 0);
+            GameManager.instance.getCurrentPlayer().addProgressCard(ProgressCardName.CRANE, 0);
+            GameManager.instance.getCurrentPlayer().addProgressCard(ProgressCardName.ENGINEER, 0);
+            GameManager.instance.getCurrentPlayer().addProgressCard(ProgressCardName.INVENTOR, 0);
+        }
+        else if(this.progressCardSet == 1)
+        {
+            GameManager.instance.getCurrentPlayer().addProgressCard(ProgressCardName.IRRIGATION, 0);
+            GameManager.instance.getCurrentPlayer().addProgressCard(ProgressCardName.MEDICINE, 0);
+            GameManager.instance.getCurrentPlayer().addProgressCard(ProgressCardName.MINING, 0);
+            GameManager.instance.getCurrentPlayer().addProgressCard(ProgressCardName.SMITH, 0);
+        }
+        else if(this.progressCardSet == 2)
+        {
+            GameManager.instance.getCurrentPlayer().addProgressCard(ProgressCardName.PRINTER, 0);
+            GameManager.instance.getCurrentPlayer().addProgressCard(ProgressCardName.ROADBUILDING, 0);
+            GameManager.instance.getCurrentPlayer().addProgressCard(ProgressCardName.BISHOP, 0);
+            GameManager.instance.getCurrentPlayer().addProgressCard(ProgressCardName.TRADEMONOPOLY, 0);
+        }
+        else if(this.progressCardSet == 3)
+        {
+            GameManager.instance.getCurrentPlayer().addProgressCard(ProgressCardName.DIPLOMAT, 0);
+            GameManager.instance.getCurrentPlayer().addProgressCard(ProgressCardName.INTRIGUE, 0);
+            GameManager.instance.getCurrentPlayer().addProgressCard(ProgressCardName.SABOTEUR, 0);
+            GameManager.instance.getCurrentPlayer().addProgressCard(ProgressCardName.SPY, 0);
+            GameManager.instance.getCurrentPlayer().addProgressCard(ProgressCardName.DIPLOMAT, 1);
+        }
+        else if(this.progressCardSet == 4)
+        {
+            GameManager.instance.getCurrentPlayer().addProgressCard(ProgressCardName.WARLORD, 0);
+            GameManager.instance.getCurrentPlayer().addProgressCard(ProgressCardName.MERCHANT, 0);
+            GameManager.instance.getCurrentPlayer().addProgressCard(ProgressCardName.MERCHANTFLEET, 0);
+            GameManager.instance.getCurrentPlayer().addProgressCard(ProgressCardName.RESOURCEMONOPOLY, 0);
+        }
+
+        GameManager.instance.getCurrentPlayer().changeProgressCardSet(0);
+
+
+    }
+
+    void devChartSavedGame()
+    {
+        if(getID() == 0)
+        {
+            GameManager.instance.getPersonalPlayer().upgradeDevChart(DevChartType.POLITICS, getID());
+            GameManager.instance.getPersonalPlayer().upgradeDevChart(DevChartType.POLITICS, getID());
+            GameManager.instance.getPersonalPlayer().upgradeDevChart(DevChartType.POLITICS, getID());
+        }
+
+        if(getID() == 1)
+        {
+            GameManager.instance.getPersonalPlayer().upgradeDevChart(DevChartType.SCIENCE, getID());
+            GameManager.instance.getPersonalPlayer().upgradeDevChart(DevChartType.SCIENCE, getID());
+            GameManager.instance.getPersonalPlayer().upgradeDevChart(DevChartType.SCIENCE, getID());
+            GameManager.instance.getPersonalPlayer().makeAqueduct(getID());
+        }
+
+        if(getID() == 2)
+        {
+            GameManager.instance.getPersonalPlayer().upgradeDevChart(DevChartType.TRADE, getID());
+            GameManager.instance.getPersonalPlayer().upgradeDevChart(DevChartType.TRADE, getID());
+            GameManager.instance.getPersonalPlayer().upgradeDevChart(DevChartType.TRADE, getID());
+            for (int i = 0; i < 3; i++)
+            {
+                GameManager.instance.getPersonalPlayer().updateCommodityRatio((CommodityType)i, 2, getID());
+            }
+        }
+    }
+
+    void knightSavedGame()
+    {
+        if(this.iD == 0)
+        {
+        }
+        else if(this.iD == 1)
+        {
+
+        }
+        else if(this.iD == 2)
+        {
+
+        }
+    }
+
+    void barbarianSavedGame()
+    {
+        moveBarbarianToPosition(6);
+    }
+
+    void winningSavedGame()
+    {
+        GameManager.instance.getPersonalPlayer().changeVPToAlmostWin(getID());
+
+        if (getID() == 0)
+        {
+            GameManager.instance.getCurrentPlayer().hasBoot(true, getID());
+        } else {
+            GameManager.instance.getCurrentPlayer().hasBoot(false, getID());
+        }
+    }
+
+    public void changeProgressCardSet(int player)
+    {
+        CmdChangeProgressCardSet(player);
+    }
+
+    [Command]
+    public void CmdChangeProgressCardSet(int player)
+    {
+        RpcChangeProgressCardSet(player);
+    }
+
+    [ClientRpc]
+    public void RpcChangeProgressCardSet(int player)
+    {
+        GameManager.instance.getPlayer(player).progressCardSet++;
+    }
+
+    [Command]
+    public void CmdDestroyObject(NetworkInstanceId netId)
+    {
+        GameObject theObject = NetworkServer.FindLocalObject(netId);
+        NetworkServer.Destroy(theObject);
+    }
+
 }

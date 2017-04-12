@@ -168,7 +168,20 @@ public class ProgressCards : NetworkBehaviour {
         Edge targetPiece = BoardState.instance.edgePosition [target];
 
 		GameObject spawnedRoad = Instantiate<GameObject>(PrefabHolder.instance.road, target, Quaternion.identity);
-		spawnedRoad.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
+        fixPieceRotationAndPosition(spawnedRoad);
+        if (targetPiece.isRightPointing)
+        {
+            spawnedRoad.transform.Rotate(0f, 0f, -29f);
+        }
+        else if (targetPiece.isLeftPointing)
+        {
+            spawnedRoad.transform.Rotate(0f, 0f, 31f);
+        }
+        else if (targetPiece.isForwardPointing)
+        {
+            spawnedRoad.transform.Rotate(0f, 0f, 90f);
+        }
+        spawnedRoad.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
 		Destroy (BoardState.instance.spawnedObjects [source]);
 
 		BoardState.instance.spawnedObjects.Add(target, spawnedRoad);
@@ -181,14 +194,47 @@ public class ProgressCards : NetworkBehaviour {
         targetPiece.setOccupyingPiece(movedRoad);
     }
 
+	// Move a knight from source to target
+	public bool diplomatRemove(Edge target, Enums.Color color, bool server)
+    {
+
+		if (!pa.canDiplomatRemove (target, color))
+        {
+			return false;
+		}
+		assignAuthority(server);
+        RpcDiplomatRemove(target.transform.position, color);
+
+		Player current = GameManager.instance.getCurrentPlayer();
+		GameManager.instance.getPersonalPlayer().removeProgressCard(ProgressCardName.DIPLOMAT, current.getID());
+
+		removeAuthority(server);
+		return true;
+	}
+
+    [ClientRpc]
+	void RpcDiplomatRemove(Vector3 target, Enums.Color color)
+    {
+
+        Edge targetPiece = BoardState.instance.edgePosition [target];
+
+		Destroy (BoardState.instance.spawnedObjects [target]);
+		BoardState.instance.spawnedObjects.Remove (target);
+
+        Road road = (Road)targetPiece.getOccupyingPiece();
+
+        targetPiece.setOccupyingPiece(null);
+		road.takeOffBoard();
+    }
+
 	// Displace a knight at target with knight at source
 	public bool intrigue(Vertex target, Enums.Color color, bool server)
     {
 		// Check if the knight can displace
-		if (!pa.canIntrigueKnight (target, color))
-        {
-			return false;
-		}
+		//if (!pa.canIntrigueKnight (target, color))
+        //{
+			//return false;
+		//}
 
 		Knight kTarget = (Knight)target.getOccupyingPiece ();
 		int targetLevel = kTarget.getLevel ();
@@ -334,6 +380,11 @@ public class ProgressCards : NetworkBehaviour {
 		}
 
 		GameManager.instance.getPersonalPlayer().removeProgressCard(ProgressCardName.CRANE, current.getID());
+		foreach (Player p in GameManager.instance.getPlayers())
+		{
+			GameManager.instance.getPersonalPlayer().setSpecial(Special.NONE, p.getID());
+			GameManager.instance.getPersonalPlayer().setMoveType(MoveType.NONE, p.getID());
+		}
 
 		return true;
 	}
@@ -362,12 +413,52 @@ public class ProgressCards : NetworkBehaviour {
 	[ClientRpc]
 	void RpcEngineer(Vector3 location, Enums.Color color)
     {
-		Vertex source = BoardState.instance.vertexPosition[location];
-		GameObject spawnedCityWall = Instantiate<GameObject>(PrefabHolder.instance.cityWall, location, Quaternion.identity);
-        fixPieceRotationAndPosition(spawnedCityWall);
-        spawnedCityWall.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
-		BoardState.instance.spawnedObjects.Add(location, spawnedCityWall);
+		// Remove the current settlement
+        Vertex source = BoardState.instance.vertexPosition[location];
+        City city = (City)source.getOccupyingPiece();
+
+		Destroy (BoardState.instance.spawnedObjects [location]);
+		BoardState.instance.spawnedObjects.Remove(location);
+
+		GameObject spawnedCityWall;
+		if (!city.isMetropolis()) { 
+			spawnedCityWall = Instantiate<GameObject>(PrefabHolder.instance.cityWithCityWall, location, Quaternion.identity);
+        	fixPieceRotationAndPosition(spawnedCityWall);
+
+			spawnedCityWall.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
+			foreach(MeshRenderer meshRend in spawnedCityWall.GetComponentsInChildren<MeshRenderer>())
+			{
+				meshRend.material.SetColor("_Color", translateColor(color));
+			}
+		} else {
+			spawnedCityWall = Instantiate<GameObject>(PrefabHolder.instance.metropolisWithCityWall, location, Quaternion.identity);
+        	fixPieceRotationAndPosition(spawnedCityWall);
+
+			if (Object.ReferenceEquals(GameManager.instance.getMetropolisAt(DevChartType.TRADE), source)) {
+				spawnedCityWall.GetComponent<MeshRenderer>().material.SetColor("_Color", UnityEngine.Color.yellow);
+				foreach(MeshRenderer meshRend in spawnedCityWall.GetComponentsInChildren<MeshRenderer>())
+				{
+					meshRend.material.SetColor("_Color", UnityEngine.Color.yellow);
+				}
+			} else if (Object.ReferenceEquals(GameManager.instance.getMetropolisAt(DevChartType.POLITICS), source)) {
+				spawnedCityWall.GetComponent<MeshRenderer>().material.SetColor("_Color", UnityEngine.Color.blue);
+				foreach(MeshRenderer meshRend in spawnedCityWall.GetComponentsInChildren<MeshRenderer>())
+				{
+					meshRend.material.SetColor("_Color", UnityEngine.Color.blue);
+				}
+			} else {
+				spawnedCityWall.GetComponent<MeshRenderer>().material.SetColor("_Color", UnityEngine.Color.green);
+				foreach(MeshRenderer meshRend in spawnedCityWall.GetComponentsInChildren<MeshRenderer>())
+				{
+					meshRend.material.SetColor("_Color", UnityEngine.Color.green);
+				}
+			}
+		}
+
+        BoardState.instance.spawnedObjects.Add(location, spawnedCityWall);
+
 		source.addWall();
+
     }
 
 	public bool inventor(Hex source, Hex target, bool server)
@@ -404,7 +495,7 @@ public class ProgressCards : NetworkBehaviour {
 			if (h.getHexType() != HexType.FIELD) continue;
 			foreach (Vertex v in h.getVertices()) {
 				GamePiece piece = v.getOccupyingPiece();
-				if(Object.ReferenceEquals(piece, null)) {
+				if(!Object.ReferenceEquals(piece, null)) {
 					if (piece.getColor() == color) {
 						Player current = GameManager.instance.getCurrentPlayer();
 						GameManager.instance.getPersonalPlayer().changeResource(ResourceType.GRAIN, 2, current.getID());
@@ -423,7 +514,7 @@ public class ProgressCards : NetworkBehaviour {
 			if (h.getHexType() != HexType.MOUNTAIN) continue;
 			foreach (Vertex v in h.getVertices()) {
 				GamePiece piece = v.getOccupyingPiece();
-				if(Object.ReferenceEquals(piece, null)) {
+				if(!Object.ReferenceEquals(piece, null)) {
 					if (piece.getColor() == color) {
 						Player current = GameManager.instance.getCurrentPlayer();
 						GameManager.instance.getPersonalPlayer().changeResource(ResourceType.ORE, 2, current.getID());
@@ -563,7 +654,18 @@ public class ProgressCards : NetworkBehaviour {
 		GameObject spawnedRoad = Instantiate<GameObject>(PrefabHolder.instance.road, location, Quaternion.identity);
 
         fixPieceRotationAndPosition(spawnedRoad);
-
+        if (edge.isRightPointing)
+        {
+            spawnedRoad.transform.Rotate(0f, 0f, -29f);
+        }
+        else if (edge.isLeftPointing)
+        {
+            spawnedRoad.transform.Rotate(0f, 0f, 31f);
+        }
+        else if (edge.isForwardPointing)
+        {
+            spawnedRoad.transform.Rotate(0f, 0f, 90f);
+        }
         spawnedRoad.GetComponent<MeshRenderer>().material.SetColor("_Color", translateColor(color));
 		BoardState.instance.spawnedObjects.Add(location, spawnedRoad);
 
@@ -579,6 +681,96 @@ public class ProgressCards : NetworkBehaviour {
 		}
 
         //Update longest route
+    }
+
+    public void WarLord()
+    {
+        Player current = GameManager.instance.getCurrentPlayer();
+        current.activateKnights(current.getID());
+
+        GameManager.instance.getPersonalPlayer().removeProgressCard(ProgressCardName.WARLORD, current.getID());
+    }
+
+	public void saboteur() {
+
+		Player current = GameManager.instance.getCurrentPlayer();
+		GameManager.instance.getPersonalPlayer().removeProgressCard(ProgressCardName.SABOTEUR, current.getID());
+
+		GameManager.instance.getPersonalPlayer().setOldTurn(GameManager.instance.getPlayerTurn());
+
+		saboteurDiscard(0);	
+	}
+
+	public void saboteurShortcut(int start) {
+		saboteurDiscard(start);
+	}
+
+	private void saboteurDiscard(int start) {
+
+		List<Player> players = GameManager.instance.getPlayers();
+
+        for (int i = start; i < players.Count; i++)
+        {
+            Player p = players[i];
+            if (p.getVictoryCounts() > GameManager.instance.getPlayer(GameManager.instance.getPersonalPlayer().getOldTurn()).getVictoryCounts() ){
+
+                foreach (Player p2 in players) {
+                    GameManager.instance.getPersonalPlayer().setMoveType(MoveType.SPECIAL, p2.getID());
+                }
+
+                GameManager.instance.getPersonalPlayer().setSpecial(Special.DISCARD_RESOURCE_SABOTEUR, p.getID());
+                foreach (Player p2 in players) {
+                    if(!Object.ReferenceEquals(p, p2)) GameManager.instance.getPersonalPlayer().setSpecial(Special.NONE, p2.getID());
+                }
+                GameManager.instance.getPersonalPlayer().setSpecialTurn(p.getID());
+                return;
+            }
+		}
+		
+		foreach(Player p in GameManager.instance.getPlayers()) {
+			GameManager.instance.getPersonalPlayer().setMoveType(MoveType.NONE, p.getID());
+			GameManager.instance.getPersonalPlayer().setSpecial(Special.NONE, p.getID());
+		}
+		GameManager.instance.getPersonalPlayer().revertTurn();
+	}
+
+	public bool smith(int[] devChart, Vertex v, List<GamePiece> pieces,
+			Enums.Color color, bool server)
+    {
+
+		// Check if the knight can be upgraded
+		if (!pa.canSmith (devChart, v, pieces, color))
+        {
+			return false;
+		}
+
+		Knight k = (Knight)v.getOccupyingPiece ();
+		int level = k.getLevel ();
+
+		assignAuthority(server);
+        RpcSmith(devChart, v.transform.position, level, color);
+
+		Player current = GameManager.instance.getCurrentPlayer();
+		GameManager.instance.getPersonalPlayer().removeProgressCard(ProgressCardName.SMITH, current.getID());
+
+		removeAuthority(server);
+		return true;
+	}
+
+    [ClientRpc]
+	void RpcSmith(int[] devChart, Vector3 v, int level, Enums.Color color)
+    {
+		// Remove the current settlement
+        Vertex source = BoardState.instance.vertexPosition[v];
+        Knight knight = (Knight)source.getOccupyingPiece();
+		Destroy (BoardState.instance.spawnedObjects [v]);
+		BoardState.instance.spawnedObjects.Remove(v);
+
+		GameObject newKnight = MoveManager.instance.getKnightFromLevel (level + 1, v, color);
+
+		BoardState.instance.spawnedObjects.Add(v, newKnight);
+
+		knight.upgrade ();
     }
 
 }

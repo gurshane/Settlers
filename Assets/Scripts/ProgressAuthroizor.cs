@@ -128,6 +128,33 @@ public class ProgressAuthroizor {
         return true;
     }
 
+    public bool canDiplomatRemove(Edge target, Enums.Color color)
+    {
+        GamePiece targetPiece = target.getOccupyingPiece();
+
+        // Make sure there is a ship on the source edge
+        if (Object.ReferenceEquals(targetPiece, null))
+        {
+            return false;
+        }
+        if (targetPiece.getPieceType() != Enums.PieceType.ROAD)
+        {
+            return false;
+        }
+        if (targetPiece.getColor() == color)
+        {
+            return false;
+        }
+
+        Road road = (Road)targetPiece;
+        if (road.getIsShip())
+        {
+            return false;
+        }
+
+        return true;
+    }
+
 	 // Check if a knight can displace another knight
     public bool canIntrigueKnight (Vertex target, Enums.Color color)
     {
@@ -376,6 +403,71 @@ public class ProgressAuthroizor {
             return false;
         }
 
+        return true;
+    }
+
+    public bool canSmith(int[] devChart, Vertex v, List<GamePiece> pieces, Enums.Color color)
+    {
+
+        // Make sure there is a knight that can be upgraded at the vertex
+        GamePiece sourcePiece = v.getOccupyingPiece();
+        if (Object.ReferenceEquals(sourcePiece, null))
+        {
+            return false;
+        }
+        if (sourcePiece.getColor() != color) {
+            return false;
+        }
+        if (sourcePiece.getPieceType() != Enums.PieceType.KNIGHT)
+        {
+            return false;
+        }
+
+        Knight sourceKnight = (Knight)sourcePiece;
+        int upgradeLevel = sourceKnight.getLevel() + 1;
+        if (sourceKnight.wasUpgraded())
+        {
+            return false;
+        }
+
+        // Make sure there are enough knights of that level available
+        int total = 0;
+        foreach (GamePiece p in pieces)
+        {
+            if (p.getPieceType() != Enums.PieceType.KNIGHT)
+            {
+                continue;
+            }
+            else if (!p.isOnBoard())
+            {
+                continue;
+            }
+
+            Knight k = (Knight)p;
+            if (k.getLevel() == upgradeLevel)
+            {
+                total++;
+                if (total == 2)
+                {
+                    return false;
+                }
+            }
+        }
+
+
+        // Check the politics level for high-level knights
+        int level = devChart[(int)Enums.DevChartType.POLITICS];
+        if (level < 3)
+        {
+            if (sourceKnight.getLevel() >= 2)
+            {
+                return false;
+            }
+        }
+        else if (sourceKnight.getLevel() >= 3)
+        {
+            return false;
+        }
         return true;
     }
 }

@@ -1,4 +1,5 @@
-﻿using System.Collections;using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using Enums;
@@ -10,10 +11,14 @@ using Enums;
 public class UIMoveManager : MonoBehaviour {
 
 	private Player _CurrentPlayer;
+	private Player _SpiedPlayer;
 	private UIManager _UIManager;
 
 	[SerializeField]
 	private UIGameStateBanner _Banner;
+
+	[SerializeField]
+	private Transform _ResetButton;
 
 	#region Panel Toggle Booleans
 
@@ -21,8 +26,13 @@ public class UIMoveManager : MonoBehaviour {
 	private bool knightToggle;
 	private bool fishToggle;
 	private bool progressCardToggle;
+	private bool bankTradeToggle;
+	private bool playerTradeToggle;
 
 	#endregion
+
+	[SerializeField]
+	private Transform _TradePanel;
 
 	/// <summary>
 	/// The progress cards panel.
@@ -51,7 +61,9 @@ public class UIMoveManager : MonoBehaviour {
 
 	[SerializeField]
 	private Transform _FishPanel;
+	#endregion
 
+	#region Pop Up Regions
 	/// <summary>
 	/// Specific panels for the fish button chosen
 	/// </summary>
@@ -86,6 +98,24 @@ public class UIMoveManager : MonoBehaviour {
 
 	[SerializeField]
 	private Transform _CraneDevPanel;
+
+	[SerializeField]
+	private Transform _ResourceMonopolyPanel;
+
+	[SerializeField]
+	private Transform _TradeMonopolyPanel;
+
+	[SerializeField]
+	private Transform _SaboteurPanel;
+
+	[SerializeField]
+	private Transform _SpyPlayerPanel;
+
+	[SerializeField]
+	private Transform _SpyProgressCardsPanel;
+
+	[SerializeField]
+	private Transform _MerchantFleetPanel;
 	#endregion
 
 	// -------------------------
@@ -93,10 +123,14 @@ public class UIMoveManager : MonoBehaviour {
 	void Start () {
 		_UIManager = GetComponent<UIManager> ();
 
+	
 		_InitialPhasePanel.gameObject.SetActive (true);
 
+		_TradePanel.gameObject.SetActive (false);
 		_ResourceDiscardPanel.gameObject.SetActive (false);
 		originalPlayerHandSum = 0;
+
+		_ResetButton.gameObject.SetActive (false);
 
 		_KnightPanel.gameObject.SetActive (false);
 		_BuildingPanel.gameObject.SetActive (false);
@@ -113,9 +147,20 @@ public class UIMoveManager : MonoBehaviour {
 		_UpgradeDevChartPanel.gameObject.SetActive (false);
 		_AlchemistDicePanel.gameObject.SetActive (false);
 		_CraneDevPanel.gameObject.SetActive (false);
+		_SaboteurPanel.gameObject.SetActive (false);
+		_SpyPlayerPanel.gameObject.SetActive (false);
+		_SpyProgressCardsPanel.gameObject.SetActive (false);
+		_MerchantFleetPanel.gameObject.SetActive (false);
+
+		_ResourceMonopolyPanel.gameObject.SetActive (false);
+		_TradeMonopolyPanel.gameObject.SetActive (false);
 
 		buildingToggle = false;
 		knightToggle = false;
+		fishToggle = false;
+		progressCardToggle = false;
+		bankTradeToggle = false;
+		playerTradeToggle = false;
 	}
 		
 
@@ -125,6 +170,39 @@ public class UIMoveManager : MonoBehaviour {
 	public void uiEndTurn()
 	{
 		_CurrentPlayer.endTurn ();
+	}
+
+	private void revealResetButton()
+	{
+		bool playerVCheck = !GameObject.ReferenceEquals (_CurrentPlayer.v1, null);
+		bool playerECheck = !GameObject.ReferenceEquals (_CurrentPlayer.e1, null);
+		bool playerHCheck = !GameObject.ReferenceEquals (_CurrentPlayer.h1, null);
+
+		// If any one of the player attributes is null, reveal the reset button
+		if (playerVCheck || playerECheck || playerHCheck) 
+		{
+			_ResetButton.gameObject.SetActive (true);
+		}
+
+		else
+			_ResetButton.gameObject.SetActive (false);
+	}
+
+	/// <summary>
+	/// Method called when reset Button is clicked
+	/// </summary>
+	public void resetButtonOnClick()
+	{
+		_CurrentPlayer.ResetV1(_CurrentPlayer.getID());
+		_CurrentPlayer.ResetE1 (_CurrentPlayer.getID ());
+		_CurrentPlayer.ResetH1 (_CurrentPlayer.getID ());
+
+		foreach (Player p in GameManager.instance.players)
+		{
+			_CurrentPlayer.setMoveType (MoveType.NONE, p.getID ());
+			_CurrentPlayer.setSpecial (Special.NONE, p.getID ());
+		}
+
 	}
 
 	/// <summary>
@@ -183,15 +261,6 @@ public class UIMoveManager : MonoBehaviour {
 			// Update Move ENUM Here
 	}
 
-	/*
-	/// <summary>
-	/// Calls necessary methods to place player's ship
-	/// </summary>
-	public void uiPlaceInitialCity()
-	{
-		_Banner.setHeaderText ("SECOND TURN");
-		_Banner.setSubText ("Place Initial City");
-	}*/
 
 	#endregion
 
@@ -310,7 +379,7 @@ public class UIMoveManager : MonoBehaviour {
 	public void revealResourceDiscardPanel()
 	{
 
-		if (_CurrentPlayer.getSpecial () == Special.DISCARD_RESOURCE_SEVEN && GameManager.instance.getGamePhase() == GamePhase.PHASE_TWO) 
+		if (_CurrentPlayer.getSpecial () == Special.DISCARD_RESOURCE_SEVEN && GameManager.instance.getGamePhase() == GamePhase.PHASE_ONE) 
 		{
 			_ResourceDiscardPanel.gameObject.SetActive (true);
 
@@ -376,9 +445,9 @@ public class UIMoveManager : MonoBehaviour {
 	/// Reveals the choose progress card panel at the proper player state
 	/// and hides otherwise
 	/// </summary>
-	public void revealChooseProgressCardPanel()
+	public void revealChooseProgressCardPanelBarbarian()
 	{
-		if (_CurrentPlayer.getSpecial () == Special.CHOOSE_PROGRESS_PILE && GameManager.instance.getGamePhase() == GamePhase.PHASE_TWO) 
+		if (_CurrentPlayer.getSpecial () == Special.CHOOSE_PROGRESS_PILE && GameManager.instance.getGamePhase() == GamePhase.PHASE_ONE) 
 		{
 			_ChooseProgressCardPanel.gameObject.SetActive (true);
 		} 
@@ -414,7 +483,7 @@ public class UIMoveManager : MonoBehaviour {
 		_CurrentPlayer.CmdUpgradeDevelopmentChart((DevChartType) p_ChartType);
 
 		// Set movetype to none afterwards
-		moveTypeChange(MoveType.NONE);
+		//moveTypeChange(MoveType.NONE);
 		//_CurrentPlayer.setMoveType (MoveType.NONE, _CurrentPlayer.getID ());
 
 	}
@@ -443,7 +512,7 @@ public class UIMoveManager : MonoBehaviour {
 	#endregion
 
 
-	#region Progress Card Methods
+	#region Aqueduct Methods
 	public void revealAqueductPanel()
 	{
 		if (_CurrentPlayer.getSpecial () == Special.AQUEDUCT) 
@@ -471,8 +540,16 @@ public class UIMoveManager : MonoBehaviour {
 
 	}
 
+	#endregion
+
+
+	#region Progress Cards Methods
+
 	public void revealProgressCardsPanel()
 	{
+		if (GameManager.instance.getGamePhase () == GamePhase.SETUP_ONE || GameManager.instance.getGamePhase () == GamePhase.SETUP_TWO)
+			return;
+		
 		progressCardToggle = !progressCardToggle;
 		_ProgressCardsPanel.gameObject.SetActive (progressCardToggle);
 
@@ -492,139 +569,228 @@ public class UIMoveManager : MonoBehaviour {
 		// Loop through buttons for as many times as there are progress Cards in the player's hand
 		foreach (Transform child in _ProgressCardsPanel) 
 		{
-			// If index exceeds number of progress cards that player may have, return immediately
-			if (index > _CurrentPlayer.getProgressCards ().Count) 
+			// If index exceeds number of progress cards that player may have, 
+			// or if the number of progress cards is 0, return immediately
+			if (index >= _CurrentPlayer.getProgressCards ().Count || _CurrentPlayer.getProgressCards ().Count == 0) 
 			{
 				return;
 			}
 
+			child.gameObject.SetActive (true);
+
 			// Get the button component of the child object
 			Button _button = child.GetComponent<Button> ();
+			UIProgressCardButton _pCardButton = child.GetComponent<UIProgressCardButton> ();
+
 			List<ProgressCardName> _PCards = _CurrentPlayer.getProgressCards ();
 
 			Enums.ProgressCardName _progressCardName = _PCards [index];
+			//Debug.Log ("ProgessCard at index: " + _progressCardName);
+
+
 
 			// Get the child of this button child
 			Transform textChild = child.GetChild (0);
+
 			// Get the text component of this child of the button
 			Text _text = textChild.GetComponent<Text> ();
 
 
-			assignButtonAndText (_progressCardName, _text, _button);
+			assignButtonAndText (_progressCardName, _text, _pCardButton);
 
 			index++;
 		}
 	}
 
 
-	private void assignButtonAndText(ProgressCardName _pCN, Text p_Text, Button p_Button)
+	private void assignButtonAndText(ProgressCardName _pCN, Text p_Text, UIProgressCardButton _pCButton)
 	{
-		// Remove all listeners at the beginning
-		p_Button.onClick.RemoveAllListeners ();
-
 		switch (_pCN) 
 		{
 		case ProgressCardName.ALCHEMIST:
 			p_Text.text = "Alchemist";
-			moveTypeChange(MoveType.PROGRESS_ALCHEMIST);
-			//_CurrentPlayer.setMoveType (MoveType.PROGRESS_ALCHEMIST, _CurrentPlayer.getID ());
+			_pCButton.pCardName = ProgressCardName.ALCHEMIST;
 			break;
 		case ProgressCardName.BISHOP:
 			p_Text.text = "Bishop";
-			moveTypeChange(MoveType.PROGRESS_BISHOP);
-			//_CurrentPlayer.setMoveType (MoveType.PROGRESS_BISHOP, _CurrentPlayer.getID ());
-			break;
-		case ProgressCardName.COMMERCIALHARBOR:
-			//TODO : Yeah, no
+			_pCButton.pCardName = ProgressCardName.BISHOP;
 			break;
 		case ProgressCardName.CONSTITUTION:
 			p_Text.text = "Constitution";
-			p_Button.onClick.AddListener (ProgressCards.instance.constitution);
+			_pCButton.pCardName = ProgressCardName.CONSTITUTION;
 			break;
 		case ProgressCardName.CRANE:
 			p_Text.text = "Crane";
-			moveTypeChange(MoveType.PROGRESS_CRANE);
-			//_CurrentPlayer.setMoveType (MoveType.PROGRESS_CRANE, _CurrentPlayer.getID ());
-			break;
-		case ProgressCardName.DESERTER:
-			//TODO: Yeah, no
+			_pCButton.pCardName = ProgressCardName.CRANE;
 			break;
 		case ProgressCardName.DIPLOMAT:
 			p_Text.text = "Diplomat";
-			moveTypeChange(MoveType.PROGRESS_DIPLOMAT);
-			//_CurrentPlayer.setMoveType (MoveType.PROGRESS_DIPLOMAT, _CurrentPlayer.getID ());
+			_pCButton.pCardName = ProgressCardName.DIPLOMAT;
 			break;
 		case ProgressCardName.ENGINEER:
 			p_Text.text = "Engineer";
-			moveTypeChange(MoveType.PROGRESS_ENGINEER);
-			//_CurrentPlayer.setMoveType (MoveType.PROGRESS_ENGINEER, _CurrentPlayer.getID ());
+			_pCButton.pCardName = ProgressCardName.ENGINEER;
 			break;
 		case ProgressCardName.INTRIGUE:
 			p_Text.text = "Intrigue";
-			moveTypeChange(MoveType.PROGRESS_INTRIGUE);
-			//_CurrentPlayer.setMoveType (MoveType.PROGRESS_INTRIGUE, _CurrentPlayer.getID ());
+			_pCButton.pCardName = ProgressCardName.INTRIGUE;
 			break;
 		case ProgressCardName.INVENTOR:
 			p_Text.text = "Inventor";
-			moveTypeChange(MoveType.PROGRESS_INVENTOR);
-			//_CurrentPlayer.setMoveType (MoveType.PROGRESS_INVENTOR, _CurrentPlayer.getID ());
+			_pCButton.pCardName = ProgressCardName.INVENTOR;
 			break;
 		case ProgressCardName.IRRIGATION:
 			p_Text.text = "Irrigation";
-			p_Button.onClick.AddListener (() => {ProgressCards.instance.irrigation(_CurrentPlayer.getColor());});
-			break;
-		case ProgressCardName.MASTERMERCHANT:
-			// TODO: Yeah, no
+			_pCButton.pCardName = ProgressCardName.IRRIGATION;
 			break;
 		case ProgressCardName.MEDICINE:
 			p_Text.text = "Medicine";
-			moveTypeChange(MoveType.PROGRESS_MEDICINE);
-			//_CurrentPlayer.setMoveType (MoveType.PROGRESS_MEDICINE, _CurrentPlayer.getID ());
+			_pCButton.pCardName = ProgressCardName.MEDICINE;
 			break;
 		case ProgressCardName.MERCHANT:
+			p_Text.text = "Merchant";
+			_pCButton.pCardName = ProgressCardName.MERCHANT;
 			//TODO: Yeah, no
 			break;
 		case ProgressCardName.MERCHANTFLEET:
+			p_Text.text = "Merchant Fleet";
+			_pCButton.pCardName = ProgressCardName.MERCHANTFLEET;
 			//TODO: Yeah, no
 			break;
 		case ProgressCardName.MINING:
 			p_Text.text = "Mining";
-			p_Button.onClick.AddListener (() => {ProgressCards.instance.mining(_CurrentPlayer.getColor());});
+			_pCButton.pCardName = ProgressCardName.MINING;
 			break;
 		case ProgressCardName.PRINTER:
 			p_Text.text = "Printer";
-			p_Button.onClick.AddListener (ProgressCards.instance.printer);
+			_pCButton.pCardName = ProgressCardName.PRINTER;
 			break;
 		case ProgressCardName.RESOURCEMONOPOLY:
+			p_Text.text = "Resource Monopoly";
+			_pCButton.pCardName = ProgressCardName.RESOURCEMONOPOLY;
 			//TODO: Yeah, no
 			break;
 		case ProgressCardName.ROADBUILDING:
+			p_Text.text = "Road Building";
+			_pCButton.pCardName = ProgressCardName.ROADBUILDING;
 			break;
 		case ProgressCardName.SABOTEUR:
+			p_Text.text = "Saboteur";
+			_pCButton.pCardName = ProgressCardName.SABOTEUR;
 			//TODO: Yeah, no
 			break;
 		case ProgressCardName.SMITH:
+			p_Text.text = "Smith";
+			_pCButton.pCardName = ProgressCardName.SMITH;
 			//TODO: Yeah, no
 			break;
 		case ProgressCardName.SPY:
+			p_Text.text = "Spy";
+			_pCButton.pCardName = ProgressCardName.SPY;
 			//TODO: Yeah, no
 			break;
 		case ProgressCardName.TRADEMONOPOLY:
+			p_Text.text = "Trade Monopoly";
+			_pCButton.pCardName = ProgressCardName.TRADEMONOPOLY;
 			//TODO: Yeah, no
 			break;
 		case ProgressCardName.WARLORD:
-			//TODO: Yeah, no
-			break;
-		case ProgressCardName.WEDDING:
+			p_Text.text = "Warlord";
+			_pCButton.pCardName = ProgressCardName.WARLORD;
 			//TODO: Yeah, no
 			break;
 		}
 
-		// Add this to make sure the button closes the panel afterwards
-		p_Button.onClick.AddListener (closeProgressCardPanel);
+	
 	}
 
 
+	/// <summary>
+	/// Calls the appropriate method according to what type of progress card the calling button is.
+	/// </summary>
+	/// <param name="p_ProgressCardIndex">P progress card index.</param>
+	public void progressCardButton(int p_ProgressCardIndex)
+	{
+		// Use the parameter to get the corresponding Button to get the Text component from
+		Button _button = _ProgressCardsPanel.GetChild(p_ProgressCardIndex).GetComponent<Button>();
+
+		// Then, get the ProgressCardButton component of this button to use its name for the switch statement
+		UIProgressCardButton _pCardButton = _ProgressCardsPanel.GetChild(p_ProgressCardIndex).GetComponent<UIProgressCardButton>();
+
+		switch (_pCardButton.pCardName) 
+		{
+		case ProgressCardName.ALCHEMIST:
+			moveTypeChange(MoveType.PROGRESS_ALCHEMIST);
+			break;
+		case ProgressCardName.BISHOP:
+			moveTypeChange(MoveType.PROGRESS_BISHOP);
+			break;
+		case ProgressCardName.CONSTITUTION:
+			ProgressCards.instance.constitution();
+			break;
+		case ProgressCardName.CRANE:
+			moveTypeChange(MoveType.PROGRESS_CRANE);
+			break;
+		case ProgressCardName.DIPLOMAT:
+			moveTypeChange(MoveType.PROGRESS_DIPLOMAT);
+			break;
+		case ProgressCardName.ENGINEER:
+			moveTypeChange(MoveType.PROGRESS_ENGINEER);
+			break;
+		case ProgressCardName.INTRIGUE:
+			moveTypeChange(MoveType.PROGRESS_INTRIGUE);
+			break;
+		case ProgressCardName.INVENTOR:
+			moveTypeChange(MoveType.PROGRESS_INVENTOR);
+			break;
+		case ProgressCardName.IRRIGATION:
+			ProgressCards.instance.irrigation(_CurrentPlayer.getColor());
+			break;
+		case ProgressCardName.MEDICINE:
+			moveTypeChange(MoveType.PROGRESS_MEDICINE);
+			break;
+		case ProgressCardName.MERCHANT:
+			moveTypeChange (MoveType.PROGRESS_MERCHANT);
+			break;
+		case ProgressCardName.MERCHANTFLEET:
+			moveTypeChange (MoveType.PROGRESS_MERCHANT_FLEET);
+			break;
+		case ProgressCardName.MINING:
+			ProgressCards.instance.mining(_CurrentPlayer.getColor());
+			break;
+		case ProgressCardName.PRINTER:
+			ProgressCards.instance.printer();
+			break;
+		case ProgressCardName.RESOURCEMONOPOLY:
+			moveTypeChange (MoveType.PROGRESS_RESOURCE_MONOPOLY);
+			break;
+		case ProgressCardName.ROADBUILDING:
+			moveTypeChange(MoveType.PROGRESS_ROAD_BUILDING_1);
+			break;
+		case ProgressCardName.SABOTEUR:
+			ProgressCards.instance.saboteur ();
+			break;
+		case ProgressCardName.SMITH:
+			moveTypeChange (MoveType.PROGRESS_SMITH_1);
+			break;
+		case ProgressCardName.SPY:
+			moveTypeChange(MoveType.PROGRESS_SPY);
+			break;
+		case ProgressCardName.TRADEMONOPOLY:
+			moveTypeChange (MoveType.PROGRESS_TRADE_MONOPOLY);
+			break;
+		case ProgressCardName.WARLORD:
+			ProgressCards.instance.WarLord ();
+			break;
+		}
+
+		Debug.Log ("Progress Card Pushed");
+
+	}
+
+	/// <summary>
+	/// Displays Alchemist Dice Roll panel at appropriate time
+	/// </summary>
 	private void revealAlchemistDiceRollPanel()
 	{
 		if (_CurrentPlayer.getMoveType () == MoveType.PROGRESS_ALCHEMIST  && GameManager.instance.getGamePhase() == GamePhase.PHASE_ONE ) 
@@ -637,6 +803,9 @@ public class UIMoveManager : MonoBehaviour {
 		}
 	}
 
+	/// <summary>
+	/// Displays crane upgradeDev panel at approrpriate time
+	/// </summary>
 	private void revealCraneUpgradeDevPanel()
 	{
 		if (_CurrentPlayer.getMoveType () == MoveType.PROGRESS_CRANE  && GameManager.instance.getGamePhase() == GamePhase.PHASE_TWO ) 
@@ -649,18 +818,378 @@ public class UIMoveManager : MonoBehaviour {
 		}
 	}
 
+	/// <summary>
+	/// Method called by crane upgradeDevChart button
+	/// </summary>
+	/// <param name="p_ChartType">P chart type.</param>
 	public void craneUpgradeDevChart(int p_ChartType)
 	{
-		//_CurrentPlayer.upgradeDevChart((DevChartType) p_ChartType, _CurrentPlayer.getID ());
-		_CurrentPlayer.CmdUpgradeDevelopmentChart((DevChartType) p_ChartType);
+		ProgressCards.instance.crane ((DevChartType)p_ChartType, _CurrentPlayer.commodities, _CurrentPlayer.pieces, _CurrentPlayer.devFlipChart, _CurrentPlayer.isServer);
+	}
 
-		// Set movetype to none afterwards
-		moveTypeChange(MoveType.NONE);
-		//_CurrentPlayer.setMoveType (MoveType.NONE, _CurrentPlayer.getID ());
+	/// <summary>
+	/// displays resource monopoly panel at appropriate time
+	/// </summary>
+	private void revealResourceMonopolyPanel()
+	{
+		if (_CurrentPlayer.getMoveType () == MoveType.PROGRESS_RESOURCE_MONOPOLY  && GameManager.instance.getGamePhase() == GamePhase.PHASE_TWO ) 
+		{
+			_ResourceMonopolyPanel.gameObject.SetActive (true);
+		} 
+
+		else {
+			_ResourceMonopolyPanel.gameObject.SetActive (false);
+		}
+	}
+
+	/// <summary>
+	/// Picks the parameter p_Resource from each of the other players
+	/// </summary>
+	/// <param name="p_Resource">P resource.</param>
+	public void monopolyPickResource(int p_Resource)
+	{
+		List<Player> _Players = GameManager.instance.players;
+
+
+		foreach (Player p in _Players) 
+		{
+			// If the player observed as same colour as _currentPlayer of this UIMoveManager, continue
+			if (p.getColor () == _CurrentPlayer.getColor ())
+				continue;
+
+			// If the observed player has none of the resource to be taken from it, continue
+			if (p.resources [p_Resource] < 2)
+				continue;
+
+			// Take the specific resource from the observed player
+			_CurrentPlayer.changeResource ((ResourceType)p_Resource, -2, p.getID());
+
+			// Add that specific resource to this instance's _currentPlayer attribute
+			_CurrentPlayer.changeResource ((ResourceType)p_Resource, 2, _CurrentPlayer.getID());
+		}
+
+		// Remove the Resource Monopoly card from the _currentPlayer attribute
+		_CurrentPlayer.removeProgressCard (ProgressCardName.RESOURCEMONOPOLY, _CurrentPlayer.getID ());
+
+		// Set moveType to none
+		moveTypeChange (MoveType.NONE);
+
+	}
+		
+
+	/// <summary>
+	/// Reveals the trade monopoly panel.
+	/// </summary>
+	private void revealTradeMonopolyPanel()
+	{
+		if (_CurrentPlayer.getMoveType () == MoveType.PROGRESS_TRADE_MONOPOLY  && GameManager.instance.getGamePhase() == GamePhase.PHASE_TWO ) 
+		{
+			_TradeMonopolyPanel.gameObject.SetActive (true);
+		} 
+
+		else {
+			_TradeMonopolyPanel.gameObject.SetActive (false);
+		}
+	}
+
+	/// <summary>
+	/// Picks the parameter p_Commodity from each of the players
+	/// </summary>
+	/// <param name="p_Commodity">P commodity.</param>
+	public void monopolyPickCommodity(int p_Commodity)
+	{
+		List<Player> _Players = GameManager.instance.players;
+
+
+		foreach (Player p in _Players) 
+		{
+			// If the player observed as same colour as _currentPlayer of this UIMoveManager, continue
+			if (p.getColor () == _CurrentPlayer.getColor ())
+				continue;
+
+			// If the observed player has none of the resource to be taken from it, continue
+			if (p.commodities [p_Commodity] < 1)
+				continue;
+
+			// Take the specific resource from the observed player
+			_CurrentPlayer.changeCommodity ((CommodityType)p_Commodity, -1, p.getID());
+
+			// Add that specific resource to this instance's _currentPlayer attribute
+			_CurrentPlayer.changeCommodity ((CommodityType)p_Commodity, 1, _CurrentPlayer.getID());
+		}
+
+		// Remove the Resource Monopoly card from the _currentPlayer attribute
+		_CurrentPlayer.removeProgressCard (ProgressCardName.TRADEMONOPOLY, _CurrentPlayer.getID ());
+
+		// Set moveType to none
+		moveTypeChange (MoveType.NONE);
 
 	}
 
 
+	private void revealSaboteurPanel()
+	{
+		if (_CurrentPlayer.getSpecial () == Special.DISCARD_RESOURCE_SABOTEUR  && GameManager.instance.getGamePhase() == GamePhase.PHASE_TWO ) 
+		{
+			_SaboteurPanel.gameObject.SetActive (true);
+
+			// If originalHandSum hasn't been modified at all, then set it to Player's current hand size
+			if (originalPlayerHandSum == 0) {
+				originalPlayerHandSum = _CurrentPlayer.getHandSize ();
+			}
+		} 
+
+		else {
+			_SaboteurPanel.gameObject.SetActive (false);
+			originalPlayerHandSum = 0;
+		}
+	}
+
+	/// <summary>
+	/// Saboteurs player's p_resource by 1
+	/// </summary>
+	/// <param name="p_Resource">P resource.</param>
+	public void saboteurPlayerResource(int p_Resource)
+	{
+		_CurrentPlayer.changeResource ((ResourceType)p_Resource, -1, _CurrentPlayer.getID());
+
+		// If handsize goes lower than half the original hand size when discard began,
+		// close panel, revert turn back to the player who rolled 7
+		if (_CurrentPlayer.getHandSize () <= (originalPlayerHandSum - originalPlayerHandSum / 2)) 
+		{
+			int temp = GameManager.instance.getPlayerTurn ();
+
+			//Debug.Log ("Revert Turn" + GameManager.instance.getPlayerTurn ());
+
+			// Goes to the next player to discard
+			ProgressCards.instance.saboteurShortcut (temp+1);
+		}
+	}
+
+	/// <summary>
+	/// Decrements player's pCommodity by 1
+	/// </summary>
+	/// <param name="p_Commodity">P commodity.</param>
+	public void saboteurPlayerCommodity(int p_Commodity)
+	{
+		_CurrentPlayer.changeCommodity ((CommodityType)p_Commodity, -1, _CurrentPlayer.getID());
+
+		// If handsize goes lower than half the original hand size when discard began,
+		// close panel, revert turn back to the player who rolled 7
+		if (_CurrentPlayer.getHandSize () <= originalPlayerHandSum - originalPlayerHandSum / 2) 
+		{
+			int temp = GameManager.instance.getPlayerTurn ();
+
+			// Goes to the next player to discard
+			ProgressCards.instance.saboteurShortcut(temp+1);
+		}
+
+	}
+
+	private void revealSpyPlayerPanel()
+	{
+		if (_CurrentPlayer.getMoveType () == MoveType.PROGRESS_SPY  && GameManager.instance.getGamePhase() == GamePhase.PHASE_TWO ) 
+		{
+			_SpyPlayerPanel.gameObject.SetActive (true);
+			updateSpyPlayerPanel ();
+		} 
+
+		else {
+			_SpyPlayerPanel.gameObject.SetActive (false);
+		}
+	}
+
+	/// <summary>
+	/// Updates the spy player panel to display the number of progress cards
+	/// </summary>
+	public void updateSpyPlayerPanel()
+	{
+		int index = 0;
+
+
+		// Loop through every button, appending the number of progress cards that player has
+		// if this player is above current players in the game, then print another message and continue
+		foreach (Transform child in _SpyPlayerPanel) 
+		{
+			Text _text = child.GetChild (0).GetComponent<Text> ();
+
+			if (index+1 > GameManager.instance.players.Count) 
+			{
+				_text.text = "Player Not Connected";
+				continue;
+			}
+
+			_text.text =  "Cards: " + GameManager.instance.players [index].progressCards.Count;
+
+			index++;
+		}
+	}
+
+	public void spyChoosePlayer(int p_ColorInt)
+	{
+		List<Player> _Players = GameManager.instance.players;
+
+		// If the requested player color is out of bounds, assume they do not exist. 
+		// return early
+		if (p_ColorInt >= _Players.Count)
+			return;
+
+		// If the index of currentPlayer's colour and the parameter match, then return
+		if ((int)_CurrentPlayer.getColor () == p_ColorInt) 
+		{
+			return;
+		}
+			
+
+		// Loop through all players to find the player with matching colour as parameter
+		foreach (Player p in _Players)
+		{
+			if ((int)p.getColor () == p_ColorInt) 
+			{
+				_SpiedPlayer = p;
+
+
+				// If the player has no cards, set spied player to null and return immediately
+				if (_SpiedPlayer.progressCards.Count == 0) 
+				{
+					_SpiedPlayer = null;
+					return;
+				}
+			}
+				
+		}
+
+
+
+		// Set the moveType to special for all players
+		foreach (Player p in _Players) 
+		{
+			_CurrentPlayer.setMoveType (MoveType.SPECIAL, p.getID ());
+
+			// If the observed player is the same as UIMoveManager's _currentPlayer attribute, continue
+			if (p.getColor () == _CurrentPlayer.getColor ())
+				continue;
+
+
+			// Set the special of all players not this instance's _currentPlayer attribute to NONE
+			_CurrentPlayer.setSpecial (Special.NONE, p.getID ());
+		}
+			
+
+
+		// Set _currentPlayer's Special to the enum necessary to reveal next panel
+		_CurrentPlayer.setSpecial (Special.TAKE_OPPONENT_PROGRESS, _CurrentPlayer.getID ());
+		_CurrentPlayer.removeProgressCard (ProgressCardName.SPY, _CurrentPlayer.getID ());
+
+
+	}
+
+	private void revealSpyProgressCardsPanel()
+	{
+		if (_CurrentPlayer.getSpecial () == Special.TAKE_OPPONENT_PROGRESS  && GameManager.instance.getGamePhase() == GamePhase.PHASE_TWO ) 
+		{
+			_SpyProgressCardsPanel.gameObject.SetActive (true);
+			spyChooseProgressCard ();
+		} 
+
+		else {
+			_SpyProgressCardsPanel.gameObject.SetActive (false);
+		}
+	}
+
+	public void spyChooseProgressCard()
+	{
+		int index = 0;
+
+		// Set all buttons to inactive to begin.
+		foreach (Transform child in _SpyProgressCardsPanel) 
+		{
+			child.gameObject.SetActive (false);
+		}
+
+		// Loop through buttons for as many times as there are progress Cards in the player's hand
+		foreach (Transform child in _SpyProgressCardsPanel) 
+		{
+			// If index exceeds number of progress cards that player may have, 
+			// or if the number of progress cards is 0, return immediately
+			if (index >= _SpiedPlayer.getProgressCards ().Count || _SpiedPlayer.getProgressCards ().Count == 0) 
+			{
+				return;
+			}
+
+			child.gameObject.SetActive (true);
+
+			// Get the button component of the child object
+			Button _button = child.GetComponent<Button> ();
+			UIProgressCardButton _pCardButton = child.GetComponent<UIProgressCardButton> ();
+
+			List<ProgressCardName> _PCards = _SpiedPlayer.getProgressCards ();
+
+			Enums.ProgressCardName _progressCardName = _PCards [index];
+			//Debug.Log ("ProgessCard at index: " + _progressCardName);
+
+
+
+			// Get the child of this button child
+			Transform textChild = child.GetChild (0);
+
+			// Get the text component of this child of the button
+			Text _text = textChild.GetComponent<Text> ();
+
+
+			assignButtonAndText (_progressCardName, _text, _pCardButton);
+
+			index++;
+		}
+	}
+
+	public void spyProgressCardButton(int p_ButtonIndex)
+	{
+		// Use the parameter to get the corresponding Button to get the Text component from
+		Button _button = _SpyProgressCardsPanel.GetChild(p_ButtonIndex).GetComponent<Button>();
+
+		// Then, get the ProgressCardButton component of this button to use its name for the switch statement
+		UIProgressCardButton _pCardButton = _SpyProgressCardsPanel.GetChild(p_ButtonIndex).GetComponent<UIProgressCardButton>();
+
+		_CurrentPlayer.addProgressCard (_pCardButton.pCardName, _CurrentPlayer.getID ());
+		_CurrentPlayer.removeProgressCard (_pCardButton.pCardName, _SpiedPlayer.getID ());
+
+		foreach (Player p in GameManager.instance.players) 
+		{
+			_CurrentPlayer.setMoveType (MoveType.NONE, p.getID ());
+
+			// Set the special of all players not this instance's _currentPlayer attribute to NONE
+			_CurrentPlayer.setSpecial (Special.NONE, p.getID ());
+		}
+
+	}
+
+	public void closeSpyProgressCardPanel()
+	{
+		_SpyProgressCardsPanel.gameObject.SetActive (false);	
+	}
+		
+
+	private void revealMerchantFleetPanel()
+	{
+		if (_CurrentPlayer.getMoveType () == MoveType.PROGRESS_MERCHANT_FLEET  && GameManager.instance.getGamePhase() == GamePhase.PHASE_TWO ) 
+		{
+			_MerchantFleetPanel.gameObject.SetActive (true);
+		} 
+
+		else {
+			_MerchantFleetPanel.gameObject.SetActive (false);
+		}
+	}
+
+	public void merchantFleetSetRatio(int p_Goods)
+	{
+		_CurrentPlayer.setFleet (p_Goods, _CurrentPlayer.getID ());
+		_CurrentPlayer.removeProgressCard (ProgressCardName.MERCHANTFLEET, _CurrentPlayer.getID ());
+
+		moveTypeChange (MoveType.NONE);
+
+	}
 
 	public void closeProgressCardPanel()
 	{
@@ -669,7 +1198,52 @@ public class UIMoveManager : MonoBehaviour {
 
 	#endregion
 
+	#region TradePanel Methods
+	public void revealTradePanel()
+	{
+		if (_CurrentPlayer.getMoveType () == Enums.MoveType.TRADE_WITH_BANK && GameManager.instance.getGamePhase() == Enums.GamePhase.PHASE_TWO) 
+		{
+			_TradePanel.gameObject.SetActive (true);
+			_TradePanel.GetComponent<UITradePanel> ().showBankSubmitButton ();
+		} 
+
+		else if (_CurrentPlayer.getMoveType () == Enums.MoveType.TRADE_WITH_PLAYER && GameManager.instance.getGamePhase() == Enums.GamePhase.PHASE_TWO) 
+		{
+			_TradePanel.gameObject.SetActive (true);
+			_TradePanel.GetComponent<UITradePanel> ().showPlayerSubmitButton ();
+		} 
+
+		else {
+			_TradePanel.gameObject.SetActive (false);
+		}
+	}
+
+	public void revealTradePanelPlayer()
+	{
+		if (_CurrentPlayer.getMoveType () == Enums.MoveType.TRADE_WITH_PLAYER && GameManager.instance.getGamePhase() == Enums.GamePhase.PHASE_TWO) 
+		{
+			_TradePanel.gameObject.SetActive (true);
+			_TradePanel.GetComponent<UITradePanel> ().showPlayerSubmitButton ();
+		} 
+
+		else {
+			_TradePanel.gameObject.SetActive (false);
+		}
+	}
+	#endregion
+
+
+
 	#region Fish Methods
+	/// <summary>
+	/// Tells the _currentPlayer attribute to give boot to the player pointed to by p_ButtonIndex
+	/// </summary>
+	/// <param name="p_ButtonIndex">P button index.</param>
+	public void addBoot(int p_ButtonIndex)
+	{
+		_CurrentPlayer.giveBoot (p_ButtonIndex);
+	}
+
 	public void fish3StealResource(int p_ColorInt)
 	{
 		// If Player doesn't exist
@@ -679,7 +1253,12 @@ public class UIMoveManager : MonoBehaviour {
 		// return early
 		if (p_ColorInt >= _Players.Count)
 			return;
-		
+
+		if (_CurrentPlayer.numFish < 3) 
+		{
+			return;
+		}
+
 		// If the index of currentPlayer's colour and the parameter do match, then return
 		if ((int)_CurrentPlayer.getColor () == p_ColorInt) 
 		{
@@ -693,6 +1272,7 @@ public class UIMoveManager : MonoBehaviour {
 				_CurrentPlayer.changeResource((ResourceType)i, -1, oppo.getID());
 				taken = true;
 				_CurrentPlayer.changeResource((ResourceType)i, 1, _CurrentPlayer.getID());
+				_CurrentPlayer.changeFishCount (-3, _CurrentPlayer.getID ());
 				break;
 			}
 		}
@@ -701,10 +1281,12 @@ public class UIMoveManager : MonoBehaviour {
 				if (oppo.getCommodities () [i] > 0) {
 					_CurrentPlayer.changeCommodity ((CommodityType)i, -1, oppo.getID ());
 					_CurrentPlayer.changeCommodity ((CommodityType)i, 1, _CurrentPlayer.getID ());
+					_CurrentPlayer.changeFishCount (-3, _CurrentPlayer.getID ());
 					break;
 				}
 			}
 		}
+
 
 		// Set moveType back to NONE
 		moveTypeChange(MoveType.NONE);
@@ -718,7 +1300,14 @@ public class UIMoveManager : MonoBehaviour {
 	/// <param name="p_Resource">P resource.</param>
 	public void fish4PickResource(int p_Resource)
 	{
+		if (_CurrentPlayer.numFish < 4) 
+		{
+			return;
+		}
+
 		_CurrentPlayer.changeResource ((ResourceType)p_Resource, 1, _CurrentPlayer.getID());
+
+		_CurrentPlayer.changeFishCount (-4, _CurrentPlayer.getID ());
 
 		moveTypeChange(MoveType.NONE);
 		//_CurrentPlayer.setMoveType (MoveType.NONE, _CurrentPlayer.getID ());
@@ -732,7 +1321,14 @@ public class UIMoveManager : MonoBehaviour {
 	/// <param name="p_ChartType">P chart type.</param>
 	public void fish7PickProgressCard(int p_ChartType)
 	{
+		if (_CurrentPlayer.numFish < 7) 
+		{
+			return;
+		}
+
 		Bank.instance.withdrawProgressCard ((DevChartType) p_ChartType, _CurrentPlayer.getID ());
+
+		_CurrentPlayer.changeFishCount (-7, _CurrentPlayer.getID ());
 
 		moveTypeChange(MoveType.NONE);
 		//_CurrentPlayer.setMoveType (MoveType.NONE, _CurrentPlayer.getID ());
@@ -787,6 +1383,10 @@ public class UIMoveManager : MonoBehaviour {
 		}
 	}
 
+	/// <summary>
+	/// Methods called by Move-Fish panel
+	/// </summary>
+	/// <param name="p_FishNumber">P fish number.</param>
 	public void uiFish(int p_FishNumber)
 	{
 		switch (p_FishNumber) 
@@ -822,7 +1422,7 @@ public class UIMoveManager : MonoBehaviour {
 	#region Choose Pirate or Robber Panel Methods
 	public void revealChoosePirateRobberPanel()
 	{
-		if (_CurrentPlayer.getSpecial () == Special.CHOOSE_PIRATE_OR_ROBBER && GameManager.instance.getGamePhase() == GamePhase.PHASE_TWO) 
+		if (_CurrentPlayer.getSpecial () == Special.CHOOSE_PIRATE_OR_ROBBER && GameManager.instance.getGamePhase() == GamePhase.PHASE_ONE) 
 		{
 			_PirateRobberChoosePanel.gameObject.SetActive (true);
 
@@ -867,6 +1467,44 @@ public class UIMoveManager : MonoBehaviour {
 
 
 	#region Panel Toggles
+	/// <summary>
+	/// Toggles the trade panel.
+	/// </summary>
+	public void toggleBankTradePanel()
+	{
+		bankTradeToggle = !bankTradeToggle;
+
+		if (GameManager.instance.getGamePhase () == GamePhase.SETUP_ONE || GameManager.instance.getGamePhase () == GamePhase.SETUP_TWO)
+			return;
+		
+		if (bankTradeToggle && GameManager.instance.getGamePhase() == Enums.GamePhase.PHASE_TWO) 
+		{
+			moveTypeChange (MoveType.TRADE_WITH_BANK);
+		}
+		else if (!bankTradeToggle && GameManager.instance.getGamePhase() == Enums.GamePhase.PHASE_TWO)
+		{
+			moveTypeChange (MoveType.NONE);
+		}
+	}
+
+	public void togglePlayerTradePanel()
+	{
+		playerTradeToggle = !playerTradeToggle;
+
+		if (GameManager.instance.getGamePhase () == GamePhase.SETUP_ONE || GameManager.instance.getGamePhase () == GamePhase.SETUP_TWO)
+			return;
+
+
+		if (playerTradeToggle && GameManager.instance.getGamePhase() == Enums.GamePhase.PHASE_TWO) 
+		{
+			moveTypeChange (MoveType.TRADE_WITH_PLAYER);
+		}
+
+		else if (!playerTradeToggle && GameManager.instance.getGamePhase() == Enums.GamePhase.PHASE_TWO)
+		{
+			moveTypeChange (MoveType.NONE);
+		}
+	}
 
 	/// <summary>
 	/// Toggles the build panel.
@@ -981,6 +1619,21 @@ public class UIMoveManager : MonoBehaviour {
 		case Enums.MoveType.DISPLACE_KNIGHT:
 			rString = "Displace Knight";
 			break;
+		case Enums.MoveType.FISH_2:
+			rString = "2 Fish";
+			break;
+		case Enums.MoveType.FISH_3:
+			rString = "3 Fish";
+			break;
+		case Enums.MoveType.FISH_4:
+			rString = "4 Fish";
+			break;
+		case Enums.MoveType.FISH_5:
+			rString = "5 Fish";
+			break;
+		case Enums.MoveType.FISH_7:
+			rString = "7 Fish";
+			break;
 		case Enums.MoveType.MOVE_KNIGHT:
 			rString = "Move Knight";
 			break;
@@ -1026,11 +1679,32 @@ public class UIMoveManager : MonoBehaviour {
 		case Enums.MoveType.PROGRESS_MEDICINE:
 			rString = "Progress Card : Medicine";
 			break;
+		case Enums.MoveType.PROGRESS_MERCHANT:
+			rString = "Progress Card : Merchant";
+			break;
+		case Enums.MoveType.PROGRESS_MERCHANT_FLEET:
+			rString = "Progress Card: Merchant Fleet";
+			break;
+		case Enums.MoveType.PROGRESS_RESOURCE_MONOPOLY:
+			rString = "Progress Card: Resource Monopoly";
+			break;
 		case Enums.MoveType.PROGRESS_ROAD_BUILDING_1:
 			rString = "RoadBuilding : Place First Road";
 			break;
 		case Enums.MoveType.PROGRESS_ROAD_BUILDING_2:
 			rString = "RoadBuilding : Place Second Road";
+			break;
+		case Enums.MoveType.PROGRESS_SMITH_1:
+			rString = "Smith: First Part";
+			break;
+		case Enums.MoveType.PROGRESS_SMITH_2:
+			rString = "Smith: Second Part";
+			break;
+		case Enums.MoveType.PROGRESS_SPY:
+			rString = "Progress Card : Spy";
+			break;
+		case Enums.MoveType.PROGRESS_TRADE_MONOPOLY:
+			rString = "Progress Card: Trade Monopoly";
 			break;
 		case Enums.MoveType.SPECIAL:
 			rString = "Special: " + convert(_CurrentPlayer.getSpecial());
@@ -1054,8 +1728,14 @@ public class UIMoveManager : MonoBehaviour {
 
 		switch (p_Special) 
 		{
+		case Special.AQUEDUCT:
+			rString = "Aqueduct";
+			break;
 		case Special.CHOOSE_DESTROYED_CITY:
 			rString = "Choose City to Destroy";
+			break;
+		case Special.CHOOSE_METROPOLIS:
+			rString = "Choose Metropolis";
 			break;
 		case Special.CHOOSE_OPPONENT_RESOURCES:
 			rString = "Choose Opponent Resources";
@@ -1068,6 +1748,9 @@ public class UIMoveManager : MonoBehaviour {
 			break;
 		case Special.CHOOSE_PROGRESS_PILE:
 			rString = "Choose Progress Pile";
+			break;
+		case Special.DISCARD_RESOURCE_SABOTEUR:
+			rString = "Saboteur In Progress";
 			break;
 		case Special.DISCARD_RESOURCE_SEVEN:
 			rString = "Discard Cards";
@@ -1086,6 +1769,15 @@ public class UIMoveManager : MonoBehaviour {
 			break;
 		case Special.STEAL_RESOURCES_PIRATE:
 			rString = "Steal Resources Pirate";
+			break;
+		case Special.TAKE_OPPONENT_PROGRESS:
+			rString = "Taking Opponent Progress Card";
+			break;
+		case Special.YOU_LOSE:
+			rString = "You Lose";
+			break;
+		case Special.YOU_WIN:
+			rString = "YOU WIN";
 			break;
 		case Special.NONE:
 			rString = "None";
@@ -1111,13 +1803,16 @@ public class UIMoveManager : MonoBehaviour {
 		handleInitialPhasePanelDisplay ();
 		handleBannerText ();
 
+		revealResetButton ();
+		revealTradePanel ();
+		//revealTradePanelPlayer ();
 
 		/* Show or hide Discard Resource Panel */
 		revealResourceDiscardPanel ();
 		revealChoosePirateRobberPanel ();
 		revealAqueductPanel ();
 		revealUpgradeDevChart ();
-		revealChooseProgressCardPanel ();
+		revealChooseProgressCardPanelBarbarian ();
 
 		revealFish3 ();
 		revealFish4 ();
@@ -1125,5 +1820,12 @@ public class UIMoveManager : MonoBehaviour {
 
 		revealAlchemistDiceRollPanel ();
 		revealCraneUpgradeDevPanel ();
+		revealResourceMonopolyPanel ();
+		revealTradeMonopolyPanel ();
+		revealSaboteurPanel ();
+
+		revealSpyPlayerPanel ();
+		revealSpyProgressCardsPanel ();
+		revealMerchantFleetPanel ();
 	}
 }

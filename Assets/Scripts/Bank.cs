@@ -3,21 +3,22 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
 
-public class Bank : NetworkBehaviour {
-    
-	public int[] resources;
+public class Bank : NetworkBehaviour
+{
+
+    public int[] resources;
     public int[] commodities;
 
     public List<FishToken> fishTokens;
 
-	public List<Enums.ProgressCardName> tradeCards;
-	public List<Enums.ProgressCardName> politicsCards;
-	public List<Enums.ProgressCardName> scienceCards;
-	private NetworkIdentity objNetId;
+    public List<Enums.ProgressCardName> tradeCards;
+    public List<Enums.ProgressCardName> politicsCards;
+    public List<Enums.ProgressCardName> scienceCards;
+    private NetworkIdentity objNetId;
 
     static public Bank instance = null;
 
-	void Awake()
+    void Awake()
     {
         instance = this;
     }
@@ -60,8 +61,8 @@ public class Bank : NetworkBehaviour {
         politicsCards.Add(Enums.ProgressCardName.BISHOP);
         politicsCards.Add(Enums.ProgressCardName.BISHOP);
         politicsCards.Add(Enums.ProgressCardName.CONSTITUTION);
-        politicsCards.Add(Enums.ProgressCardName.DESERTER);
-        politicsCards.Add(Enums.ProgressCardName.DESERTER);
+        //politicsCards.Add(Enums.ProgressCardName.DESERTER);
+        //politicsCards.Add(Enums.ProgressCardName.DESERTER);
         politicsCards.Add(Enums.ProgressCardName.DIPLOMAT);
         politicsCards.Add(Enums.ProgressCardName.DIPLOMAT);
         politicsCards.Add(Enums.ProgressCardName.INTRIGUE);
@@ -73,14 +74,14 @@ public class Bank : NetworkBehaviour {
         politicsCards.Add(Enums.ProgressCardName.SPY);
         politicsCards.Add(Enums.ProgressCardName.WARLORD);
         politicsCards.Add(Enums.ProgressCardName.WARLORD);
-        politicsCards.Add(Enums.ProgressCardName.WEDDING);
-        politicsCards.Add(Enums.ProgressCardName.WEDDING);
+        //politicsCards.Add(Enums.ProgressCardName.WEDDING);
+        //politicsCards.Add(Enums.ProgressCardName.WEDDING);
 
         tradeCards = new List<Enums.ProgressCardName>();
-        tradeCards.Add(Enums.ProgressCardName.COMMERCIALHARBOR);
-        tradeCards.Add(Enums.ProgressCardName.COMMERCIALHARBOR);
-        tradeCards.Add(Enums.ProgressCardName.MASTERMERCHANT);
-        tradeCards.Add(Enums.ProgressCardName.MASTERMERCHANT);
+        //tradeCards.Add(Enums.ProgressCardName.COMMERCIALHARBOR);
+        //tradeCards.Add(Enums.ProgressCardName.COMMERCIALHARBOR);
+        //tradeCards.Add(Enums.ProgressCardName.MASTERMERCHANT);
+        //tradeCards.Add(Enums.ProgressCardName.MASTERMERCHANT);
         tradeCards.Add(Enums.ProgressCardName.MERCHANT);
         tradeCards.Add(Enums.ProgressCardName.MERCHANT);
         tradeCards.Add(Enums.ProgressCardName.MERCHANT);
@@ -134,18 +135,18 @@ public class Bank : NetworkBehaviour {
         fishTokens.Add(new FishToken(false, 3));
         fishTokens.Add(new FishToken(false, 3));
 
-        fishTokens.Add(new FishToken(true, 1));
+        fishTokens.Add(new FishToken(true, -7));
     }
 
     public int getFishToken(bool server)
     {
-        if(fishTokens.Count < 3)
+        if (fishTokens.Count < 3)
         {
             generateFishTokens();
         }
-        
-        int numFish = fishTokens[0].value;
 
+        int numFish = fishTokens[0].value;
+        
         assignAuthority(server);
         RpcWithdrawFishToken();
         removeAuthority(server);
@@ -167,7 +168,11 @@ public class Bank : NetworkBehaviour {
         }
 
         int numFish = fishTokens[0].value;
-        numFish += fishTokens[1].value;
+        if(numFish != -7)
+        {
+            numFish += fishTokens[1].value;
+        }
+        else{}
 
         assignAuthority(server);
         RpcWithdrawFishTokens();
@@ -185,26 +190,26 @@ public class Bank : NetworkBehaviour {
 
     public int getResourceAmount(Enums.ResourceType res)
     {
-		return resources [(int)res];
-	}
+        return resources[(int)res];
+    }
 
-	public int getCommodityAmount(Enums.CommodityType com)
+    public int getCommodityAmount(Enums.CommodityType com)
     {
-		return commodities [(int)com];
-	}
+        return commodities[(int)com];
+    }
 
-	public bool withdrawResource(Enums.ResourceType res, int amount, bool server)
+    public bool withdrawResource(Enums.ResourceType res, int amount, bool server)
     {
-		if (resources [(int)res] < amount)
+        if (resources[(int)res] < amount)
         {
-			return false;
-		}
+            return false;
+        }
 
         assignAuthority(server);
         RpcDecrementResources(res, amount);
         removeAuthority(server);
-		return true;
-	}
+        return true;
+    }
 
     [ClientRpc]
     void RpcDecrementResources(Enums.ResourceType res, int amount)
@@ -212,18 +217,18 @@ public class Bank : NetworkBehaviour {
         resources[(int)res] -= amount;
     }
 
-	public bool withdrawCommodity(Enums.CommodityType com, int amount, bool server)
+    public bool withdrawCommodity(Enums.CommodityType com, int amount, bool server)
     {
-		if (commodities [(int)com] < amount)
+        if (commodities[(int)com] < amount)
         {
-			return false;
-		}
+            return false;
+        }
 
         assignAuthority(server);
         RpcDecrementCommodities(com, amount);
         removeAuthority(server);
-		return true;
-	}
+        return true;
+    }
 
     [ClientRpc]
     void RpcDecrementCommodities(Enums.CommodityType com, int amount)
@@ -236,7 +241,7 @@ public class Bank : NetworkBehaviour {
         assignAuthority(server);
         RpcIncreaseResources(res, amount);
         removeAuthority(server);
-	}
+    }
 
     [ClientRpc]
     void RpcIncreaseResources(Enums.ResourceType res, int amount)
@@ -244,12 +249,12 @@ public class Bank : NetworkBehaviour {
         resources[(int)res] += amount;
     }
 
-	public void depositCommodity(Enums.CommodityType com, int amount, bool server)
+    public void depositCommodity(Enums.CommodityType com, int amount, bool server)
     {
         assignAuthority(server);
         RpcIncreaseCommodities(com, amount);
         removeAuthority(server);
-	}
+    }
 
     [ClientRpc]
     void RpcIncreaseCommodities(Enums.CommodityType com, int amount)
@@ -257,14 +262,14 @@ public class Bank : NetworkBehaviour {
         commodities[(int)com] += amount;
     }
 
-	// Put the given progress card on the bottom of a progress card pile
-	public void depositProgressCard(Enums.DevChartType progressType, 
-		Enums.ProgressCardName progressCard, bool server)
+    // Put the given progress card on the bottom of a progress card pile
+    public void depositProgressCard(Enums.DevChartType progressType,
+        Enums.ProgressCardName progressCard, bool server)
     {
         assignAuthority(server);
         RpcAddProgressCard(progressType, progressCard);
         removeAuthority(server);
-	}
+    }
 
     [ClientRpc]
     void RpcAddProgressCard(Enums.DevChartType progressType, Enums.ProgressCardName progressCard)
@@ -283,83 +288,134 @@ public class Bank : NetworkBehaviour {
         }
     }
 
-	// Draw and return a progress card from the requested pile
-	public void withdrawProgressCard(Enums.DevChartType progressType, int player)
+    // Draw and return a progress card from the requested pile
+    public void withdrawProgressCard(Enums.DevChartType progressType, int player)
     {
         Enums.ProgressCardName prog;
-		if (progressType == Enums.DevChartType.TRADE)
+        if (progressType == Enums.DevChartType.TRADE)
         {
-			int rand = Random.Range(0, tradeCards.Count);
+            int rand = Random.Range(0, tradeCards.Count);
             prog = tradeCards[rand];
             tradeCards.RemoveAt(rand);
-		}
+        }
         else if (progressType == Enums.DevChartType.POLITICS)
         {
-			int rand = Random.Range(0, politicsCards.Count);
+            int rand = Random.Range(0, politicsCards.Count);
             prog = politicsCards[rand];
             politicsCards.RemoveAt(rand);
-		}
+        }
         else
         {
-			int rand = Random.Range(0, scienceCards.Count);
+            int rand = Random.Range(0, scienceCards.Count);
             prog = scienceCards[rand];
             scienceCards.RemoveAt(rand);
-		}
+        }
         Player current = GameManager.instance.getPlayer(player);
         GameManager.instance.getPersonalPlayer().addProgressCard(prog, current.getID());
     }
-		
-	// Make sure a given trade is valid
-	public bool isValidBankTrade(int[] resRatios, int[] comRatios, Trades trade)
+
+    // Make sure a given trade is valid
+    public bool isValidBankTrade(int[] resRatios, int[] comRatios, Trades trade)
     {
-		int totalAvailable = 0;
-		int totalWanted = 0;
+        int totalAvailable = 0;
+        int totalWanted = 0;
 
-		// Extract the information from the trade
-		int[] resOffered = trade.getResourcesOffered ();
-		int[] resWanted = trade.getResourcesWanted ();
-		int[] comOffered = trade.getCommoditiesOffered ();
-		int[] comWanted = trade.getCommoditiesWanted ();
+        // Extract the information from the trade
+        SyncListInt resOffered = trade.getResourcesOffered();
+        SyncListInt resWanted = trade.getResourcesWanted();
+        SyncListInt comOffered = trade.getCommoditiesOffered();
+        SyncListInt comWanted = trade.getCommoditiesWanted();
 
-		// Find the total offered amount
-		for (int i = 0; i < resOffered.Length; i++)
+        // Find the total offered amount
+        for (int i = 0; i < resOffered.Count; i++)
         {
-			totalAvailable += resOffered [i] / resRatios [i];
-		}
-		for (int i = 0; i < comOffered.Length; i++)
+            totalAvailable += resOffered[i] / resRatios[i];
+        }
+        for (int i = 0; i < comOffered.Count; i++)
         {
-			totalAvailable += comOffered [i] / comRatios [i];
-		}
-		totalAvailable += trade.getGoldOffered () / 2;
+            totalAvailable += comOffered[i] / comRatios[i];
+        }
+        totalAvailable += trade.getGoldOffered() / 2;
 
-		// Find the total requested amount
-		for (int i = 0; i < resWanted.Length; i++)
+        // Find the total requested amount
+        for (int i = 0; i < resWanted.Count; i++)
         {
-			if (resWanted [i] > resources [i])
+            if (resWanted[i] > resources[i])
             {
-				return false;
-			}
-			totalWanted += resWanted [i];
-		}
-		for (int i = 0; i < comWanted.Length; i++)
+                return false;
+            }
+            totalWanted += resWanted[i];
+        }
+        for (int i = 0; i < comWanted.Count; i++)
         {
-			if (comWanted [i] > commodities [i])
+            if (comWanted[i] > commodities[i])
             {
-				return false;
-			}
-			totalWanted += comWanted [i];
-		}
+                return false;
+            }
+            totalWanted += comWanted[i];
+        }
 
-		// Return true if the requested amount is valid
-		if (totalWanted != 0 && totalWanted <= totalAvailable)
+        // Return true if the requested amount is valid
+        if (totalWanted != 0 && totalWanted <= totalAvailable)
         {
-			return true;
-		}
+            return true;
+        }
         else
         {
-			return false;
-		}
-	}
+            return false;
+        }
+    }
+
+    public bool isValidBankTrade(int[] resRatios, int[] comRatios, Trade trade)
+    {
+        int totalAvailable = 0;
+        int totalWanted = 0;
+
+        // Extract the information from the trade
+        int[] resOffered = trade.resourcesOffered;
+        int[] resWanted = trade.resourcesWanted;
+        int[] comOffered = trade.commoditiesOffered;
+        int[] comWanted = trade.commoditiesWanted;
+
+        // Find the total offered amount
+        for (int i = 0; i < resOffered.Length; i++)
+        {
+            totalAvailable += resOffered[i] / resRatios[i];
+        }
+        for (int i = 0; i < comOffered.Length; i++)
+        {
+            totalAvailable += comOffered[i] / comRatios[i];
+        }
+        totalAvailable += trade.goldOffered / 2;
+
+        // Find the total requested amount
+        for (int i = 0; i < resWanted.Length; i++)
+        {
+            if (resWanted[i] > resources[i])
+            {
+                return false;
+            }
+            totalWanted += resWanted[i];
+        }
+        for (int i = 0; i < comWanted.Length; i++)
+        {
+            if (comWanted[i] > commodities[i])
+            {
+                return false;
+            }
+            totalWanted += comWanted[i];
+        }
+
+        // Return true if the requested amount is valid
+        if (totalWanted != 0 && totalWanted <= totalAvailable)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
 
     // Make a trade with the bank
     public bool tradeWithBank(int[] resRatios, int[] comRatios, Trades trade)
@@ -369,52 +425,100 @@ public class Bank : NetworkBehaviour {
             return false;
         }
 
-		// Extract the information from the trade
-		int[] resOffered = trade.getResourcesOffered();
-		int[] resWanted = trade.getResourcesWanted();
-		int[] comOffered = trade.getCommoditiesOffered();
-		int[] comWanted = trade.getCommoditiesWanted();
-        
-        Player trader = GameManager.instance.getCurrentPlayer();
-        int tradeId = trader.getID ();
-		int gold = trade.getGoldOffered ();
+        // Extract the information from the trade
+        SyncListInt resOffered = trade.getResourcesOffered();
+        SyncListInt resWanted = trade.getResourcesWanted();
+        SyncListInt comOffered = trade.getCommoditiesOffered();
+        SyncListInt comWanted = trade.getCommoditiesWanted();
 
-		// Update all relevent fields
-		for (int i = 0; i < resOffered.Length; i++)
-		{
-			GameManager.instance.getPersonalPlayer().changeResource((Enums.ResourceType)i, resOffered[i], trader.getID());
-			depositResource((Enums.ResourceType)i, resOffered[i], trader.isServer);
-		}
-		for (int i = 0; i < comOffered.Length; i++)
-		{
-			GameManager.instance.getPersonalPlayer().changeCommodity((Enums.CommodityType)i, comOffered[i], trader.getID());
-			depositCommodity((Enums.CommodityType)i, comOffered[i], trader.isServer);
-		}
-		for (int i = 0; i < resWanted.Length; i++)
-		{
-			GameManager.instance.getPersonalPlayer().changeResource((Enums.ResourceType)i, resWanted[i], trader.getID());
-			withdrawResource((Enums.ResourceType)i, resWanted[i], trader.isServer);
-		}
-		for (int i = 0; i < comWanted.Length; i++)
-		{
-			GameManager.instance.getPersonalPlayer().changeCommodity((Enums.CommodityType)i, comWanted[i], trader.getID());
-			withdrawCommodity((Enums.CommodityType)i, comWanted[i], trader.isServer);
-		}
-		GameManager.instance.getPersonalPlayer().changeGoldCount(gold, trader.getID());
-			
+        Player trader = GameManager.instance.getCurrentPlayer();
+        int tradeId = trader.getID();
+        int gold = trade.getGoldOffered();
+
+        // Update all relevent fields
+        for (int i = 0; i < resOffered.Count; i++)
+        {
+            GameManager.instance.getPersonalPlayer().changeResource((Enums.ResourceType)i, resOffered[i], trader.getID());
+            depositResource((Enums.ResourceType)i, resOffered[i], trader.isServer);
+        }
+        for (int i = 0; i < comOffered.Count; i++)
+        {
+            GameManager.instance.getPersonalPlayer().changeCommodity((Enums.CommodityType)i, comOffered[i], trader.getID());
+            depositCommodity((Enums.CommodityType)i, comOffered[i], trader.isServer);
+        }
+        for (int i = 0; i < resWanted.Count; i++)
+        {
+            GameManager.instance.getPersonalPlayer().changeResource((Enums.ResourceType)i, resWanted[i], trader.getID());
+            withdrawResource((Enums.ResourceType)i, resWanted[i], trader.isServer);
+        }
+        for (int i = 0; i < comWanted.Count; i++)
+        {
+            GameManager.instance.getPersonalPlayer().changeCommodity((Enums.CommodityType)i, comWanted[i], trader.getID());
+            withdrawCommodity((Enums.CommodityType)i, comWanted[i], trader.isServer);
+        }
+        GameManager.instance.getPersonalPlayer().changeGoldCount(gold, trader.getID());
+
         return true;
     }
 
-    private void assignAuthority(bool server) {
-        if (!server) {
-			objNetId = this.GetComponent<NetworkIdentity> ();     
-			objNetId.AssignClientAuthority (connectionToClient);   
-		}
+    public bool tradeWithBank(int[] resRatios, int[] comRatios, Trade trade)
+    {
+        if (!isValidBankTrade(resRatios, comRatios, trade))
+        {
+            return false;
+        }
+
+        // Extract the information from the trade
+        int[] resOffered = trade.resourcesOffered;
+        int[] resWanted = trade.resourcesWanted;
+        int[] comOffered = trade.commoditiesOffered;
+        int[] comWanted = trade.commoditiesWanted;
+
+        Player trader = GameManager.instance.getCurrentPlayer();
+        int tradeId = trader.getID();
+        int gold = trade.goldOffered;
+
+        // Update all relevent fields
+        for (int i = 0; i < resOffered.Length; i++)
+        {
+            GameManager.instance.getPersonalPlayer().changeResource((Enums.ResourceType)i, -1 * resOffered[i], trader.getID());
+            depositResource((Enums.ResourceType)i, resOffered[i], trader.isServer);
+        }
+        for (int i = 0; i < comOffered.Length; i++)
+        {
+            GameManager.instance.getPersonalPlayer().changeCommodity((Enums.CommodityType)i, -1 * comOffered[i], trader.getID());
+            depositCommodity((Enums.CommodityType)i, comOffered[i], trader.isServer);
+        }
+
+        for (int i = 0; i < resWanted.Length; i++)
+        {
+            GameManager.instance.getPersonalPlayer().changeResource((Enums.ResourceType)i, resWanted[i], trader.getID());
+            withdrawResource((Enums.ResourceType)i, resWanted[i], trader.isServer);
+        }
+        for (int i = 0; i < comWanted.Length; i++)
+        {
+            GameManager.instance.getPersonalPlayer().changeCommodity((Enums.CommodityType)i, comWanted[i], trader.getID());
+            withdrawCommodity((Enums.CommodityType)i, comWanted[i], trader.isServer);
+        }
+        GameManager.instance.getPersonalPlayer().changeGoldCount(gold, trader.getID());
+
+        return true;
     }
 
-    private void removeAuthority(bool server) {
-        if (!server) {
-			objNetId.RemoveClientAuthority (connectionToClient); 
-		}
+    private void assignAuthority(bool server)
+    {
+        if (!server)
+        {
+            objNetId = this.GetComponent<NetworkIdentity>();
+            objNetId.AssignClientAuthority(connectionToClient);
+        }
+    }
+
+    private void removeAuthority(bool server)
+    {
+        if (!server)
+        {
+            objNetId.RemoveClientAuthority(connectionToClient);
+        }
     }
 }

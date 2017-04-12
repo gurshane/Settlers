@@ -44,6 +44,13 @@ public class UIManager : NetworkBehaviour {
 	private Enums.ResourceType _ToResource;
 	#endregion
 
+
+	#region The Boot
+	[SerializeField]
+	private Transform _Boot;
+	#endregion
+
+
 	#region UI Panels
 
 	/// <summary>
@@ -137,6 +144,7 @@ public class UIManager : NetworkBehaviour {
 	/// <summary>
 	/// List of hexes to highlight
 	/// </summary>
+	[SerializeField]
 	private List<Hex> _hToHighlight;
 
 	private bool highlightBoardPieces;
@@ -258,7 +266,7 @@ public class UIManager : NetworkBehaviour {
 		{
 			highlight (false);
 			getHighlightList ();
-			recentMove = _CurrentPlayer.getMoveType ();
+			//recentMove = _CurrentPlayer.getMoveType ();
 			highlight (true);
 		} 
 	
@@ -346,6 +354,9 @@ public class UIManager : NetworkBehaviour {
 		case Enums.MoveType.DISPLACE_KNIGHT:
 			_vToHighlight = _build.buildableDisplaceKnight (_CurrentPlayer.getColor ());
 			break;
+		case Enums.MoveType.FISH_5:
+			_eToHighlight = _build.buildableFishRoad (_CurrentPlayer.numFish, _CurrentPlayer.getGamePieces (), _CurrentPlayer.getColor ());
+			break;
 		case Enums.MoveType.MOVE_KNIGHT:
 			_vToHighlight = _build.buildableMoveKnight (_CurrentPlayer.getColor ());
 			break;
@@ -363,6 +374,36 @@ public class UIManager : NetworkBehaviour {
 			break;
 		case Enums.MoveType.PLACE_INITIAL_SHIP:
 			_eToHighlight = _build.buildablePlaceInitialShip (_CurrentPlayer.getColor ());
+			break;
+		case Enums.MoveType.PROGRESS_DIPLOMAT:
+			_eToHighlight = _build.buildableMoveRoad (_CurrentPlayer.getColor ());
+			break;
+		case Enums.MoveType.PROGRESS_INTRIGUE:
+			_vToHighlight = _build.buildableIntrigueKnight (_CurrentPlayer.getColor ());
+			break;
+		case Enums.MoveType.PROGRESS_ENGINEER:
+			_vToHighlight = _build.buildableEngineer (_CurrentPlayer.cityWallsLeft, _CurrentPlayer.getColor ());
+			break;
+		case Enums.MoveType.PROGRESS_INVENTOR:
+			_hToHighlight = _build.buildableInventor();
+			break;
+		case Enums.MoveType.PROGRESS_MEDICINE:
+			_vToHighlight = _build.buildableMedicine (_CurrentPlayer.resources, _CurrentPlayer.getGamePieces (), _CurrentPlayer.getColor ());
+			break;
+		case Enums.MoveType.PROGRESS_ROAD_BUILDING_1:
+			_eToHighlight = _build.buildableRoadBuilding (_CurrentPlayer.getGamePieces (), _CurrentPlayer.getColor ());
+			break;
+		case Enums.MoveType.PROGRESS_ROAD_BUILDING_2:
+			_eToHighlight = _build.buildableRoadBuilding (_CurrentPlayer.getGamePieces (), _CurrentPlayer.getColor ());
+			break;
+		case Enums.MoveType.PROGRESS_MERCHANT:
+			_hToHighlight = _build.buildablePlaceMerchant();
+			break;
+		case Enums.MoveType.PROGRESS_SMITH_1:
+			_vToHighlight = _build.buildableSmith (_CurrentPlayer.getDevFlipChart (), _CurrentPlayer.getGamePieces (), _CurrentPlayer.getColor ());
+			break;
+		case Enums.MoveType.PROGRESS_SMITH_2:
+			_vToHighlight = _build.buildableSmith (_CurrentPlayer.getDevFlipChart (), _CurrentPlayer.getGamePieces (), _CurrentPlayer.getColor ());
 			break;
 		case Enums.MoveType.UPGRADE_KNIGHT:
 			_vToHighlight = _build.buildableUpgradgeKnight (_CurrentPlayer.getResources (), _CurrentPlayer.getDevFlipChart (), _CurrentPlayer.getGamePieces (), _CurrentPlayer.getColor ());
@@ -382,11 +423,19 @@ public class UIManager : NetworkBehaviour {
 			}
 			if (Enums.Special.MOVE_PIRATE == _CurrentPlayer.getSpecial ()) 
 			{
-				_hToHighlight = _build.buildableCanMovePirate ();
+				highlight (false);
 			}
 			if (Enums.Special.CHOOSE_DESTROYED_CITY == _CurrentPlayer.getSpecial ()) 
 			{
 				_vToHighlight = _build.buildableCanDestroyCity (_CurrentPlayer.getColor ());
+			}
+			if (Enums.Special.CHOOSE_METROPOLIS == _CurrentPlayer.getSpecial ()) 
+			{
+				_vToHighlight = _build.buildableCanChooseMetropolis (_CurrentPlayer.getColor ());
+			}
+			if (Enums.Special.KNIGHT_DISPLACED == _CurrentPlayer.getSpecial ()) 
+			{
+				_vToHighlight = _build.buildableForcedKnightMove (_CurrentPlayer.getColor ());
 			}
 			break;
 		case Enums.MoveType.NONE:
@@ -401,7 +450,22 @@ public class UIManager : NetworkBehaviour {
 	#endregion
 
     #region Update Methods
-    /// <summary>
+	/// <summary>
+	/// Displays the boot icon if player has the boot
+	/// </summary>
+	public void updateBoot()
+	{
+		if (_CurrentPlayer.ownsBoot) 
+		{
+			_Boot.gameObject.SetActive (true);
+		}
+			
+
+		else 
+			_Boot.gameObject.SetActive(false);
+	}
+
+	/// <summary>
     /// Updates the resources of the currentPlayer to be displayed on the UI
     /// </summary>
     public void updateResources()
@@ -695,6 +759,8 @@ public class UIManager : NetworkBehaviour {
                 updateMyPlayerPanel();
 				updateDiceRollPanel ();
 				updateTurnsPanel();
+
+				updateBoot ();
 
 				updatePlayerInfoPanels ();
 

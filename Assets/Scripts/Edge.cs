@@ -11,6 +11,10 @@ public class Edge : BoardPiece {
 	public Hex rightHex;
 	private int visited;
 
+    public bool isForwardPointing;
+    public bool isLeftPointing;
+    public bool isRightPointing;
+
 	public Edge(Enums.TerrainType terrain) : base(terrain)
     {
 		this.visited = 0;

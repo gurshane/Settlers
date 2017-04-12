@@ -12,9 +12,9 @@ public class Vertex : BoardPiece {
     public bool producesFish;
     public int fishNumber;
 
-    private bool hasWall;
+    public bool hasWall;
     private bool adjacentToRobber;
-    private int chits;
+    public int chits;
 	private int visited;
 
 	public Vertex(Enums.TerrainType terrain) : base (terrain) {

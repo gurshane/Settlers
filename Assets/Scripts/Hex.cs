@@ -8,6 +8,8 @@ public class Hex : BoardPiece {
 
 	public List<Vertex> vertices;
 
+    public bool isLake;
+
 	/// <summary>
 	/// The hex value displayed above this instance
 	/// </summary>
