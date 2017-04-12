@@ -22,9 +22,11 @@ public class UIResource : UIElement {
 	private ResourceType _Resource;
 	/// <summary>
 
-	/// The text component attached to this instance
+	/// The text component attached to this instance's child
 	/// </summary>
 	private Text _ResourceCount;
+
+	private Text _TradeRatio;
 
 	#endregion
 
@@ -40,6 +42,11 @@ public class UIResource : UIElement {
 
 		setResourceType ();
 		_ResourceCount = transform.GetChild (0).GetComponent<Text>();
+
+		// Set the trade ratio text if this is neither gold nor fish
+		if (!isGold && !isFish) {
+			_TradeRatio = transform.GetChild (1).GetComponent<Text> ();
+		}
 	}
 		
 
@@ -66,11 +73,17 @@ public class UIResource : UIElement {
 		int[] resourceList = p_Player.getResources ();
 		int resourceIndex = (int)_Resource;
 
+
+		//Get Player's list of trade ratios
+		int[] ratioList = p_Player.getResourceRatios();
+
 		// Check whether the player resource list has been initialised or not
 		if ( isArrayEmpty (resourceList) ) return;
 
 		// Update UI Text to display the new value
 		_ResourceCount.text = "x" + resourceList [resourceIndex];
+
+		_TradeRatio.text =  "" + ratioList [resourceIndex] + ":1";
 
 	}
 
