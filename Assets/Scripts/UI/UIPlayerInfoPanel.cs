@@ -5,13 +5,19 @@ using UnityEngine.UI;
 
 public class UIPlayerInfoPanel : UIElement {
 
+
+
 	#region Private Attributes
+	[SerializeField]
+	private UIManager _UIM;
+	private Player _CurrentPlayer;
 
 	/// <summary>
 	/// The Text object showing player's name
 	/// </summary>
 	[SerializeField]
 	private Text _PlayerName;
+
 
 	/// <summary>
 	/// Text object showing current player's victory points
@@ -69,6 +75,8 @@ public class UIPlayerInfoPanel : UIElement {
         //_PlayerName.text = "Hi";
 		//_VictoryPoints.text = "" + p_Player.getVictoryCounts ();
 	}
+
+
 
 	/// <summary>
 	/// Updates the UI element
