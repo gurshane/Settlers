@@ -19,6 +19,9 @@ public class UICommodity : UIElement  {
 	[SerializeField]
 	private Text _CommodityCount;
 
+	[SerializeField]
+	private Text _TradeRatio;
+
 	#endregion
 
 	// Use this for initialization
@@ -26,6 +29,7 @@ public class UICommodity : UIElement  {
 
 		setCommodityType ();
 		_CommodityCount = transform.GetChild (0).GetComponent<Text> ();
+		_TradeRatio = transform.GetChild (1).GetComponent<Text> ();
 	}
 
 
@@ -40,11 +44,15 @@ public class UICommodity : UIElement  {
 		int[] commodityList = p_Player.getCommodities();
 		int commodityIndex = (int)_Commodity;
 
+		int[] ratioList = p_Player.getCommodityRatios ();
+
 		// Check whether the player commodity list has been initialised or not
 		if ( isArrayEmpty (commodityList) ) return;
 
 		// Update UI Text to display the new value
 		_CommodityCount.text = "x" + commodityList [commodityIndex];
+
+		_TradeRatio.text = "" + ratioList [commodityIndex] + ":1";
 
 	}
 
