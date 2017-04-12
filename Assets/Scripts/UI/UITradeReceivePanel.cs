@@ -33,6 +33,39 @@ public class UITradeReceivePanel : MonoBehaviour {
 
 	}
 
+
+	public int[] getResources()
+	{
+		int[] resourcesOffered = new int[5];
+
+		resourcesOffered [0] = (int) _OreSlider.value;
+		resourcesOffered [1] = (int) _LumberSlider.value;
+		resourcesOffered [2] = (int) _WoolSlider.value;
+		resourcesOffered [3] = (int) _BrickSlider.value;
+		resourcesOffered [4] = (int) _GrainSlider.value;
+
+		return resourcesOffered;
+
+	}
+
+	public int[] getCommodities()
+	{
+		int[] commoditiesOffered = new int[3];
+
+		commoditiesOffered [0] = (int)_ClothSlider.value;
+		commoditiesOffered [1] = (int)_CoinSlider.value;
+		commoditiesOffered [2] = (int)_PaperSlider.value;
+
+		return commoditiesOffered;
+	}
+
+	public int getGold()
+	{
+		return (int) _GoldSlider.value;
+	}
+
+
+
 	public void updateTextResource(int p_SliderType)
 	{
 		Text numText;

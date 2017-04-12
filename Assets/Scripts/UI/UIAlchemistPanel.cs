@@ -49,6 +49,8 @@ public class UIAlchemistPanel : MonoBehaviour {
 	{
 		_CurrentPlayer.CmdAlchemistRoll ((int)_YellowDieSlider.value, (int)_RedDieSlider.value);
 		_CurrentPlayer.setMoveType (MoveType.NONE, _CurrentPlayer.getID());
+
+		_CurrentPlayer.removeProgressCard (ProgressCardName.ALCHEMIST, _CurrentPlayer.getID ());
 	}
 
 
