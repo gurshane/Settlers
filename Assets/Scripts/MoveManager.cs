@@ -1105,7 +1105,7 @@ public class MoveManager : NetworkBehaviour {
 
 		Hex targetLocation = BoardState.instance.hexPosition[target];
 		GameObject newMerchant = Instantiate<GameObject>(PrefabHolder.instance.merchant, target, Quaternion.identity);
-        fixPieceRotationAndPosition(newMerchant);
+        
         newMerchant.GetComponent<MeshRenderer>().material.SetColor("_Color", UnityEngine.Color.yellow);
 		BoardState.instance.spawnedObjects.Add(target, newMerchant);
 

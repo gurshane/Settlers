@@ -366,6 +366,57 @@ public class Bank : NetworkBehaviour
         }
     }
 
+    public bool isValidBankTrade(int[] resRatios, int[] comRatios, Trade trade)
+    {
+        int totalAvailable = 0;
+        int totalWanted = 0;
+
+        // Extract the information from the trade
+        int[] resOffered = trade.resourcesOffered;
+        int[] resWanted = trade.resourcesWanted;
+        int[] comOffered = trade.commoditiesOffered;
+        int[] comWanted = trade.commoditiesWanted;
+
+        // Find the total offered amount
+        for (int i = 0; i < resOffered.Length; i++)
+        {
+            totalAvailable += resOffered[i] / resRatios[i];
+        }
+        for (int i = 0; i < comOffered.Length; i++)
+        {
+            totalAvailable += comOffered[i] / comRatios[i];
+        }
+        totalAvailable += trade.goldOffered / 2;
+
+        // Find the total requested amount
+        for (int i = 0; i < resWanted.Length; i++)
+        {
+            if (resWanted[i] > resources[i])
+            {
+                return false;
+            }
+            totalWanted += resWanted[i];
+        }
+        for (int i = 0; i < comWanted.Length; i++)
+        {
+            if (comWanted[i] > commodities[i])
+            {
+                return false;
+            }
+            totalWanted += comWanted[i];
+        }
+
+        // Return true if the requested amount is valid
+        if (totalWanted != 0 && totalWanted <= totalAvailable)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
     // Make a trade with the bank
     public bool tradeWithBank(int[] resRatios, int[] comRatios, Trades trade)
     {
@@ -401,6 +452,50 @@ public class Bank : NetworkBehaviour
             withdrawResource((Enums.ResourceType)i, resWanted[i], trader.isServer);
         }
         for (int i = 0; i < comWanted.Count; i++)
+        {
+            GameManager.instance.getPersonalPlayer().changeCommodity((Enums.CommodityType)i, comWanted[i], trader.getID());
+            withdrawCommodity((Enums.CommodityType)i, comWanted[i], trader.isServer);
+        }
+        GameManager.instance.getPersonalPlayer().changeGoldCount(gold, trader.getID());
+
+        return true;
+    }
+
+    public bool tradeWithBank(int[] resRatios, int[] comRatios, Trade trade)
+    {
+        if (!isValidBankTrade(resRatios, comRatios, trade))
+        {
+            return false;
+        }
+
+        // Extract the information from the trade
+        int[] resOffered = trade.resourcesOffered;
+        int[] resWanted = trade.resourcesWanted;
+        int[] comOffered = trade.commoditiesOffered;
+        int[] comWanted = trade.commoditiesWanted;
+
+        Player trader = GameManager.instance.getCurrentPlayer();
+        int tradeId = trader.getID();
+        int gold = trade.goldOffered;
+
+        // Update all relevent fields
+        for (int i = 0; i < resOffered.Length; i++)
+        {
+            GameManager.instance.getPersonalPlayer().changeResource((Enums.ResourceType)i, -1 * resOffered[i], trader.getID());
+            depositResource((Enums.ResourceType)i, resOffered[i], trader.isServer);
+        }
+        for (int i = 0; i < comOffered.Length; i++)
+        {
+            GameManager.instance.getPersonalPlayer().changeCommodity((Enums.CommodityType)i, -1 * comOffered[i], trader.getID());
+            depositCommodity((Enums.CommodityType)i, comOffered[i], trader.isServer);
+        }
+
+        for (int i = 0; i < resWanted.Length; i++)
+        {
+            GameManager.instance.getPersonalPlayer().changeResource((Enums.ResourceType)i, resWanted[i], trader.getID());
+            withdrawResource((Enums.ResourceType)i, resWanted[i], trader.isServer);
+        }
+        for (int i = 0; i < comWanted.Length; i++)
         {
             GameManager.instance.getPersonalPlayer().changeCommodity((Enums.CommodityType)i, comWanted[i], trader.getID());
             withdrawCommodity((Enums.CommodityType)i, comWanted[i], trader.isServer);

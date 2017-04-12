@@ -2055,16 +2055,15 @@ public class Player : NetworkBehaviour
         GameManager.instance.alchemistRolled(a, b, isServer);
     }
 
-    public bool changeResourceOffer(ResourceType resource, int num, int player)
+    public void changeResourceOffer(ResourceType resource, int num, int player)
     {
         int resPosition = (int)resource;
         if (GameManager.instance.getPlayer(player).resourcesOffered[resPosition] + num < 0)
         {
-            return false;
+            return;
         }
 
         CmdChangeResourceOffer(resource, num, player);
-        return true;
     }
 
     [Command]
@@ -2080,16 +2079,15 @@ public class Player : NetworkBehaviour
         GameManager.instance.getPlayer(player).resourcesOffered[resP] += num;
     }
 
-    public bool changeResourceWanted(ResourceType resource, int num, int player)
+    public void changeResourceWanted(ResourceType resource, int num, int player)
     {
         int resPosition = (int)resource;
         if (GameManager.instance.getPlayer(player).resourcesWanted[resPosition] + num < 0)
         {
-            return false;
+            return;
         }
 
         CmdChangeResourceWanted(resource, num, player);
-        return true;
     }
 
     [Command]
@@ -2105,16 +2103,15 @@ public class Player : NetworkBehaviour
         GameManager.instance.getPlayer(player).resourcesWanted[resP] += num;
     }
 
-    public bool changeCommodityOffered(CommodityType commodity, int num, int player)
+    public void changeCommodityOffered(CommodityType commodity, int num, int player)
     {
         int comPosition = (int)commodity;
         if (GameManager.instance.getPlayer(player).commoditiesOffered[comPosition] + num < 0)
         {
-            return false;
+            return;
         }
 
         CmdChangeCommodityOffered(commodity, num, player);
-        return true;
     }
 
     [Command]
@@ -2130,16 +2127,15 @@ public class Player : NetworkBehaviour
         GameManager.instance.getPlayer(player).commoditiesOffered[comP] += num;
     }
 
-    public bool changeCommodityWanted(CommodityType commodity, int num, int player)
+    public void changeCommodityWanted(CommodityType commodity, int num, int player)
     {
         int comPosition = (int)commodity;
         if (GameManager.instance.getPlayer(player).commoditiesWanted[comPosition] + num < 0)
         {
-            return false;
+            return;
         }
 
         CmdChangeCommodityWanted(commodity, num, player);
-        return true;
     }
 
     [Command]
@@ -2153,6 +2149,19 @@ public class Player : NetworkBehaviour
     {
         int comP = (int)commodity;
         GameManager.instance.getPlayer(player).commoditiesWanted[comP] += num;
+    }
+
+    public void tradeWithBank()
+    {
+        Trade newTrade = new Trade();
+        newTrade.resourcesOffered = this.resourcesOffered;
+        newTrade.resourcesWanted = this.resourcesWanted;
+        newTrade.commoditiesOffered = this.commoditiesOffered;
+        newTrade.commoditiesWanted = this.commoditiesWanted;
+        newTrade.goldOffered = this.goldOffered;
+        newTrade.goldWanted = this.goldWanted;
+        newTrade.offeringPlayer = this.iD;
+        Bank.instance.tradeWithBank(this.resourceRatios, this.commodityRatios, newTrade);
     }
 
     public bool changeResource(ResourceType resource, int num, int plyr)
