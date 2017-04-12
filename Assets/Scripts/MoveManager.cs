@@ -1053,6 +1053,17 @@ public class MoveManager : NetworkBehaviour {
 
 		assignAuthority(server);
         RpcPlaceMerchant(target.transform.position);
+
+		Player current = GameManager.instance.getPersonalPlayer();
+		GameManager.instance.getPersonalPlayer().removeProgressCard(ProgressCardName.MERCHANT, current.getID());
+		GameManager.instance.getPersonalPlayer().changeVictoryPoints(1, current.getID());
+
+		int mController = GameManager.instance.merchantController;
+
+		if (mController >= 0) {
+			GameManager.instance.getPersonalPlayer().changeVictoryPoints(-1, mController);
+		}
+
 		removeAuthority(server);
 		return true;
 	}
@@ -1423,7 +1434,7 @@ public class MoveManager : NetworkBehaviour {
     }
 	
 	// Instantiate a knight of the given level at the given location 
-	private GameObject getKnightFromLevel(int level, Vector3 location, Enums.Color color) {
+	public GameObject getKnightFromLevel(int level, Vector3 location, Enums.Color color) {
 		GameObject knight;
 		switch (level) {
 		case 1:

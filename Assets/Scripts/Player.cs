@@ -1147,6 +1147,34 @@ public class Player : NetworkBehaviour
                     moveType = Enums.MoveType.NONE;
                 }
             }
+            else if (moveType == Enums.MoveType.PROGRESS_SMITH_1)
+            {
+
+                if (!pieceHit.tag.Equals("Vertex"))
+                {
+                    return;
+                }
+                Vertex v = pieceHit.GetComponent<Vertex>();
+                if (pa.canSmith(this.devFlipChart, v, this.pieces, this.myColor))
+                {
+                    CmdSmith(v.transform.position);
+                    moveType = Enums.MoveType.PROGRESS_SMITH_2;
+                }
+            }
+            else if (moveType == Enums.MoveType.PROGRESS_SMITH_2)
+            {
+
+                if (!pieceHit.tag.Equals("Vertex"))
+                {
+                    return;
+                }
+                Vertex v = pieceHit.GetComponent<Vertex>();
+                if (pa.canSmith(this.devFlipChart, v, this.pieces, this.myColor))
+                {
+                    CmdSmith(v.transform.position);
+                    moveType = Enums.MoveType.NONE;
+                }
+            }
         }
     }
 
@@ -2570,6 +2598,12 @@ public class Player : NetworkBehaviour
     public void CmdEngineer(Vector3 location)
     {
         ProgressCards.instance.engineer(BoardState.instance.vertexPosition[location], this.cityWallsLeft, this.myColor, isServer);
+    }
+
+    [Command]
+    public void CmdSmith(Vector3 location)
+    {
+        ProgressCards.instance.smith(this.devFlipChart, BoardState.instance.vertexPosition[location], this.pieces, this.myColor, isServer);
     }
 
     [Command]

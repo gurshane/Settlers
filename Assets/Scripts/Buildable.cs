@@ -572,4 +572,16 @@ public class Buildable {
 		return hexes;
 	}
 
+	public List<Vertex> buildableSmith (int[] devChart, List<GamePiece> pieces, Enums.Color color) {
+
+		List<Vertex> vertices = new List<Vertex>();
+
+		foreach (Vertex v in BoardState.instance.vertexPosition.Values) {
+			if (pa.canSmith(devChart, v, pieces, color)) {
+				vertices.Add(v);
+			}
+		}
+		return vertices;
+	}
+
 }

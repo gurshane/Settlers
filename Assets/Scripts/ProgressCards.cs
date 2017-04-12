@@ -696,4 +696,43 @@ public class ProgressCards : NetworkBehaviour {
 		GameManager.instance.getPersonalPlayer().revertTurn();
 	}
 
+	public bool smith(int[] devChart, Vertex v, List<GamePiece> pieces,
+			Enums.Color color, bool server)
+    {
+
+		// Check if the knight can be upgraded
+		if (!pa.canSmith (devChart, v, pieces, color))
+        {
+			return false;
+		}
+
+		Knight k = (Knight)v.getOccupyingPiece ();
+		int level = k.getLevel ();
+
+		assignAuthority(server);
+        RpcSmith(devChart, v.transform.position, level, color);
+
+		Player current = GameManager.instance.getCurrentPlayer();
+		GameManager.instance.getPersonalPlayer().removeProgressCard(ProgressCardName.SMITH, current.getID());
+
+		removeAuthority(server);
+		return true;
+	}
+
+    [ClientRpc]
+	void RpcSmith(int[] devChart, Vector3 v, int level, Enums.Color color)
+    {
+		// Remove the current settlement
+        Vertex source = BoardState.instance.vertexPosition[v];
+        Knight knight = (Knight)source.getOccupyingPiece();
+		Destroy (BoardState.instance.spawnedObjects [v]);
+		BoardState.instance.spawnedObjects.Remove(v);
+
+		GameObject newKnight = MoveManager.instance.getKnightFromLevel (level + 1, v, color);
+
+		BoardState.instance.spawnedObjects.Add(v, newKnight);
+
+		knight.upgrade ();
+    }
+
 }
