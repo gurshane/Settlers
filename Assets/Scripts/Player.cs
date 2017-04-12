@@ -1547,6 +1547,11 @@ public class Player : NetworkBehaviour
 
     public void giveBoot(int targetPlayer)
     {
+        if(((this.iD) == targetPlayer))
+        {
+            return;
+        }
+
         if(!this.ownsBoot || ((this.iD) != GameManager.instance.getPlayerTurn()))
         {
             return;
@@ -1558,9 +1563,9 @@ public class Player : NetworkBehaviour
         {
             return;
         }
-        
-        GameManager.instance.getPersonalPlayer().hasBoot(true, targetPlayer);
+
         GameManager.instance.getPersonalPlayer().hasBoot(false, this.iD);
+        GameManager.instance.getPersonalPlayer().hasBoot(true, targetPlayer);
     }
 
     public int getI1()
