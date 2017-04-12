@@ -182,6 +182,12 @@ public class UIMoveManager : MonoBehaviour {
 		_CurrentPlayer.ResetE1 (_CurrentPlayer.getID ());
 		_CurrentPlayer.ResetH1 (_CurrentPlayer.getID ());
 
+		foreach (Player p in GameManager.instance.players)
+		{
+			_CurrentPlayer.setMoveType (MoveType.NONE, p.getID ());
+			_CurrentPlayer.setSpecial (Special.NONE, p.getID ());
+		}
+
 	}
 
 	/// <summary>
@@ -875,14 +881,14 @@ public class UIMoveManager : MonoBehaviour {
 				continue;
 
 			// If the observed player has none of the resource to be taken from it, continue
-			if (p.resources [p_Resource] < 1)
+			if (p.resources [p_Resource] < 2)
 				continue;
 
 			// Take the specific resource from the observed player
-			_CurrentPlayer.changeResource ((ResourceType)p_Resource, -1, p.getID());
+			_CurrentPlayer.changeResource ((ResourceType)p_Resource, -2, p.getID());
 
 			// Add that specific resource to this instance's _currentPlayer attribute
-			_CurrentPlayer.changeResource ((ResourceType)p_Resource, 1, _CurrentPlayer.getID());
+			_CurrentPlayer.changeResource ((ResourceType)p_Resource, 2, _CurrentPlayer.getID());
 		}
 
 		// Remove the Resource Monopoly card from the _currentPlayer attribute
@@ -1002,10 +1008,36 @@ public class UIMoveManager : MonoBehaviour {
 		if (_CurrentPlayer.getMoveType () == MoveType.PROGRESS_SPY  && GameManager.instance.getGamePhase() == GamePhase.PHASE_TWO ) 
 		{
 			_SpyPlayerPanel.gameObject.SetActive (true);
+			updateSpyPlayerPanel ();
 		} 
 
 		else {
 			_SpyPlayerPanel.gameObject.SetActive (false);
+		}
+	}
+
+	/// <summary>
+	/// Updates the spy player panel to display the number of progress cards
+	/// </summary>
+	public void updateSpyPlayerPanel()
+	{
+		int index = 0;
+
+
+		// Loop through every button, appending the number of progress cards that player has
+		// if this player is above current players in the game, then print another message and continue
+		foreach (Transform child in _SpyPlayerPanel) 
+		{
+			Text _text = child.GetChild (0).GetComponent<Text> ();
+
+			if (index+1 > GameManager.instance.players.Count) 
+			{
+				_text.text = "Player Not Connected";
+				continue;
+			}
+
+			_text.text = "Player_" + index + " | Cards: " + GameManager.instance.players [index].progressCards.Count;
+
 		}
 	}
 
@@ -1023,6 +1055,23 @@ public class UIMoveManager : MonoBehaviour {
 		{
 			return;
 		}
+			
+
+		// Loop through all players to find the player with matching colour as parameter
+		foreach (Player p in _Players)
+		{
+			if ((int)p.getColor () == p_ColorInt) 
+			{
+				_SpiedPlayer = p;
+
+				// If the player has no cards, set spied player to null and return immediately
+				if (_SpiedPlayer.progressCards.Count == 0) 
+				{
+					_SpiedPlayer = null;
+					return;
+				}
+			}
+		}
 
 
 
@@ -1035,11 +1084,6 @@ public class UIMoveManager : MonoBehaviour {
 			if (p.getColor () == _CurrentPlayer.getColor ())
 				continue;
 
-			// Find the player with the same color as the pColorInt parameter
-			if ((int)p.getColor () == p_ColorInt) 
-			{
-				_SpiedPlayer = p;
-			}
 
 			// Set the special of all players not this instance's _currentPlayer attribute to NONE
 			_CurrentPlayer.setSpecial (Special.NONE, p.getID ());
@@ -1058,6 +1102,7 @@ public class UIMoveManager : MonoBehaviour {
 		if (_CurrentPlayer.getSpecial () == Special.TAKE_OPPONENT_PROGRESS  && GameManager.instance.getGamePhase() == GamePhase.PHASE_TWO ) 
 		{
 			_SpyProgressCardsPanel.gameObject.SetActive (true);
+			spyChooseProgressCard ();
 		} 
 
 		else {
