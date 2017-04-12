@@ -1142,7 +1142,7 @@ public class Player : NetworkBehaviour
         GameObject trade = (GameObject)GameObject.Instantiate(tradePrefab);
         trade.GetComponent<Trades>().init(resourcesOffered, resourcesDemanded, commoditiesOffered, commoditiesDemanded, goldOffered, goldDemanded, GameManager.instance.getPlayers().Count, this);
         NetworkServer.Spawn(trade);
-        trade.GetComponent<Trades>().RpcSetPlayer(this.netId);
+        trade.GetComponent<Trades>().RpcSetPlayer(this.iD);
         MoveManager.instance.tradeWithBank(this.resourceRatios, this.commodityRatios, trade.GetComponent<Trades>());
         CmdDestroyObject(trade.GetComponent<Trades>().netId);
     }
@@ -2521,7 +2521,7 @@ public class Player : NetworkBehaviour
         GameObject trade = (GameObject)GameObject.Instantiate(tradePrefab);
         trade.GetComponent<Trades>().init(resourcesOffered, resourcesDemanded, commoditiesOffered, commoditiesDemanded, goldOffered, goldDemanded, GameManager.instance.getPlayers().Count, this);
         NetworkServer.Spawn(trade);
-        trade.GetComponent<Trades>().RpcSetPlayer(this.netId);
+        trade.GetComponent<Trades>().RpcSetPlayer(this.iD);
     }
 
     [Command]
@@ -2573,6 +2573,7 @@ public class Player : NetworkBehaviour
         }
         offered.changeGoldCount(trade.getGoldWanted() - trade.getGoldOffered(), offered.iD);
         this.changeGoldCount(trade.getGoldOffered() - trade.getGoldWanted(), this.iD);
+        Debug.Log(trade.netId);
         CmdDestroyObject(trade.netId);//destroy the trade 
     }
 

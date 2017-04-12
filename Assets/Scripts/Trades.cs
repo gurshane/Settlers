@@ -17,7 +17,7 @@ public class Trades : NetworkBehaviour
     [SyncVar]
     private int declined;
 
-    private Player offering;
+    public Player offering;
 
     public SyncListInt getResourcesOffered()
     {
@@ -75,14 +75,16 @@ public class Trades : NetworkBehaviour
     }
 
     [ClientRpc]
-    public void RpcSetPlayer(NetworkInstanceId iD)
+    public void RpcSetPlayer(int iDs)
     {
-        Debug.Log(iD);
-        Player theObject = NetworkServer.FindLocalObject(iD).GetComponent<Player>();
-        Debug.Log("offering iD: " + theObject.iD);
-        offering = theObject;
+        Debug.Log("Starting RPC set Player: " + iDs);
         foreach(Player player in GameManager.instance.getPlayers())
         {
+            if (player.iD == iDs)
+            {
+                this.offering = player;
+                Debug.Log("set offering");
+            }
             player.trade = this;
         }
     }
