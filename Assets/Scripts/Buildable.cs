@@ -14,12 +14,36 @@ public class Buildable {
 
 	public List<Vertex> buildableMoveKnight (Enums.Color color) {
 
-		return findActiveKnights(color);
+		Vertex v1 = GameManager.instance.getPersonalPlayer().v1;
+		if (!Object.ReferenceEquals(v1, null)) {
+			List<Vertex> vertices = new List<Vertex>();
+
+			foreach (Vertex v in BoardState.instance.vertexPosition.Values) {
+				if (ma.canKnightMove(v1, v, color)) {
+					vertices.Add(v);
+				}
+			}
+			return vertices;
+		} else {
+			return findActiveKnights(color);
+		}
 	}
 
 	public List<Vertex> buildableDisplaceKnight (Enums.Color color) {
 
-		return findActiveKnights(color);
+		Vertex v1 = GameManager.instance.getPersonalPlayer().v1;
+		if (!Object.ReferenceEquals(v1, null)) {
+			List<Vertex> vertices = new List<Vertex>();
+
+			foreach (Vertex v in BoardState.instance.vertexPosition.Values) {
+				if (ma.canKnightDisplace(v1, v, color)) {
+					vertices.Add(v);
+				}
+			}
+			return vertices;
+		} else {
+			return findActiveKnights(color);
+		}
 	}
 
 	public List<Vertex> buildableUpgradgeKnight (int[] resources, int[] devChart, List<GamePiece> pieces, Enums.Color color) {
@@ -127,6 +151,16 @@ public class Buildable {
 	public List<Edge> buildableMoveShip (Enums.Color color) {
 
 		List<Edge> edges = new List<Edge>();
+
+		Edge e1 = GameManager.instance.getPersonalPlayer().e1;
+		if (!Object.ReferenceEquals(e1, null)) {
+			foreach (Edge e in BoardState.instance.edgePosition.Values) {
+				if (ma.canShipMove(e1, e, color)) {
+					edges.Add(e);
+				}
+			}
+			return edges;
+		}
 
 		foreach (Edge source in BoardState.instance.edgePosition.Values) {
 			GamePiece sourcePiece = source.getOccupyingPiece();
@@ -371,5 +405,23 @@ public class Buildable {
 			}
 		}
 		return edges;
+	}
+
+	public List<Vertex> buildableForcedKnightMove(Enums.Color color) {
+
+		Vertex v1 = GameManager.instance.getPersonalPlayer().v1;
+		List<Vertex> vertices = new List<Vertex>();
+
+		if (!Object.ReferenceEquals(v1, null)) {
+			
+			foreach (Vertex v in BoardState.instance.vertexPosition.Values) {
+				if (ma.canForcedKnightMove(v1, v, color)) {
+					vertices.Add(v);
+				}
+			}
+			return vertices;
+		} 
+
+		return vertices;
 	}
 }

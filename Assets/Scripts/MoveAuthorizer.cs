@@ -13,6 +13,11 @@ public class MoveAuthorizer
     {
 
         // Make sure there is a knight that can be moved
+        if (Object.ReferenceEquals(source, target))
+        {
+            return false;
+        }
+
         GamePiece sourcePiece = source.getOccupyingPiece();
         if (Object.ReferenceEquals(sourcePiece, null))
         {
@@ -33,6 +38,28 @@ public class MoveAuthorizer
             return false;
         }
         if (sourceKnight.wasActivatedThisTurn())
+        {
+            return false;
+        }
+
+        // Make sure there is nothing at the target vertex
+        GamePiece targetPiece = target.getOccupyingPiece();
+        if (!Object.ReferenceEquals(targetPiece, null))
+        {
+            return false;
+        }
+
+        // Check if the vertices are connected
+        graph.vertexReset(source);
+        return graph.areConnectedVertices(source, target, color);
+    }
+
+    // Check if a knight can be moved from one vertex to another
+    public bool canForcedKnightMove(Vertex source, Vertex target, Enums.Color color)
+    {
+
+        // Make sure there is a knight that can be moved
+        if (Object.ReferenceEquals(source, target))
         {
             return false;
         }
