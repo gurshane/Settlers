@@ -7,6 +7,8 @@ using UnityEngine.Networking;
 public class Player : NetworkBehaviour
 {
 
+    public Trades trade;
+
     public GameObject myHud;
 
     public GameObject tradePrefab;
@@ -148,6 +150,7 @@ public class Player : NetworkBehaviour
 
         spawnedPieces = new Dictionary<Vector3, GamePiece>();
 
+        trade = null;
         // Create pieces
         pieces = new List<GamePiece>();
         for (int i = 0; i < 5; i++)
@@ -211,6 +214,17 @@ public class Player : NetworkBehaviour
 
     public void Update()
     {
+        if (!isLocalPlayer)
+        {
+            return;
+        }
+
+        if (trade != null)
+        {
+            //do UI thing 
+        }
+
+
         if (!isLocalPlayer || GameManager.instance.getPlayerTurn() != iD)
         {
             return;
@@ -1136,7 +1150,7 @@ public class Player : NetworkBehaviour
     public void CmdTradeWithBank(int[] resourcesOffered, int[] resourcesDemanded, int[] commoditiesOffered, int[] commoditiesDemanded, int goldOffered, int goldDemanded, int playerId)
     {
         GameObject trade = (GameObject)GameObject.Instantiate(tradePrefab);
-        trade.GetComponent<Trades>().init(resourcesOffered, resourcesDemanded, commoditiesOffered, commoditiesDemanded, goldOffered, goldDemanded, this);
+        trade.GetComponent<Trades>().init(resourcesOffered, resourcesDemanded, commoditiesOffered, commoditiesDemanded, goldOffered, goldDemanded, GameManager.instance.getPlayers().Count, this);
         NetworkServer.Spawn(trade);
         trade.GetComponent<Trades>().RpcSetPlayer(this.netId);
         MoveManager.instance.tradeWithBank(this.resourceRatios, this.commodityRatios, trade.GetComponent<Trades>());
@@ -2514,19 +2528,40 @@ public class Player : NetworkBehaviour
     public void CmdSpawnTrade(int[] resourcesOffered, int[] resourcesDemanded, int[] commoditiesOffered, int[] commoditiesDemanded, int goldOffered, int goldDemanded, int playerId)
     {
         List<Player> players = GameManager.instance.getPlayers();
-        Player offering = null;
-        foreach (Player player in players)
+        GameObject trade = (GameObject)GameObject.Instantiate(tradePrefab);
+        trade.GetComponent<Trades>().init(resourcesOffered, resourcesDemanded, commoditiesOffered, commoditiesDemanded, goldOffered, goldDemanded, GameManager.instance.getPlayers().Count, this);
+        NetworkServer.Spawn(trade);
+        trade.GetComponent<Trades>().RpcSetPlayer(this.netId);
+    }
+
+    [Command]
+    public void CmdDeclineTrade()
+    {
+        int result = trade.DecDeclined();
+        if (result <= 0)
         {
-            if (player.iD == playerId)
+            CmdDestroyObject(trade.netId);
+        }
+    }
+
+    public bool validateTrade()
+    {
+        for (int i = 0; i<trade.getResourcesWanted().Count, i++)
+        {
+            if (resources[i]<trade.getResourcesWanted()[i])
             {
-                offering = player;
-                break;
+                return false;
             }
         }
-        GameObject trade = (GameObject)GameObject.Instantiate(tradePrefab);
-        trade.GetComponent<Trades>().init(resourcesOffered, resourcesDemanded, commoditiesOffered, commoditiesDemanded, goldOffered, goldDemanded, offering);
-        NetworkServer.Spawn(trade);
-        trade.GetComponent<Trades>().RpcSetPlayer(offering.netId);
+        for (int j = 0; j<trade.getCommoditiesWanted().Count, j++)
+        {
+            if (commodities[j] < trade.getCommoditiesWanted()[i])
+            {
+                return false;
+            }
+        }
+        acceptTrade(trade);
+        return true;
     }
 
     public void acceptTrade(Trades trade)
@@ -2550,6 +2585,7 @@ public class Player : NetworkBehaviour
         this.changeGoldCount(trade.getGoldOffered() - trade.getGoldWanted(), this.iD);
         CmdDestroyObject(trade.netId);//destroy the trade 
     }
+
 
     [Command]
     public void CmdDestroyObject(NetworkInstanceId netId)
