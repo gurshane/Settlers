@@ -248,26 +248,32 @@ public class Player : NetworkBehaviour
         if (Input.GetKeyDown(KeyCode.Alpha1))
         {
             Debug.Log("Years of Plenty");
+            yearsOfPlenty();
         }
         else if (Input.GetKeyDown(KeyCode.Alpha2))
         {
             Debug.Log("Progress Card Saved Game");
+            progressCardSavedGame();
         }
-        else if (Input.GetKeyDown(KeyCode.Alpha2))
+        else if (Input.GetKeyDown(KeyCode.Alpha3))
         {
             Debug.Log("Metropolis Aqueduct, MarketPlace, Fortress");
+            devChartSavedGame();
         }
-        else if (Input.GetKeyDown(KeyCode.Alpha2))
+        else if (Input.GetKeyDown(KeyCode.Alpha4))
         {
             Debug.Log("Knight Saved Game");
+            knightSavedGame();
         }
-        else if (Input.GetKeyDown(KeyCode.Alpha2))
+        else if (Input.GetKeyDown(KeyCode.Alpha5))
         {
             Debug.Log("Barbarian Saved Game");
+            barbarianSavedGame();
         }
-        else if (Input.GetKeyDown(KeyCode.Alpha2))
+        else if (Input.GetKeyDown(KeyCode.Alpha6))
         {
             Debug.Log("Winning Saved Game");
+            winningSavedGame();
         }
 
 
@@ -1541,7 +1547,21 @@ public class Player : NetworkBehaviour
 
     public void giveBoot(int targetPlayer)
     {
+        if(!this.ownsBoot || ((this.iD) != GameManager.instance.getPlayerTurn()))
+        {
+            return;
+        }
 
+        int theirVps = GameManager.instance.getPlayer(targetPlayer).victoryPoints;
+
+        if(theirVps != this.victoryPoints)
+        {
+            return;
+        }
+
+        
+        GameManager.instance.getPlayer(targetPlayer).hasBoot(true, targetPlayer);
+        GameManager.instance.getPlayer(this.iD).hasBoot(false, this.iD);
     }
 
     public int getI1()
@@ -2808,6 +2828,11 @@ public class Player : NetworkBehaviour
     }
 
     void barbarianSavedGame()
+    {
+
+    }
+
+    void winningSavedGame()
     {
 
     }
