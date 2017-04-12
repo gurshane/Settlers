@@ -245,6 +245,31 @@ public class Player : NetworkBehaviour
         GameObject pieceHit = null;
 
 
+        if (Input.GetKeyDown(KeyCode.Alpha1))
+        {
+            Debug.Log("Years of Plenty");
+        }
+        else if (Input.GetKeyDown(KeyCode.Alpha2))
+        {
+            Debug.Log("Progress Card Saved Game");
+        }
+        else if (Input.GetKeyDown(KeyCode.Alpha2))
+        {
+            Debug.Log("Metropolis Aqueduct, MarketPlace, Fortress");
+        }
+        else if (Input.GetKeyDown(KeyCode.Alpha2))
+        {
+            Debug.Log("Knight Saved Game");
+        }
+        else if (Input.GetKeyDown(KeyCode.Alpha2))
+        {
+            Debug.Log("Barbarian Saved Game");
+        }
+        else if (Input.GetKeyDown(KeyCode.Alpha2))
+        {
+            Debug.Log("Winning Saved Game");
+        }
+
 
         // If game phase is phase one
         if (GameManager.instance.getGamePhase() == Enums.GamePhase.SETUP_ONE)
@@ -1514,6 +1539,11 @@ public class Player : NetworkBehaviour
         }
     }
 
+    public void giveBoot(int targetPlayer)
+    {
+
+    }
+
     public int getI1()
     {
         return this.i1;
@@ -2757,7 +2787,32 @@ public class Player : NetworkBehaviour
         return false;
     }
 
-    [Command]
+    void yearsOfPlenty()
+    {
+
+    }
+
+    void progressCardSavedGame()
+    {
+
+    }
+
+    void devChartSavedGame()
+    {
+
+    }
+
+    void knightSavedGame()
+    {
+
+    }
+
+    void barbarianSavedGame()
+    {
+
+    }
+
+[Command]
     public void CmdDestroyObject(NetworkInstanceId netId)
     {
         GameObject theObject = NetworkServer.FindLocalObject(netId);

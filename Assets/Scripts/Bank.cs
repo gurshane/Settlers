@@ -61,8 +61,8 @@ public class Bank : NetworkBehaviour
         politicsCards.Add(Enums.ProgressCardName.BISHOP);
         politicsCards.Add(Enums.ProgressCardName.BISHOP);
         politicsCards.Add(Enums.ProgressCardName.CONSTITUTION);
-        politicsCards.Add(Enums.ProgressCardName.DESERTER);
-        politicsCards.Add(Enums.ProgressCardName.DESERTER);
+        //politicsCards.Add(Enums.ProgressCardName.DESERTER);
+        //politicsCards.Add(Enums.ProgressCardName.DESERTER);
         politicsCards.Add(Enums.ProgressCardName.DIPLOMAT);
         politicsCards.Add(Enums.ProgressCardName.DIPLOMAT);
         politicsCards.Add(Enums.ProgressCardName.INTRIGUE);
@@ -74,14 +74,14 @@ public class Bank : NetworkBehaviour
         politicsCards.Add(Enums.ProgressCardName.SPY);
         politicsCards.Add(Enums.ProgressCardName.WARLORD);
         politicsCards.Add(Enums.ProgressCardName.WARLORD);
-        politicsCards.Add(Enums.ProgressCardName.WEDDING);
-        politicsCards.Add(Enums.ProgressCardName.WEDDING);
+        //politicsCards.Add(Enums.ProgressCardName.WEDDING);
+        //politicsCards.Add(Enums.ProgressCardName.WEDDING);
 
         tradeCards = new List<Enums.ProgressCardName>();
-        tradeCards.Add(Enums.ProgressCardName.COMMERCIALHARBOR);
-        tradeCards.Add(Enums.ProgressCardName.COMMERCIALHARBOR);
-        tradeCards.Add(Enums.ProgressCardName.MASTERMERCHANT);
-        tradeCards.Add(Enums.ProgressCardName.MASTERMERCHANT);
+        //tradeCards.Add(Enums.ProgressCardName.COMMERCIALHARBOR);
+        //tradeCards.Add(Enums.ProgressCardName.COMMERCIALHARBOR);
+        //tradeCards.Add(Enums.ProgressCardName.MASTERMERCHANT);
+        //tradeCards.Add(Enums.ProgressCardName.MASTERMERCHANT);
         tradeCards.Add(Enums.ProgressCardName.MERCHANT);
         tradeCards.Add(Enums.ProgressCardName.MERCHANT);
         tradeCards.Add(Enums.ProgressCardName.MERCHANT);
